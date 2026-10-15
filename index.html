@@ -1,15 +1,185 @@
-<!doctype html><html lang="kk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BilimLand — Электронды журнал</title><style>
-:root{--navy:#14284b;--blue:#3168e0;--pale:#f3f6fc;--ink:#18243a;--muted:#71809a;--line:#e3e9f3;--green:#18865d;--red:#c73535}*{box-sizing:border-box}body{margin:0;background:var(--pale);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:650;background:var(--blue);color:white}button.secondary{background:#edf2fc;color:#284575;border:1px solid #dce5f5}button.danger{background:#fff0f0;color:#b62f2f;border:1px solid #ffd9d9}.brand{display:flex;align-items:center;gap:12px;font-size:21px;font-weight:850;letter-spacing:-.5px;color:var(--navy)}.brand-mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#427df0,#1e4fb8);display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;box-shadow:0 7px 18px #3168e033}.login-wrap{min-height:100vh;display:grid;grid-template-columns:1fr 440px;max-width:1180px;margin:auto;padding:28px;gap:50px;align-items:center}.hero{padding:30px 20px}.hero h1{font-size:clamp(35px,5vw,58px);line-height:1.04;letter-spacing:-2px;color:var(--navy);margin:35px 0 18px}.hero p{font-size:18px;color:var(--muted);max-width:560px}.hero-card{margin-top:35px;padding:20px;background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 35px #203c7010;max-width:520px}.minirow{display:flex;align-items:center;gap:13px;padding:12px 0}.miniicon{width:42px;height:42px;border-radius:12px;background:#eef3ff;display:grid;place-items:center;font-size:21px}.panel{background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 18px 50px #203c7012;padding:28px}.panel h2{margin:0 0 5px;font-size:25px;color:var(--navy)}.sub{color:var(--muted);margin:0 0 22px}.field{display:block;margin:15px 0}.field span{display:block;font-size:13px;font-weight:700;color:#53627b;margin-bottom:7px}.field input,.field select{width:100%;padding:13px 14px;border:1px solid #dbe3ef;border-radius:10px;background:#fbfcff;outline:none}.field input:focus,.field select:focus{border-color:#6b92ed;box-shadow:0 0 0 3px #3168e018}.full{width:100%;margin-top:7px}.error{display:none;margin:12px 0;padding:10px 12px;border-radius:9px;background:#fff0f0;color:var(--red);font-weight:750}.success{display:none;margin:12px 0;padding:10px 12px;border-radius:9px;background:#eaf8f0;color:var(--green)}.tiny{font-size:12px;color:var(--muted);line-height:1.5}.topbar{height:72px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(15px,4vw,45px);position:sticky;top:0;z-index:5}.profile{display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:50%;background:#e6edff;color:#2456be;display:grid;place-items:center;font-weight:800}.layout{display:grid;grid-template-columns:235px 1fr;min-height:calc(100vh - 72px)}aside{padding:24px 14px;background:#fff;border-right:1px solid var(--line)}.navbtn{display:flex;width:100%;align-items:center;gap:11px;text-align:left;color:#53627b;background:transparent;padding:12px;border-radius:10px;margin:3px 0}.navbtn.active,.navbtn:hover{background:#edf3ff;color:#2456bd}.main{padding:clamp(18px,3vw,36px);max-width:1400px;width:100%;margin:0 auto}.welcome{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:24px}.welcome h1{font-size:28px;color:var(--navy);margin:0 0 5px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 4px 16px #1e376009}.statlabel{color:var(--muted);font-size:13px;font-weight:650}.stat{font-size:30px;font-weight:850;color:var(--navy);margin-top:8px}.section{margin-top:22px}.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.sectionhead h2{font-size:18px;margin:0;color:var(--navy)}.tablewrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px}table{border-collapse:collapse;width:100%;min-width:620px}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #edf0f6}th{font-size:12px;color:#74829a;background:#f9fbff;text-transform:uppercase;letter-spacing:.4px}tr:last-child td{border-bottom:0}.pill{display:inline-block;padding:4px 9px;border-radius:20px;background:#edf3ff;color:#2a59ba;font-size:12px;font-weight:750}.grade{font-weight:800;color:#2459c5}.empty{padding:25px;text-align:center;color:var(--muted)}.formrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.inlineform{display:flex;gap:9px;flex-wrap:wrap}.inlineform input,.inlineform select{padding:11px;border:1px solid #dbe3ef;border-radius:9px;min-width:130px;flex:1}.notice{background:#f0f5ff;border:1px solid #dce7ff;color:#3a568c;padding:13px 15px;border-radius:12px;margin-bottom:18px}.code{font-size:25px;font-weight:900;letter-spacing:2px;color:#214fb3;background:#edf3ff;padding:10px 15px;border-radius:10px;display:inline-block}.hidden{display:none!important}.toast{position:fixed;bottom:20px;right:20px;background:#15294b;color:white;padding:13px 18px;border-radius:12px;box-shadow:0 8px 30px #10203b40;z-index:10;max-width:90vw}.footer-note{font-size:12px;color:#8995a8;margin-top:18px}
-@media(max-width:850px){.login-wrap{grid-template-columns:1fr;max-width:520px;gap:12px;padding:18px}.hero{padding:12px 5px}.hero h1{margin-top:22px}.hero-card{display:none}.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line);gap:4px}.navbtn{width:auto;white-space:nowrap;margin:0}.grid{grid-template-columns:1fr}.main{padding:17px}.panel{padding:22px}}@media(min-width:851px){.mobilebrand{display:none}}
-.modalback{position:fixed;inset:0;background:#14213d80;display:flex;align-items:center;justify-content:center;padding:18px;z-index:99}.modalbox{width:min(100%,460px);background:white;border-radius:20px;padding:26px;box-shadow:0 25px 80px #0b1b3b40}.dca-personal{font-size:20px;font-weight:800;letter-spacing:1.5px;color:#285bd8;background:#eef3ff;padding:14px;border-radius:12px;display:inline-block;margin:8px 0}.event-date{color:#315fcb;font-weight:750}.eventtype{display:inline-block;padding:5px 9px;border-radius:8px;background:#eef3ff;color:#315fcb;font-size:12px;font-weight:800}.hidden{display:none!important}
-</style></head><body>
-<div id="loginScreen" class="login-wrap"><div class="hero"><div class="brand"><div class="brand-mark">B</div>BilimLand</div><h1>Білім алудың<br><span style="color:#3168e0">жаңа кеңістігі.</span></h1><p>Оқушыға, мұғалімге және сыныпқа арналған электронды журнал жүйесі.</p><div class="hero-card"><div class="minirow"><div class="miniicon">📘</div><div><b>Ортақ электронды журнал</b><div class="muted">Деректер бұлтта сақталады</div></div></div><div class="minirow"><div class="miniicon">🔐</div><div><b>Қорғалған аккаунт</b><div class="muted">Firebase Authentication</div></div></div><div class="minirow"><div class="miniicon">📊</div><div><b>Бағалар мен тапсырмалар</b><div class="muted">Құрылғылар арасында синхрондалады</div></div></div></div></div>
-<div class="panel"><div class="brand mobilebrand" style="margin-bottom:24px"><div class="brand-mark">B</div>BilimLand</div><h2>Жүйеге кіру</h2><p class="sub">Электрондық поштаңызбен кіріңіз немесе тіркеліңіз.</p><label class="field"><span>Электрондық пошта</span><input id="email" type="email" autocomplete="username" placeholder="name@example.com"></label><label class="field"><span>Құпиясөз</span><input id="password" type="password" autocomplete="current-password" placeholder="Кемінде 6 таңба"></label><label class="field"><span>Аты-жөніңіз (жаңа аккаунтқа)</span><input id="fullName" placeholder="Мысалы: Айдана Ермек"></label><div id="authError" class="error"></div><button id="signIn" class="full">Кіру →</button><button id="signUp" class="secondary full">Жаңа оқушы аккаунтын ашу</button><p class="footer-note">Қауіпсіздік үшін тіркелу кезінде тек оқушы аккаунты ашылады. Мұғалім рөлін әкімші бекітеді.</p></div></div>
-<div id="appScreen" class="hidden"><header class="topbar"><div class="brand"><div class="brand-mark">B</div>BilimLand</div><div class="profile"><div class="avatar" id="avatar">U</div><div><b id="displayName">Қолданушы</b><div class="muted" style="font-size:12px" id="displayRole">Оқушы</div></div><button id="logout" class="secondary">Шығу</button></div></header><div class="layout"><aside><button class="navbtn active" data-page="home">⌂ Шолу</button><button class="navbtn" data-page="classes">▦ Сыныптар</button><button class="navbtn" data-page="journal">▤ Бағалар журналы</button><button class="navbtn" data-page="tasks">✓ Тапсырмалар</button><button class="navbtn" data-page="assessments">▣ БЖБ / ТЖБ</button><button class="navbtn" data-page="schedule">◷ Сабақ кестесі</button></aside><main class="main"><div id="pageContent"></div></main></div></div><div id="toast" class="toast hidden"></div>
+
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BilimLand — Электронды журнал</title>
+<style>
+:root {
+  --navy:#14284b;
+  --blue:#3168e0;
+  --pale:#f3f6fc;
+  --ink:#18243a;
+  --muted:#71809a;
+  --line:#e3e9f3;
+  --green:#18865d;
+  --red:#c73535;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;background:var(--pale);color:var(--ink);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+button,input,select { font:inherit; }
+button {
+  cursor:pointer;border:0;border-radius:10px;
+  padding:11px 15px;background:var(--blue);
+  color:white;font-weight:700;
+}
+button.secondary { background:#edf2fc;color:#284575;border:1px solid var(--line); }
+button.danger { background:#fff0f0;color:#b62f2f; }
+input,select {
+  width:100%;padding:12px;border:1px solid #dbe3ef;
+  border-radius:10px;background:white;color:var(--ink);
+}
+h1,h2,h3 { color:var(--navy); }
+.brand { display:flex;align-items:center;gap:10px;font-size:22px;font-weight:850;color:var(--navy); }
+.logo {
+  width:42px;height:42px;border-radius:13px;
+  display:grid;place-items:center;background:var(--blue);
+  color:white;font-size:22px;
+}
+.login {
+  min-height:100vh;display:grid;grid-template-columns:1fr 420px;
+  align-items:center;gap:35px;max-width:1150px;margin:auto;padding:25px;
+}
+.hero { padding:25px; }
+.hero h1 { font-size:clamp(35px,5vw,58px);line-height:1.1; }
+.hero p,.muted { color:var(--muted); }
+.panel,.card {
+  background:white;border:1px solid var(--line);border-radius:17px;
+  padding:22px;box-shadow:0 6px 24px #203c7009;
+}
+.field { display:block;margin:14px 0; }
+.field span { display:block;margin-bottom:6px;font-weight:700;font-size:13px; }
+.full { width:100%;margin-top:8px; }
+.message { padding:12px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere; }
+.error { background:#fff0f0;color:var(--red); }
+.success { background:#eaf8f0;color:var(--green); }
+.hidden { display:none!important; }
+.topbar {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:14px 22px;background:white;border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:3;
+}
+.profile { display:flex;align-items:center;gap:10px; }
+.avatar {
+  width:38px;height:38px;border-radius:50%;background:#e6edff;
+  display:grid;place-items:center;color:#2456be;font-weight:800;
+}
+.layout { display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 70px); }
+aside { background:white;border-right:1px solid var(--line);padding:15px; }
+.navbtn {
+  display:block;width:100%;text-align:left;margin:4px 0;
+  color:#53627b;background:transparent;
+}
+.navbtn.active,.navbtn:hover { background:#edf3ff;color:#2456bd; }
+main { padding:clamp(16px,3vw,32px);max-width:1400px;width:100%;margin:auto; }
+.welcome { display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap; }
+.grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px; }
+.stat { font-size:30px;font-weight:850;color:var(--navy); }
+.pill { display:inline-block;padding:4px 9px;border-radius:20px;background:#edf3ff;color:#2a59ba;font-size:12px;font-weight:750; }
+.section { margin-top:24px; }
+.inlineform { display:flex;gap:9px;flex-wrap:wrap;align-items:center; }
+.inlineform input { flex:1;min-width:140px; }
+.tablewrap { overflow:auto;background:white;border:1px solid var(--line);border-radius:12px;margin-top:15px; }
+table { border-collapse:collapse;width:100%;min-width:550px; }
+th,td { text-align:left;padding:12px;border-bottom:1px solid #edf0f6; }
+th { background:#f9fbff;font-size:12px;color:var(--muted); }
+.empty { padding:20px;color:var(--muted);text-align:center; }
+.toast {
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  background:#15294b;color:white;padding:13px 17px;border-radius:12px;
+  z-index:10;max-width:92%;overflow-wrap:anywhere;
+}
+.small { font-size:12px;color:var(--muted); }
+@media(max-width:800px) {
+  .login { grid-template-columns:1fr;max-width:520px;gap:12px;padding:15px; }
+  .hero { padding:8px; }
+  .hero h1 { font-size:36px; }
+  .layout { grid-template-columns:1fr; }
+  aside { display:flex;overflow:auto;gap:4px;padding:8px;border-right:0;border-bottom:1px solid var(--line); }
+  .navbtn { width:auto;white-space:nowrap;margin:0; }
+  .grid { grid-template-columns:1fr; }
+  main { padding:15px; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login">
+  <section class="hero">
+    <div class="brand"><div class="logo">B</div>BilimLand</div>
+    <h1>Білім алудың <span style="color:#3168e0">жаңа кеңістігі.</span></h1>
+    <p>Оқушыға, мұғалімге және сыныпқа арналған электронды журнал.</p>
+    <div class="card">
+      <h3>📘 Ортақ электронды журнал</h3>
+      <p class="muted">Деректер Firebase арқылы сақталады.</p>
+      <h3>📊 Бағалар мен тапсырмалар</h3>
+      <p class="muted">Рұқсатыңыз бар деректерді әр құрылғыдан қарай аласыз.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="brand"><div class="logo">B</div>BilimLand</div>
+    <h2>Жүйеге кіру</h2>
+    <p class="muted">Электрондық поштаңызбен кіріңіз немесе аккаунт ашыңыз.</p>
+
+    <label class="field"><span>Электрондық пошта</span>
+      <input id="email" type="email" autocomplete="username" placeholder="name@example.com">
+    </label>
+    <label class="field"><span>Құпиясөз</span>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Кемінде 6 таңба">
+    </label>
+    <label class="field"><span>Аты-жөніңіз (жаңа аккаунтқа)</span>
+      <input id="fullName" placeholder="Мысалы: Айдана Ермек">
+    </label>
+
+    <div id="authMessage" class="message hidden"></div>
+    <button id="signIn" class="full">Кіру →</button>
+    <button id="signUp" class="secondary full">Жаңа оқушы аккаунтын ашу</button>
+    <p class="small">Жаңа аккаунттар оқушы рөлімен ашылады. Мұғалім рөлін әкімші бекітеді.</p>
+  </section>
+</div>
+
+<div id="appScreen" class="hidden">
+  <header class="topbar">
+    <div class="brand"><div class="logo">B</div>BilimLand</div>
+    <div class="profile">
+      <div id="avatar" class="avatar">U</div>
+      <div><b id="displayName">Қолданушы</b><div id="displayRole" class="small"></div></div>
+      <button id="logout" class="secondary">Шығу</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <button class="navbtn active" data-page="home">⌂ Шолу</button>
+      <button class="navbtn" data-page="classes">▦ Сыныптар</button>
+      <button class="navbtn" data-page="journal">▤ Бағалар журналы</button>
+      <button class="navbtn" data-page="tasks">✓ Тапсырмалар</button>
+      <button class="navbtn" data-page="assessments">▣ БЖБ / ТЖБ</button>
+      <button class="navbtn" data-page="schedule">◷ Сабақ кестесі</button>
+    </aside>
+    <main><div id="pageContent"></div></main>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
-import { getDatabase, ref, get, set, update, remove, push, query, orderByChild, equalTo, onValue } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+import {
+  getDatabase, ref, get, set, update, push,
+  query, orderByChild, equalTo
+} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+/* Firebase конфигурациясы */
 const firebaseConfig = {
   apiKey: "AIzaSyDNZxKKs6B7zw-YnL88rAo5fJypsoYad2A",
   authDomain: "bilimland-20aea.firebaseapp.com",
@@ -19,29 +189,585 @@ const firebaseConfig = {
   messagingSenderId: "420262394105",
   appId: "1:420262394105:web:ea6cbcd11ad2da24bcca28"
 };
-const app=initializeApp(firebaseConfig), auth=getAuth(app), rtdb=getDatabase(app);
-let me=null, profile=null, page='home', classes=[], allGrades=[], allTasks=[], allAssessments=[], allSchedules=[], unsub=[];
-const $=id=>document.getElementById(id); const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=> $('toast').classList.add('hidden'),2800)}
-function err(s){$('authError').textContent=s;$('authError').style.display='block'}
-$('signIn').onclick=async()=>{try{hideErr();await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){err(authMessage(e.code))}};
-$('signUp').onclick=async()=>{try{hideErr();const email=$('email').value.trim(),pass=$('password').value,name=$('fullName').value.trim();if(!name)throw Error('Аты-жөніңізді енгізіңіз.');if(pass.length<6)throw Error('Құпиясөз кемінде 6 таңба болуы керек.');const cred=await createUserWithEmailAndPassword(auth,email,pass);await set(ref(rtdb,'profiles/'+cred.user.uid),{name,role:'student',createdAt:Date.now()})}catch(e){err(e.message==='Аты-жөніңізді енгізіңіз.'||e.message.startsWith('Құпиясөз')?e.message:authMessage(e.code))}};
-function hideErr(){$('authError').style.display='none'}
-function authMessage(code){return ({'auth/invalid-email':'Электрондық пошта дұрыс емес.','auth/missing-password':'Құпиясөзді енгізіңіз.','auth/invalid-credential':'Пошта немесе құпиясөз қате.','auth/email-already-in-use':'Бұл пошта тіркелген. Кіру батырмасын қолданыңыз.','auth/weak-password':'Құпиясөз кемінде 6 таңба болсын.','auth/network-request-failed':'Интернет байланысын тексеріңіз.'}[code])||'Қате шықты. Мәліметтерді тексеріп, қайта көріңіз.'}
-$('logout').onclick=()=>signOut(auth);document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{page=b.dataset.page;document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x===b));render()});
-onAuthStateChanged(auth,async user=>{stopSubs();me=user;if(!user){profile=null;$('appScreen').classList.add('hidden');$('loginScreen').classList.remove('hidden');return}try{const s=await get(ref(rtdb,'profiles/'+user.uid));profile=s.val();if(!profile){await signOut(auth);err('Профиль табылмады. Қайта тіркеліп көріңіз.');return}$('loginScreen').classList.add('hidden');$('appScreen').classList.remove('hidden');$('displayName').textContent=profile.name||user.email;$('avatar').textContent=(profile.name||user.email||'U').slice(0,1).toUpperCase();$('displayRole').textContent=profile.role==='teacher'?'Мұғалім аккаунты':'Оқушы аккаунты';await loadData();render()}catch(e){toast('Деректерді жүктеу мүмкін болмады. Firebase Rules тексеріңіз.')}});
-function stopSubs(){unsub.forEach(f=>f());unsub=[]}
-async function loadData(){classes=[];allGrades=[];allTasks=[];allAssessments=[];allSchedules=[];if(profile.role==='teacher'){const snap=await get(query(ref(rtdb,'classes'),orderByChild('teacherId'),equalTo(me.uid)));const v=snap.val()||{};classes=Object.entries(v).map(([id,c])=>({...c,id}))}else{const snap=await get(ref(rtdb,'userClasses/'+me.uid));const links=snap.val()||{};for(const [id,status] of Object.entries(links))if(status==='active'){const c=await get(ref(rtdb,'classes/'+id));if(c.exists())classes.push({...c.val(),id})}}
-for(const c of classes){for(const [key,target] of [['grades',allGrades],['tasks',allTasks],['assessments',allAssessments],['schedules',allSchedules]]){const base=ref(rtdb,key+'/'+c.id);const s=(key==='grades'&&profile.role!=='teacher')?await get(query(base,orderByChild('studentId'),equalTo(me.uid))):await get(base);const val=s.val()||{};for(const [id,item] of Object.entries(val))target.push({...item,id,classId:c.id,className:c.name,subject:c.subject||''})}}
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let me = null;
+let profile = null;
+let page = "home";
+let classes = [];
+let grades = [];
+let tasks = [];
+let assessments = [];
+let schedules = [];
+
+const $ = id => document.getElementById(id);
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
 }
-function clsOptions(){return classes.map(c=>`<option value="${c.id}">${esc(c.name)} · ${esc(c.subject||'Жалпы')}</option>`).join('')}
-function render(){if(!me||!profile)return;const el=$('pageContent'),teacher=profile.role==='teacher';if(page==='home'){const own=teacher?allGrades:allGrades.filter(g=>g.studentId===me.uid),avg=own.length?(own.reduce((s,g)=>s+Number(g.value),0)/own.length).toFixed(1):'—';el.innerHTML=`<div class="welcome"><div><h1>Қош келдіңіз, ${esc((profile.name||'').split(' ')[0])}!</h1><div class="muted">${teacher?'Сынып пен оқу үдерісін басқарыңыз.':'Сыныптарыңыз бен оқу көрсеткіштеріңіз.'}</div></div><span class="pill">${teacher?'МҰҒАЛІМ':'ОҚУШЫ'}</span></div><div class="grid"><div class="card"><div class="statlabel">Сыныптар</div><div class="stat">${classes.length}</div></div><div class="card"><div class="statlabel">Орташа баға</div><div class="stat">${avg}</div></div><div class="card"><div class="statlabel">Тапсырмалар</div><div class="stat">${allTasks.length}</div></div></div><div class="section"><div class="card"><h2>Бұлтпен синхрондау қосылған</h2><p class="muted">Осы аккаунтпен басқа құрылғыдан кіргенде рұқсатыңыз бар деректер қайта жүктеледі.</p><button onclick="window.location.reload()">Жаңарту</button></div></div>`;return}if(page==='classes'){el.innerHTML=`<div class="welcome"><div><h1>Менің сыныптарым</h1><div class="muted">${teacher?'Сынып құрып, кодты оқушыларға беріңіз.':'Мұғалім берген кодпен сыныпқа қосылуға өтініш жіберіңіз.'}</div></div></div>${teacher?`<div class="card"><h2>Жаңа сынып</h2><div class="inlineform"><input id="cName" placeholder="Сынып (мысалы, 8A)"><input id="cSubject" placeholder="Пән"><button id="createClass">Сынып құру</button></div></div><div class="section"><h2>Қосылу өтініштері</h2><div id="requests" class="grid">Өтініштер жүктелуде…</div></div>`:`<div class="card"><h2>Сыныпқа қосылу</h2><div class="inlineform"><input id="joinCode" placeholder="DCA-XXXXXX"><button id="joinClass">Өтініш жіберу</button></div></div>`}<div class="section"><div class="grid">${classes.map(c=>`<div class="card"><span class="pill">${esc(c.subject||'Жалпы')}</span><h2>${esc(c.name)}</h2><p class="muted">Сынып коды: <b>${esc(c.code||'—')}</b></p>${teacher?`<button class="secondary" data-requests="${c.id}">Оқушыларды қарау</button>`:''}</div>`).join('')||'<div class="card empty">Әзірге сынып жоқ.</div>'}</div></div>`;if(teacher){$('createClass').onclick=createClass;$('requests').innerHTML='Өтініштерді көру үшін төмендегі сынып батырмасын басыңыз.';document.querySelectorAll('[data-requests]').forEach(b=>b.onclick=()=>showRequests(b.dataset.requests))}else $('joinClass').onclick=joinClass;return}if(page==='journal'){el.innerHTML=`<div class="welcome"><div><h1>Бағалар журналы</h1></div></div>${teacher?`<div class="card"><h2>Баға қою</h2>${classes.length?`<div class="formrow"><label class="field"><span>Сынып</span><select id="gClass">${clsOptions()}</select></label><label class="field"><span>Оқушы UID</span><input id="gStudent" placeholder="Оқушының Firebase UID-і"></label><label class="field"><span>Баға түрі</span><select id="gType"><option>Күнделікті баға</option><option>БЖБ</option><option>ТЖБ</option></select></label><label class="field"><span>Баға (1–10)</span><input id="gValue" type="number" min="1" max="10"></label></div><button id="saveGrade">Бағаны сақтау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="section"><div class="tablewrap"><table><thead><tr><th>Сынып</th><th>Оқушы</th><th>Түрі</th><th>Баға</th><th>Пайыз</th></tr></thead><tbody>${allGrades.filter(g=>teacher||g.studentId===me.uid).map(g=>`<tr><td>${esc(g.className)}</td><td>${esc(g.studentName||g.studentId||'')}</td><td>${esc(g.type)}</td><td class="grade">${g.value}/10</td><td>${Math.round(Number(g.value)*10)}%</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Бағалар әзірге жоқ.</td></tr>'}</tbody></table></div></div>`;if(teacher&&classes.length)$('saveGrade').onclick=saveGrade;return}if(page==='tasks'){el.innerHTML=`<div class="welcome"><div><h1>Тапсырмалар</h1></div></div>${teacher?`<div class="card"><h2>Тапсырма беру</h2>${classes.length?`<div class="formrow"><label class="field"><span>Сынып</span><select id="tClass">${clsOptions()}</select></label><label class="field"><span>Тапсырма</span><input id="tTitle" placeholder="Тапсырма атауы"></label><label class="field"><span>Мерзімі</span><input id="tDue" type="date"></label></div><button id="saveTask">Жариялау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="grid">${allTasks.map(t=>`<div class="card"><span class="pill">${esc(t.className)}</span><h3>${esc(t.title)}</h3><p class="muted">Мерзімі: ${esc(t.due||'—')}</p></div>`).join('')||'<div class="card empty">Тапсырма жоқ.</div>'}</div>`;if(teacher&&classes.length)$('saveTask').onclick=saveTask;return}if(page==='assessments'){el.innerHTML=`<div class="welcome"><div><h1>БЖБ / ТЖБ</h1></div></div>${teacher?`<div class="card"><h2>Бағалау жариялау</h2>${classes.length?`<div class="formrow"><label class="field"><span>Сынып</span><select id="aClass">${clsOptions()}</select></label><label class="field"><span>Түрі</span><select id="aType"><option>БЖБ</option><option>ТЖБ</option></select></label><label class="field"><span>Пән</span><input id="aSubject" placeholder="Пән"></label><label class="field"><span>Күні</span><input id="aDate" type="date"></label></div><button id="saveAssessment">Жариялау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="grid">${allAssessments.map(a=>`<div class="card"><span class="eventtype">${esc(a.type)}</span><div class="event-date">${esc(a.date)}</div><h3>${esc(a.subject)}</h3><p class="muted">${esc(a.className)}</p></div>`).join('')||'<div class="card empty">БЖБ/ТЖБ кестесі бос.</div>'}</div>`;if(teacher&&classes.length)$('saveAssessment').onclick=saveAssessment;return}if(page==='schedule'){el.innerHTML=`<div class="welcome"><div><h1>Сабақ кестесі</h1></div></div>${teacher?`<div class="card"><h2>Сабақ қосу</h2>${classes.length?`<div class="formrow"><label class="field"><span>Сынып</span><select id="sClass">${clsOptions()}</select></label><label class="field"><span>Күн</span><select id="sDay"><option>Дүйсенбі</option><option>Сейсенбі</option><option>Сәрсенбі</option><option>Бейсенбі</option><option>Жұма</option></select></label><label class="field"><span>Пән</span><input id="sSubject"></label><label class="field"><span>Уақыты</span><input id="sTime" placeholder="09:00–09:45"></label></div><button id="saveSchedule">Қосу</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="tablewrap"><table><thead><tr><th>Күн</th><th>Уақыт</th><th>Пән</th><th>Сынып</th></tr></thead><tbody>${allSchedules.map(s=>`<tr><td>${esc(s.day)}</td><td>${esc(s.time)}</td><td>${esc(s.subject)}</td><td>${esc(s.className)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Кесте бос.</td></tr>'}</tbody></table></div>`;if(teacher&&classes.length)$('saveSchedule').onclick=saveSchedule;return}}
-async function createClass(){try{const name=$('cName').value.trim(),subject=$('cSubject').value.trim();if(!name)throw Error('Сынып атауын енгізіңіз.');const id=push(ref(rtdb,'classes')).key,code='DCA-'+Math.random().toString(36).slice(2,8).toUpperCase();await set(ref(rtdb,'classes/'+id),{name,subject,code,teacherId:me.uid,createdAt:Date.now()});await set(ref(rtdb,'classCodes/'+code),id);await loadData();render();toast('Сынып құрылды. Код: '+code)}catch(e){toast('Сынып құрылмады: Firebase Rules/мұғалім рөлін тексеріңіз.')}}
-async function joinClass(){try{const code=$('joinCode').value.trim().toUpperCase(),s=await get(ref(rtdb,'classCodes/'+code));if(!s.exists())throw Error('Код табылмады.');const cid=s.val();await set(ref(rtdb,'joinRequests/'+cid+'/'+me.uid),{uid:me.uid,email:me.email,name:profile.name,status:'requested',createdAt:Date.now()});toast('Өтініш мұғалімге жіберілді. Ол мақұлдаған соң сынып көрінеді.')}catch(e){toast(e.message||'Өтініш жіберілмеді.')}}
-async function showRequests(cid){try{const s=await get(ref(rtdb,'joinRequests/'+cid)),v=s.val()||{},box=$('requests');const entries=Object.entries(v).filter(([_,r])=>r.status==='requested');box.innerHTML=entries.map(([uid,r])=>`<div class="card"><b>${esc(r.name||r.email)}</b><p class="muted">${esc(r.email)}</p><button data-approve="${uid}" data-cid="${cid}">Қабылдау</button></div>`).join('')||'<div class="card empty">Жаңа өтініш жоқ.</div>';box.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>approve(b.dataset.cid,b.dataset.approve))}catch(e){toast('Өтініштерді оқу мүмкін болмады.')}}
-async function approve(cid,uid){try{await set(ref(rtdb,'userClasses/'+uid+'/'+cid),'active');await update(ref(rtdb,'joinRequests/'+cid+'/'+uid),{status:'approved'});toast('Оқушы сыныпқа қосылды.');showRequests(cid)}catch(e){toast('Қосу сәтсіз. Firebase Rules тексеріңіз.')}}
-async function saveGrade(){try{const cid=$('gClass').value,studentId=$('gStudent').value.trim(),value=Number($('gValue').value),type=$('gType').value;if(!studentId||value<1||value>10)throw Error();const id=push(ref(rtdb,'grades/'+cid)).key;await set(ref(rtdb,'grades/'+cid+'/'+id),{studentId,value,type,studentName:studentId,createdAt:Date.now()});await loadData();render();toast('Баға сақталды.')}catch(e){toast('Бағаны сақтай алмадым. Оқушы UID мен бағаны тексеріңіз.')}}
-async function saveTask(){try{const cid=$('tClass').value,title=$('tTitle').value.trim();if(!title)throw Error();const id=push(ref(rtdb,'tasks/'+cid)).key;await set(ref(rtdb,'tasks/'+cid+'/'+id),{title,due:$('tDue').value,createdAt:Date.now()});await loadData();render();toast('Тапсырма жарияланды.')}catch(e){toast('Тапсырманы сақтау сәтсіз.')}}
-async function saveAssessment(){try{const cid=$('aClass').value,subject=$('aSubject').value.trim(),date=$('aDate').value;if(!subject||!date)throw Error();const id=push(ref(rtdb,'assessments/'+cid)).key;await set(ref(rtdb,'assessments/'+cid+'/'+id),{type:$('aType').value,subject,date,createdAt:Date.now()});await loadData();render();toast('Бағалау жарияланды.')}catch(e){toast('Пән мен күнді тексеріңіз.')}}
-async function saveSchedule(){try{const cid=$('sClass').value,subject=$('sSubject').value.trim(),time=$('sTime').value.trim();if(!subject||!time)throw Error();const id=push(ref(rtdb,'schedules/'+cid)).key;await set(ref(rtdb,'schedules/'+cid+'/'+id),{day:$('sDay').value,subject,time});await loadData();render();toast('Кесте сақталды.')}catch(e){toast('Пән мен уақытты толтырыңыз.')}}
-</script></body></html>
+
+function toast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.remove("hidden");
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => $("toast").classList.add("hidden"), 4500);
+}
+
+function authMessage(message) {
+  $("authMessage").textContent = message;
+  $("authMessage").classList.remove("hidden");
+}
+
+function clearAuthMessage() {
+  $("authMessage").textContent = "";
+  $("authMessage").classList.add("hidden");
+}
+
+function firebaseMessage(error) {
+  const messages = {
+    "auth/invalid-email":"Электрондық пошта дұрыс емес.",
+    "auth/invalid-credential":"Пошта немесе құпиясөз қате.",
+    "auth/email-already-in-use":"Бұл пошта бұрын тіркелген.",
+    "auth/weak-password":"Құпиясөз тым әлсіз. Кемінде 6 таңба енгізіңіз.",
+    "auth/network-request-failed":"Интернет байланысын тексеріңіз.",
+    "PERMISSION_DENIED":"Firebase дерекқор ережелері бұл әрекетке рұқсат бермеді.",
+    "permission-denied":"Firebase дерекқор ережелері бұл әрекетке рұқсат бермеді."
+  };
+  return messages[error?.code] || error?.message || "Белгісіз қате.";
+}
+
+/* Кіру */
+$("signIn").onclick = async () => {
+  clearAuthMessage();
+  try {
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if (!email || !password) throw Error("Пошта мен құпиясөзді енгізіңіз.");
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    authMessage(firebaseMessage(e));
+  }
+};
+
+/* Жаңа оқушы аккаунты */
+$("signUp").onclick = async () => {
+  clearAuthMessage();
+  try {
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    const name = $("fullName").value.trim();
+
+    if (!name) throw Error("Аты-жөніңізді енгізіңіз.");
+    if (!email) throw Error("Электрондық поштаңызды енгізіңіз.");
+    if (password.length < 6) throw Error("Құпиясөз кемінде 6 таңба болуы керек.");
+
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+
+    try {
+      await set(ref(db, "profiles/" + credential.user.uid), {
+        name,
+        role: "student",
+        createdAt: Date.now()
+      });
+    } catch (e) {
+      await signOut(auth);
+      throw Error("Аккаунт ашылды, бірақ профиль сақталмады. Firebase Rules тексеріңіз. " + firebaseMessage(e));
+    }
+  } catch (e) {
+    authMessage(firebaseMessage(e));
+  }
+};
+
+$("logout").onclick = () => signOut(auth);
+
+document.querySelectorAll(".navbtn").forEach(button => {
+  button.onclick = () => {
+    page = button.dataset.page;
+    document.querySelectorAll(".navbtn").forEach(b =>
+      b.classList.toggle("active", b === button)
+    );
+    render();
+  };
+});
+
+/* Пайдаланушыны тексеру */
+onAuthStateChanged(auth, async user => {
+  me = user;
+
+  if (!user) {
+    profile = null;
+    $("appScreen").classList.add("hidden");
+    $("loginScreen").classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const snapshot = await get(ref(db, "profiles/" + user.uid));
+    profile = snapshot.val();
+
+    if (!profile || !["student", "teacher"].includes(profile.role)) {
+      await signOut(auth);
+      authMessage("Профиль табылмады немесе рөл дұрыс емес. Әкімшіге хабарласыңыз.");
+      return;
+    }
+
+    $("loginScreen").classList.add("hidden");
+    $("appScreen").classList.remove("hidden");
+    $("displayName").textContent = profile.name || user.email;
+    $("avatar").textContent = (profile.name || user.email || "U").slice(0,1).toUpperCase();
+    $("displayRole").textContent = profile.role === "teacher" ? "Мұғалім" : "Оқушы";
+
+    await loadData();
+    render();
+  } catch (e) {
+    toast("Профильді жүктеу қатесі: " + firebaseMessage(e));
+  }
+});
+
+/* Сыныптар мен деректерді жүктеу */
+async function loadData() {
+  classes = [];
+  grades = [];
+  tasks = [];
+  assessments = [];
+  schedules = [];
+
+  if (profile.role === "teacher") {
+    const snapshot = await get(
+      query(ref(db, "classes"), orderByChild("teacherId"), equalTo(me.uid))
+    );
+    const value = snapshot.val() || {};
+    classes = Object.entries(value).map(([id, c]) => ({...c, id}));
+  } else {
+    const snapshot = await get(ref(db, "userClasses/" + me.uid));
+    const links = snapshot.val() || {};
+
+    for (const [id, status] of Object.entries(links)) {
+      if (status !== "active") continue;
+      const classSnapshot = await get(ref(db, "classes/" + id));
+      if (classSnapshot.exists()) {
+        classes.push({...classSnapshot.val(), id});
+      }
+    }
+  }
+
+  for (const c of classes) {
+    for (const key of ["grades", "tasks", "assessments", "schedules"]) {
+      const snapshot = await get(ref(db, key + "/" + c.id));
+      let value = snapshot.val() || {};
+
+      if (key === "grades" && profile.role === "student") {
+        value = Object.fromEntries(
+          Object.entries(value).filter(([_, item]) => item.studentId === me.uid)
+        );
+      }
+
+      const target = key === "grades" ? grades
+        : key === "tasks" ? tasks
+        : key === "assessments" ? assessments : schedules;
+
+      for (const [id, item] of Object.entries(value)) {
+        target.push({
+          ...item,
+          id,
+          classId: c.id,
+          className: c.name || "",
+          subject: item.subject || c.subject || ""
+        });
+      }
+    }
+  }
+}
+
+function classOptions() {
+  return classes.map(c =>
+    `<option value="${esc(c.id)}">${esc(c.name)} · ${esc(c.subject || "Жалпы")}</option>`
+  ).join("");
+}
+
+function noClasses() {
+  return `<div class="card empty">Алдымен сынып құрыңыз немесе сыныпқа қосылыңыз.</div>`;
+}
+
+/* Беттерді көрсету */
+function render() {
+  if (!me || !profile) return;
+
+  const el = $("pageContent");
+  const teacher = profile.role === "teacher";
+
+  if (page === "home") {
+    const average = grades.length
+      ? (grades.reduce((sum, g) => sum + Number(g.value || 0), 0) / grades.length).toFixed(1)
+      : "—";
+
+    el.innerHTML = `
+      <div class="welcome">
+        <div><h1>Қош келдіңіз, ${esc((profile.name || "").split(" ")[0])}!</h1>
+        <p class="muted">${teacher ? "Сынып пен оқу үдерісін басқарыңыз." : "Сыныптарыңыз бен оқу көрсеткіштеріңіз."}</p></div>
+        <span class="pill">${teacher ? "МҰҒАЛІМ" : "ОҚУШЫ"}</span>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="muted">Сыныптар</div><div class="stat">${classes.length}</div></div>
+        <div class="card"><div class="muted">Орташа баға</div><div class="stat">${average}</div></div>
+        <div class="card"><div class="muted">Тапсырмалар</div><div class="stat">${tasks.length}</div></div>
+      </div>
+      <div class="section card">
+        <h2>BilimLand журналы</h2>
+        <p class="muted">Деректер Firebase дерекқорында сақталады. Жаңарту үшін батырманы басыңыз.</p>
+        <button id="refresh">Деректерді жаңарту</button>
+      </div>`;
+    $("refresh").onclick = async () => {
+      try { await loadData(); render(); toast("Деректер жаңартылды."); }
+      catch(e) { toast(firebaseMessage(e)); }
+    };
+    return;
+  }
+
+  if (page === "classes") {
+    el.innerHTML = `
+      <h1>Менің сыныптарым</h1>
+      <p class="muted">${teacher ? "Жаңа сынып құрыңыз." : "Мұғалім берген код арқылы сыныпқа өтініш жіберіңіз."}</p>
+      ${teacher ? `
+        <div class="card">
+          <h2>Жаңа сынып</h2>
+          <div class="inlineform">
+            <input id="cName" placeholder="Сынып (мысалы, 8 Г)">
+            <input id="cSubject" placeholder="Пәні">
+            <button id="createClass">Сынып құру</button>
+          </div>
+        </div>
+        <div class="section card">
+          <h2>Оқушылардың өтініштері</h2>
+          <label class="field"><span>Сыныпты таңдаңыз</span><select id="requestClass">${classOptions()}</select></label>
+          <button id="loadRequests" class="secondary">Өтініштерді көру</button>
+          <div id="requests" class="section"></div>
+        </div>` : `
+        <div class="card">
+          <h2>Сыныпқа қосылу</h2>
+          <div class="inlineform">
+            <input id="joinCode" placeholder="DCA-XXXXXX">
+            <button id="joinClass">Өтініш жіберу</button>
+          </div>
+        </div>`}
+      <div class="section grid">
+        ${classes.map(c => `
+          <div class="card">
+            <span class="pill">${esc(c.subject || "Жалпы")}</span>
+            <h2>${esc(c.name)}</h2>
+            <p class="muted">Сынып коды:</p><b>${esc(c.code || "—")}</b>
+          </div>`).join("") || `<div class="card empty">Әзірге сынып жоқ.</div>`}
+      </div>`;
+
+    if (teacher) {
+      $("createClass").onclick = createClass;
+      $("loadRequests").onclick = () => {
+        const cid = $("requestClass").value;
+        if (cid) showRequests(cid);
+        else toast("Алдымен сынып құрыңыз.");
+      };
+    } else {
+      $("joinClass").onclick = joinClass;
+    }
+    return;
+  }
+
+  if (page === "journal") {
+    el.innerHTML = `
+      <h1>Бағалар журналы</h1>
+      ${teacher ? `
+        <div class="card">
+          <h2>Баға қою</h2>
+          ${classes.length ? `
+            <label class="field"><span>Сынып</span><select id="gClass">${classOptions()}</select></label>
+            <label class="field"><span>Оқушының аккаунт UID-і</span><input id="gStudent" placeholder="Firebase UID"></label>
+            <label class="field"><span>Баға түрі</span><select id="gType"><option>Күнделікті баға</option><option>БЖБ</option><option>ТЖБ</option></select></label>
+            <label class="field"><span>Баға (1–10)</span><input id="gValue" type="number" min="1" max="10"></label>
+            <button id="saveGrade">Бағаны сақтау</button>
+          ` : noClasses()}
+        </div>` : ""}
+      <div class="tablewrap"><table>
+        <thead><tr><th>Сынып</th><th>Оқушы</th><th>Түрі</th><th>Баға</th><th>Пайыз</th></tr></thead>
+        <tbody>${grades.map(g => `
+          <tr><td>${esc(g.className)}</td><td>${esc(g.studentName || g.studentId || "")}</td>
+          <td>${esc(g.type)}</td><td>${esc(g.value)}/10</td>
+          <td>${Math.round(Number(g.value) * 10)}%</td></tr>`).join("") ||
+          `<tr><td colspan="5" class="empty">Бағалар әзірге жоқ.</td></tr>`}
+        </tbody>
+      </table></div>`;
+
+    if (teacher && classes.length) $("saveGrade").onclick = saveGrade;
+    return;
+  }
+
+  if (page === "tasks") {
+    el.innerHTML = `
+      <h1>Тапсырмалар</h1>
+      ${teacher ? `
+        <div class="card"><h2>Тапсырма беру</h2>
+        ${classes.length ? `
+          <label class="field"><span>Сынып</span><select id="tClass">${classOptions()}</select></label>
+          <label class="field"><span>Тапсырма атауы</span><input id="tTitle"></label>
+          <label class="field"><span>Мерзімі</span><input id="tDue" type="date"></label>
+          <button id="saveTask">Жариялау</button>` : noClasses()}
+        </div>` : ""}
+      <div class="grid">${tasks.map(t => `
+        <div class="card"><span class="pill">${esc(t.className)}</span>
+        <h3>${esc(t.title)}</h3><p class="muted">Мерзімі: ${esc(t.due || "—")}</p></div>
+      `).join("") || `<div class="card empty">Тапсырма жоқ.</div>`}</div>`;
+
+    if (teacher && classes.length) $("saveTask").onclick = saveTask;
+    return;
+  }
+
+  if (page === "assessments") {
+    el.innerHTML = `
+      <h1>БЖБ / ТЖБ</h1>
+      ${teacher ? `
+        <div class="card"><h2>Бағалау жариялау</h2>
+        ${classes.length ? `
+          <label class="field"><span>Сынып</span><select id="aClass">${classOptions()}</select></label>
+          <label class="field"><span>Түрі</span><select id="aType"><option>БЖБ</option><option>ТЖБ</option></select></label>
+          <label class="field"><span>Пән</span><input id="aSubject"></label>
+          <label class="field"><span>Күні</span><input id="aDate" type="date"></label>
+          <button id="saveAssessment">Жариялау</button>` : noClasses()}
+        </div>` : ""}
+      <div class="grid">${assessments.map(a => `
+        <div class="card"><span class="pill">${esc(a.type)}</span>
+        <h3>${esc(a.subject)}</h3><p>${esc(a.date)}</p>
+        <p class="muted">${esc(a.className)}</p></div>
+      `).join("") || `<div class="card empty">БЖБ/ТЖБ кестесі бос.</div>`}</div>`;
+
+    if (teacher && classes.length) $("saveAssessment").onclick = saveAssessment;
+    return;
+  }
+
+  if (page === "schedule") {
+    el.innerHTML = `
+      <h1>Сабақ кестесі</h1>
+      ${teacher ? `
+        <div class="card"><h2>Сабақ қосу</h2>
+        ${classes.length ? `
+          <label class="field"><span>Сынып</span><select id="sClass">${classOptions()}</select></label>
+          <label class="field"><span>Күн</span><select id="sDay">
+            <option>Дүйсенбі</option><option>Сейсенбі</option><option>Сәрсенбі</option>
+            <option>Бейсенбі</option><option>Жұма</option><option>Сенбі</option>
+          </select></label>
+          <label class="field"><span>Пән</span><input id="sSubject"></label>
+          <label class="field"><span>Уақыты</span><input id="sTime" placeholder="09:00–09:45"></label>
+          <button id="saveSchedule">Қосу</button>` : noClasses()}
+        </div>` : ""}
+      <div class="tablewrap"><table>
+        <thead><tr><th>Күн</th><th>Уақыт</th><th>Пән</th><th>Сынып</th></tr></thead>
+        <tbody>${schedules.map(s => `
+          <tr><td>${esc(s.day)}</td><td>${esc(s.time)}</td>
+          <td>${esc(s.subject)}</td><td>${esc(s.className)}</td></tr>
+        `).join("") || `<tr><td colspan="4" class="empty">Кесте бос.</td></tr>`}</tbody>
+      </table></div>`;
+
+    if (teacher && classes.length) $("saveSchedule").onclick = saveSchedule;
+  }
+}
+
+/* Жаңа сынып құру */
+async function createClass() {
+  try {
+    if (profile?.role !== "teacher") throw Error("Бұл әрекет тек мұғалімге арналған.");
+
+    const name = $("cName").value.trim();
+    const subject = $("cSubject").value.trim();
+    if (!name) throw Error("Сынып атауын енгізіңіз.");
+
+    const classRef = push(ref(db, "classes"));
+    const id = classRef.key;
+    const code = "DCA-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+
+    await set(ref(db, "classes/" + id), {
+      name, subject, code, teacherId: me.uid, createdAt: Date.now()
+    });
+
+    try {
+      await set(ref(db, "classCodes/" + code), id);
+    } catch (e) {
+      toast("Сынып сақталды, бірақ кодты сақтау сәтсіз: " + firebaseMessage(e));
+      await loadData();
+      render();
+      return;
+    }
+
+    await loadData();
+    render();
+    toast("Сынып құрылды! Код: " + code);
+  } catch (e) {
+    console.error("Сынып құру қатесі:", e);
+    toast("Сынып құрылмады: " + firebaseMessage(e));
+  }
+}
+
+/* Оқушының сыныпқа өтініші */
+async function joinClass() {
+  try {
+    const code = $("joinCode").value.trim().toUpperCase();
+    if (!code) throw Error("Сынып кодын енгізіңіз.");
+
+    const codeSnapshot = await get(ref(db, "classCodes/" + code));
+    if (!codeSnapshot.exists()) throw Error("Мұндай сынып коды табылмады.");
+
+    const cid = codeSnapshot.val();
+    await set(ref(db, "joinRequests/" + cid + "/" + me.uid), {
+      uid: me.uid,
+      email: me.email || "",
+      name: profile.name || "",
+      status: "requested",
+      createdAt: Date.now()
+    });
+
+    toast("Өтініш жіберілді. Мұғалімнің мақұлдауын күтіңіз.");
+  } catch (e) {
+    console.error("Сыныпқа қосылу қатесі:", e);
+    toast(firebaseMessage(e));
+  }
+}
+
+/* Оқушылардың өтініштерін қарау */
+async function showRequests(cid) {
+  try {
+    const snapshot = await get(ref(db, "joinRequests/" + cid));
+    const entries = Object.entries(snapshot.val() || {})
+      .filter(([_, request]) => request.status === "requested");
+
+    const box = $("requests");
+    box.innerHTML = entries.map(([uid, request]) => `
+      <div class="card">
+        <b>${esc(request.name || request.email || uid)}</b>
+        <p class="muted">${esc(request.email || "")}</p>
+        <button data-approve="${esc(uid)}" data-cid="${esc(cid)}">Қабылдау</button>
+      </div>
+    `).join("") || `<div class="empty">Жаңа өтініш жоқ.</div>`;
+
+    box.querySelectorAll("[data-approve]").forEach(button => {
+      button.onclick = () => approve(button.dataset.cid, button.dataset.approve);
+    });
+  } catch (e) {
+    console.error("Өтініштер қатесі:", e);
+    toast("Өтініштерді оқу мүмкін болмады: " + firebaseMessage(e));
+  }
+}
+
+async function approve(cid, uid) {
+  try {
+    if (profile?.role !== "teacher") throw Error("Мұғалім рұқсаты қажет.");
+
+    await set(ref(db, "userClasses/" + uid + "/" + cid), "active");
+    await update(ref(db, "joinRequests/" + cid + "/" + uid), {
+      status: "approved",
+      approvedAt: Date.now()
+    });
+
+    toast("Оқушы сыныпқа қосылды.");
+    await showRequests(cid);
+  } catch (e) {
+    console.error("Оқушыны қабылдау қатесі:", e);
+    toast("Оқушыны қосу сәтсіз: " + firebaseMessage(e));
+  }
+}
+
+/* Баға сақтау */
+async function saveGrade() {
+  try {
+    const cid = $("gClass").value;
+    const studentId = $("gStudent").value.trim();
+    const value = Number($("gValue").value);
+    const type = $("gType").value;
+
+    if (!studentId) throw Error("Оқушы UID-ін енгізіңіз.");
+    if (!Number.isFinite(value) || value < 1 || value > 10) {
+      throw Error("Баға 1 мен 10 арасында болуы керек.");
+    }
+
+    const gradeRef = push(ref(db, "grades/" + cid));
+    await set(gradeRef, {
+      studentId, value, type, studentName: studentId, createdAt: Date.now()
+    });
+
+    await loadData();
+    render();
+    toast("Баға сақталды.");
+  } catch (e) {
+    console.error("Баға сақтау қатесі:", e);
+    toast("Баға сақталмады: " + firebaseMessage(e));
+  }
+}
+
+/* Тапсырма сақтау */
+async function saveTask() {
+  try {
+    const cid = $("tClass").value;
+    const title = $("tTitle").value.trim();
+    if (!title) throw Error("Тапсырма атауын енгізіңіз.");
+
+    const taskRef = push(ref(db, "tasks/" + cid));
+    await set(taskRef, {
+      title, due: $("tDue").value, createdAt: Date.now()
+    });
+
+    await loadData();
+    render();
+    toast("Тапсырма жарияланды.");
+  } catch (e) {
+    console.error("Тапсырма сақтау қатесі:", e);
+    toast("Тапсырма сақталмады: " + firebaseMessage(e));
+  }
+}
+
+/* БЖБ/ТЖБ сақтау */
+async function saveAssessment() {
+  try {
+    const cid = $("aClass").value;
+    const type = $("aType").value;
+    const subject = $("aSubject").value.trim();
+    const date = $("aDate").value;
+
+    if (!subject || !date) throw Error("Пән мен күнді толтырыңыз.");
+
+    const assessmentRef = push(ref(db, "assessments/" + cid));
+    await set(assessmentRef, { type, subject, date, createdAt: Date.now() });
+
+    await loadData();
+    render();
+    toast("БЖБ/ТЖБ жарияланды.");
+  } catch (e) {
+    console.error("Бағалау сақтау қатесі:", e);
+    toast("Бағалау сақталмады: " + firebaseMessage(e));
+  }
+}
+
+/* Сабақ кестесін сақтау */
+async function saveSchedule() {
+  try {
+    const cid = $("sClass").value;
+    const subject = $("sSubject").value.trim();
+    const time = $("sTime").value.trim();
+    const day = $("sDay").value;
+
+    if (!subject || !time) throw Error("Пән мен уақытты толтырыңыз.");
+
+    const scheduleRef = push(ref(db, "schedules/" + cid));
+    await set(scheduleRef, { day, subject, time, createdAt: Date.now() });
+
+    await loadData();
+    render();
+    toast("Сабақ кестесі сақталды.");
+  } catch (e) {
+    console.error("Кесте сақтау қатесі:", e);
+    toast("Кесте сақталмады: " + firebaseMessage(e));
+  }
+}
+</script>
+</body>
+</html>
