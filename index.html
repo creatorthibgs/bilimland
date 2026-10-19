@@ -76,7 +76,21 @@ let me=null,profile=null,page='home',classes=[],grades=[],tasks=[],assessments=[
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(message){$('toast').textContent=message;$('toast').classList.remove('hidden');clearTimeout(window.__blToast);window.__blToast=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
 function showAuthError(message){$('authError').textContent=message;$('authError').style.display='block'}function hideAuthError(){$('authError').style.display='none'}
-function authMessage(code){return ({'auth/invalid-email':'Электрондық пошта дұрыс емес.','auth/missing-password':'Құпиясөзді енгізіңіз.','auth/invalid-credential':'Пошта немесе құпиясөз қате.','auth/email-already-in-use':'Бұл пошта тіркелген. Кіру батырмасын қолданыңыз.','auth/weak-password':'Құпиясөз кемінде 6 таңба болуы керек.','auth/network-request-failed':'Интернет байланысын тексеріңіз.','auth/too-many-requests':'Тым көп әрекет жасалды. Біраздан соң қайталап көріңіз.'}[code])||'Қате шықты. Мәліметтерді тексеріп, қайта көріңіз.'}
+function authMessage(code){
+  return ({
+    'auth/invalid-email':'Электрондық пошта дұрыс емес.',
+    'auth/missing-password':'Құпиясөзді енгізіңіз.',
+    'auth/invalid-credential':'Пошта немесе құпиясөз қате.',
+    'auth/email-already-in-use':'Бұл пошта тіркелген. Кіру батырмасын қолданыңыз.',
+    'auth/weak-password':'Құпиясөз кемінде 6 таңба болуы керек.',
+    'auth/network-request-failed':'Интернет байланысын тексеріңіз.',
+    'auth/too-many-requests':'Тым көп әрекет жасалды. Біраздан соң қайталап көріңіз.',
+    'auth/unauthorized-domain':'Firebase баптауларында сайт доменіне рұқсат беру керек.',
+    'auth/operation-not-allowed':'Firebase-та Email/Password кіру әдісін қосу керек.',
+    'auth/invalid-api-key':'Firebase API кілтін тексеру керек.',
+    'auth/user-disabled':'Бұл аккаунт өшірілген.'
+  })[code] || `Қате коды: ${code || 'белгісіз'}.`;
+}
 $('signIn').onclick=async()=>{hideAuthError();try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){showAuthError(authMessage(e.code))}};
 $('signUp').onclick=async()=>{hideAuthError();try{const email=$('email').value.trim(),password=$('password').value,name=$('fullName').value.trim();if(!name)throw Error('Аты-жөніңізді енгізіңіз.');if(password.length<6)throw Error('Құпиясөз кемінде 6 таңба болуы керек.');const cred=await createUserWithEmailAndPassword(auth,email,password);await set(ref(db,'profiles/'+cred.user.uid),{name,role:'student',email,createdAt:Date.now()})}catch(e){showAuthError(e.message==='Аты-жөніңізді енгізіңіз.'||e.message.startsWith('Құпиясөз')?e.message:authMessage(e.code))}};
 $('logout').onclick=()=>signOut(auth);document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{page=b.dataset.page;document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x===b));render()});
