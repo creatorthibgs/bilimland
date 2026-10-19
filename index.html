@@ -1,721 +1,107 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="kk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101426">
-  <title>BilimLand — Электронды журнал</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#14284b"><title>BilimLand — Электронды журнал</title>
+<style>
+:root{--navy:#172b4d;--blue:#3767e8;--blue2:#244fc5;--bg:#f4f7fc;--ink:#1c2940;--muted:#72809a;--line:#e4eaf4;--white:#fff;--green:#15845d;--red:#c63b48;--gold:#a96b0a;--shadow:0 12px 32px rgba(23,43,77,.07)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{border:0;cursor:pointer;border-radius:12px;padding:11px 15px;font-weight:750;background:var(--blue);color:#fff;transition:.15s}button:hover{filter:brightness(.97)}button:disabled{opacity:.55;cursor:not-allowed}.secondary{background:#edf2ff;color:#2b4f9f;border:1px solid #dce5ff}.danger{background:#fff0f1;color:#b52e3b;border:1px solid #ffd9dd}.small{padding:7px 10px;font-size:13px}.hidden{display:none!important}.brand{display:flex;align-items:center;gap:11px;font-size:21px;font-weight:900;letter-spacing:-.6px;color:var(--navy)}.mark{width:43px;height:43px;border-radius:15px;background:linear-gradient(140deg,#4b86ff,#254fc2);display:grid;place-items:center;color:white;font-weight:950;box-shadow:0 7px 18px #3767e833}.login-wrap{min-height:100vh;max-width:1160px;margin:auto;padding:28px;display:grid;grid-template-columns:1fr 430px;gap:42px;align-items:center}.hero{padding:20px}.hero h1{font-size:clamp(36px,5vw,62px);line-height:1.02;letter-spacing:-2.5px;margin:38px 0 20px;color:var(--navy)}.hero h1 span{color:var(--blue)}.hero>p{font-size:18px;color:var(--muted);max-width:520px}.feature-list{margin-top:35px;display:grid;gap:12px;max-width:500px}.feature{display:flex;gap:13px;align-items:center;padding:14px;background:#fff;border:1px solid var(--line);border-radius:16px}.feature-icon{width:42px;height:42px;border-radius:13px;background:#edf3ff;display:grid;place-items:center;font-size:21px}.panel,.card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.panel{padding:28px}.panel h2{margin:0;color:var(--navy);font-size:25px}.sub{margin:7px 0 22px;color:var(--muted)}.field{display:block;margin:14px 0}.field span{display:block;margin-bottom:6px;font-size:13px;font-weight:800;color:#53627b}.field input,.field select,.field textarea,input.control,select.control,textarea.control{width:100%;padding:12px 13px;border:1px solid #dce4f1;border-radius:11px;background:#fbfcff;color:var(--ink);outline:none;min-width:0}.field input:focus,.field select:focus,.field textarea:focus,input.control:focus,select.control:focus{border-color:#7b9cf2;box-shadow:0 0 0 3px #3767e818}.full{width:100%;margin-top:8px}.error,.success{padding:11px 13px;border-radius:11px;margin:12px 0;font-weight:700}.error{display:none;background:#fff0f1;color:var(--red)}.success{display:none;background:#eaf8f0;color:var(--green)}.note{font-size:12px;color:var(--muted);margin-top:17px}.topbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);min-height:76px;display:flex;align-items:center;justify-content:space-between;padding:12px clamp(14px,4vw,42px);gap:14px}.profile{display:flex;align-items:center;gap:10px}.avatar{width:40px;height:40px;border-radius:14px;background:#e8efff;color:#2c55bc;display:grid;place-items:center;font-weight:900}.profile-name{font-weight:850}.profile-role{font-size:12px;color:var(--muted)}.layout{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 76px)}aside{background:#fff;border-right:1px solid var(--line);padding:20px 12px}.nav-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9aa5b8;font-weight:900;padding:7px 12px}.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;color:#65738b;margin:3px 0;padding:12px;border-radius:12px}.navbtn.active,.navbtn:hover{background:#edf3ff;color:#2453c4}.main{padding:clamp(17px,3vw,34px);width:100%;max-width:1450px;margin:0 auto}.welcome{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}.welcome h1{font-size:clamp(24px,3vw,31px);line-height:1.2;margin:0 0 6px;color:var(--navy);letter-spacing:-.6px}.muted{color:var(--muted)}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--blue);font-weight:900}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.card{padding:19px;min-width:0}.stat-label{font-size:13px;color:var(--muted);font-weight:750}.stat{font-size:32px;letter-spacing:-1px;color:var(--navy);font-weight:950;margin-top:5px}.stat-hint{font-size:12px;color:var(--muted);margin-top:4px}.section{margin-top:24px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:13px}.section-head h2{font-size:19px;color:var(--navy);margin:0}.pill{display:inline-flex;align-items:center;padding:5px 10px;border-radius:30px;background:#edf3ff;color:#2b55bc;font-size:12px;font-weight:850}.pill.green{background:#e8f8ef;color:#13764e}.pill.gold{background:#fff5df;color:#93600a}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 13px}.inline-form{display:flex;gap:9px;flex-wrap:wrap}.inline-form input,.inline-form select{flex:1;min-width:130px;padding:12px;border:1px solid #dce4f1;border-radius:11px;background:#fbfcff}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px;background:#fff}table{border-collapse:collapse;width:100%;min-width:600px}th,td{text-align:left;padding:13px 15px;border-bottom:1px solid #edf0f6;vertical-align:top}th{background:#f8faff;color:#77849b;font-size:11px;letter-spacing:.7px;text-transform:uppercase}tr:last-child td{border-bottom:0}.empty{padding:25px;text-align:center;color:var(--muted)}.grade{font-weight:900;color:#2858c5}.notice{padding:13px 15px;border-radius:13px;background:#eff5ff;border:1px solid #dce7ff;color:#3d588e;margin-bottom:16px}.code{font-size:21px;font-weight:950;letter-spacing:1.7px;color:#234fb8;background:#edf3ff;padding:10px 13px;border-radius:11px;display:inline-block}.toast{position:fixed;z-index:50;bottom:18px;left:50%;transform:translateX(-50%);background:#172b4d;color:#fff;border-radius:13px;padding:13px 18px;box-shadow:0 10px 35px #10203b40;max-width:calc(100vw - 30px);width:max-content}.bar{height:8px;background:#e8edf6;border-radius:20px;overflow:hidden;margin-top:10px}.bar>span{display:block;height:100%;background:linear-gradient(90deg,#3767e8,#6c8df1);border-radius:20px}.stack{display:grid;gap:12px}.item{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff}.item-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.item h3{margin:6px 0;color:var(--navy);font-size:17px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.foot{font-size:12px;color:#929eb0;margin-top:18px}.danger-outline{background:#fff;color:#b52e3b;border:1px solid #f3c8ce}.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.metric{padding:15px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#fff,#f8faff);min-width:0}.metric strong{display:block;font-size:25px;line-height:1.2;color:var(--navy);margin-top:5px}.metric small{color:var(--muted)}.class-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.progress-label{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:750;margin-top:10px}.metric .bar{margin-top:7px}@media(max-width:850px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.class-actions button{flex:1}}@media(max-width:420px){.metric-grid{grid-template-columns:1fr 1fr}.metric{padding:12px}.metric strong{font-size:21px}.profile{gap:6px}.profile-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.topbar{padding:10px}}
+@media(max-width:850px){.login-wrap{grid-template-columns:1fr;max-width:520px;padding:17px;gap:12px}.hero{padding:10px 5px}.hero h1{font-size:40px;margin:23px 0 12px}.feature-list{display:none}.panel{padding:22px}.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;gap:5px;padding:8px;border-right:0;border-bottom:1px solid var(--line);position:sticky;top:76px;z-index:8}.nav-label{display:none}.navbtn{width:auto;white-space:nowrap;margin:0;padding:10px 12px;font-size:13px}.grid{grid-template-columns:1fr}.main{padding:17px}.topbar{min-height:70px}.profile-role{display:none}.form-grid{grid-template-columns:1fr}.brand{font-size:19px}.mark{width:38px;height:38px}}
 
-  <style>
-    :root {
-      --bg: #101426;
-      --panel: rgba(255,255,255,.075);
-      --border: rgba(255,255,255,.13);
-      --text: #f5f7ff;
-      --muted: #a9b1cb;
-      --accent: #8c83ff;
-      --danger: #ff7b91;
-      --success: #7de2b8;
-    }
+/* Global Update visual layer */
+:root{--navy:#111827;--blue:#6657e8;--blue2:#4e40c7;--bg:#f6f5fb;--ink:#20243a;--muted:#737890;--line:#e7e5f1;--green:#11845b;--red:#c6384a;--gold:#9b690d;--shadow:0 16px 42px rgba(43,35,89,.08)}
+body{background:radial-gradient(ellipse at 10% 0%,#eeebff 0,transparent 38%),var(--bg)}
+.topbar{background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom-color:#e9e6f4}
+.mark{background:linear-gradient(140deg,#9c8cff,#5747d7);box-shadow:0 8px 20px #6657e833}
+.brand{color:#201b46}
+.panel,.card{border-color:#e8e5f3;border-radius:22px;box-shadow:0 12px 32px rgba(43,35,89,.055)}
+button{border-radius:13px;background:linear-gradient(135deg,#7567f0,#5647d4);box-shadow:0 5px 12px #6657e81a}
+button.secondary{background:#f0eeff;color:#5144c7;border:1px solid #e0dcff;box-shadow:none}
+button.danger,.danger-outline{background:#fff1f3;color:#b52e43;border-color:#ffdce1;box-shadow:none}
+.navbtn.active,.navbtn:hover{background:#efedff;color:#5144c7}
+aside{background:linear-gradient(180deg,#fff,#faf9ff);border-right-color:#e9e6f4}
+.metric{background:linear-gradient(145deg,#fff,#f8f6ff);border-color:#e8e4fb}
+.metric .bar>span,.bar>span{background:linear-gradient(90deg,#6657e8,#a08dff)}
+.pill{background:#efedff;color:#5144c7}
+.code{background:#f0eeff;color:#5144c7}
+.field input:focus,.field select:focus,.field textarea:focus,input.control:focus,select.control:focus{border-color:#9b8eff;box-shadow:0 0 0 4px #6657e817}
+.item{border-radius:17px}
+@media(max-width:850px){aside{background:rgba(255,255,255,.96);box-shadow:0 6px 18px #332b6310}.navbtn.active{box-shadow:inset 0 0 0 1px #ded9ff}.main{padding:14px}.panel,.card{border-radius:18px}}
+@media(max-width:520px){.topbar{padding:10px 12px}.main{padding:12px}.welcome{align-items:flex-start}.welcome h1{font-size:25px}.metric-grid{gap:8px}.metric strong{font-size:20px}.inline-form>*{width:100%;flex-basis:100%}.table-wrap table{min-width:560px}}
 
-    * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(ellipse at 10% 10%, #37366b 0, transparent 42%),
-        radial-gradient(ellipse at 90% 80%, #173e57 0, transparent 38%),
-        var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 14px;
-    }
+/* Liquid Glass aesthetic — layered translucent glass, aurora background */
+:root{--navy:#f4f2ff;--blue:#a99bff;--blue2:#7766f2;--bg:#090d1c;--ink:#f2f3ff;--muted:#b2b8d0;--line:rgba(222,226,255,.16);--white:rgba(255,255,255,.1);--green:#53e0b0;--red:#ff718d;--gold:#ffc879;--shadow:0 22px 70px rgba(0,0,0,.28)}
+html{background:#090d1c;min-height:100%;color-scheme:dark}
+body{color:var(--ink);background:radial-gradient(ellipse at 12% 5%,rgba(106,91,255,.38),transparent 34%),radial-gradient(ellipse at 86% 13%,rgba(255,133,208,.22),transparent 29%),radial-gradient(ellipse at 55% 100%,rgba(49,137,255,.2),transparent 36%),linear-gradient(135deg,#090d1c 0%,#11162b 48%,#17132b 100%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 25% 25%,rgba(255,255,255,.055),transparent 22%),radial-gradient(circle at 75% 65%,rgba(171,153,255,.07),transparent 25%)}
+.brand{color:#f6f4ff}.mark{background:linear-gradient(145deg,rgba(255,255,255,.42),rgba(139,119,255,.62));border:1px solid rgba(255,255,255,.45);box-shadow:0 8px 28px rgba(139,119,255,.34),inset 0 1px 0 rgba(255,255,255,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.hero h1,.panel h2,.welcome h1,.section-head h2,.stat,.metric strong,.item h3{color:#f4f2ff}.hero h1 span{background:linear-gradient(100deg,#c4baff,#ffb8e7,#8bd8ff);-webkit-background-clip:text;background-clip:text;color:transparent}.hero>p,.sub,.muted,.stat-label,.stat-hint,.profile-role,.field span,.metric small,.foot,.note{color:#b7bdd5}
+.feature,.panel,.card,.metric,.item{background:linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.045));border:1px solid rgba(235,237,255,.18);box-shadow:0 18px 55px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.16);backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%)}
+.panel,.card{border-radius:24px}.panel{background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055))}.feature{border-radius:18px}.feature-icon{background:linear-gradient(140deg,rgba(168,153,255,.34),rgba(114,199,255,.18));border:1px solid rgba(255,255,255,.16)}
+.topbar{background:rgba(12,16,34,.58);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 8px 32px rgba(0,0,0,.12);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%)}
+.layout{background:transparent}aside{background:rgba(14,18,38,.48);border-right:1px solid rgba(255,255,255,.12);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}.nav-label{color:#9099bc}.navbtn{color:#c3c8e1;border:1px solid transparent;transition:background .22s,border-color .22s,transform .22s}.navbtn:hover{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.12);transform:translateX(2px)}.navbtn.active{background:linear-gradient(110deg,rgba(155,135,255,.32),rgba(111,184,255,.12));color:#fff;border:1px solid rgba(203,192,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 7px 25px rgba(105,88,245,.12)}
+button{background:linear-gradient(115deg,#a18cff,#6e64ed 55%,#6bbaf5);color:#fff;border:1px solid rgba(255,255,255,.22);box-shadow:0 8px 25px rgba(112,98,241,.25),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .2s,filter .2s,box-shadow .2s}button:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 11px 30px rgba(112,98,241,.32),inset 0 1px 0 rgba(255,255,255,.35)}button.secondary{background:rgba(255,255,255,.08);color:#e7e5ff;border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}button.danger,.danger-outline{background:rgba(255,92,125,.13);color:#ffb5c4;border:1px solid rgba(255,127,155,.3);box-shadow:none}.small{box-shadow:none}
+.avatar{background:linear-gradient(145deg,rgba(186,170,255,.35),rgba(91,181,255,.2));color:#fff;border:1px solid rgba(255,255,255,.2)}
+.field input,.field select,.field textarea,input.control,select.control,textarea.control,.inline-form input,.inline-form select{background:rgba(7,11,27,.44);color:#f5f4ff;border:1px solid rgba(226,230,255,.18);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.field input::placeholder,input.control::placeholder,textarea::placeholder,.inline-form input::placeholder{color:#8189aa}.field input:focus,.field select:focus,.field textarea:focus,input.control:focus,select.control:focus,textarea.control:focus{border-color:rgba(177,160,255,.75);box-shadow:0 0 0 4px rgba(151,130,255,.13)}select option{background:#171b32;color:#f4f2ff}
+.table-wrap{background:rgba(10,14,30,.35);border:1px solid rgba(229,232,255,.14);border-radius:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}table{color:#eef0ff}th{background:rgba(255,255,255,.075);color:#b7bdd8}td{border-bottom-color:rgba(255,255,255,.085)}tr:hover td{background:rgba(255,255,255,.035)}.empty{color:#aeb5d1}.grade{color:#c5bbff}
+.pill{background:rgba(169,153,255,.16);color:#d9d1ff;border:1px solid rgba(198,187,255,.17)}.pill.green{background:rgba(49,211,157,.13);color:#8df2cd}.pill.gold{background:rgba(255,192,102,.13);color:#ffd69b}.notice{background:rgba(117,160,255,.12);border:1px solid rgba(151,180,255,.22);color:#d6e4ff}.code{background:rgba(166,151,255,.15);border:1px solid rgba(201,190,255,.24);color:#e0d8ff}.bar{background:rgba(255,255,255,.12)}.bar>span{background:linear-gradient(90deg,#a28aff,#75d5ff,#ffb3df)}.error{background:rgba(255,87,119,.14);color:#ffb7c5;border:1px solid rgba(255,87,119,.2)}.success{background:rgba(55,218,157,.12);color:#9af3d0;border:1px solid rgba(55,218,157,.2)}.toast{background:rgba(21,25,49,.92);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.metric{background:linear-gradient(140deg,rgba(255,255,255,.13),rgba(255,255,255,.045))}.metric strong{font-size:clamp(21px,2vw,27px)}.section-head h2{letter-spacing:-.35px}.welcome h1{letter-spacing:-.8px}.eyebrow{color:#b7aaff}.item{background:rgba(255,255,255,.065)}
+@media(max-width:850px){aside{background:rgba(12,16,34,.78);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 9px 28px rgba(0,0,0,.18)}.navbtn.active{box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 5px 20px rgba(112,98,241,.14)}.panel,.card{border-radius:20px}.main{padding:15px}}
+@media(max-width:520px){.topbar{background:rgba(12,16,34,.78)}.welcome h1{font-size:24px}.panel{padding:20px}.card{padding:15px}.feature{padding:12px}}
+@media(prefers-reduced-transparency:reduce){.panel,.card,.metric,.item,.topbar,aside,.table-wrap{backdrop-filter:none;-webkit-backdrop-filter:none;background:#171c34}}
 
-    button, input { font: inherit; }
 
-    .app {
-      width: 100%;
-      max-width: 960px;
-      margin: auto;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 22px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      font-size: 24px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #a99cff, #6b8cff);
-      color: #fff;
-      box-shadow: 0 8px 30px #7770ff35;
-    }
-
-    h1, h2, h3, p { margin-top: 0; }
-
-    .brand h1 {
-      margin: 0 0 4px;
-      font-size: 19px;
-    }
-
-    .brand p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .glass {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      box-shadow: 0 20px 70px #00000020;
-    }
-
-    .auth-card {
-      max-width: 460px;
-      margin: 0 auto;
-      padding: 30px;
-    }
-
-    .eyebrow {
-      color: #b9b2ff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .auth-card h2 {
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
-    .muted {
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 5px;
-      border-radius: 14px;
-      background: #00000025;
-      margin: 24px 0;
-    }
-
-    .tab {
-      border: 0;
-      padding: 12px 8px;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background: #ffffff16;
-      color: white;
-      box-shadow: inset 0 0 0 1px var(--border);
-    }
-
-    .field { margin-bottom: 16px; }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #dfe3f7;
-      font-size: 13px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px 15px;
-      border-radius: 13px;
-      color: white;
-      background: #080d1d55;
-      border: 1px solid var(--border);
-      outline: none;
-      transition: border .2s, box-shadow .2s;
-    }
-
-    input::placeholder { color: #78819d; }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px #8c83ff20;
-    }
-
-    .primary, .secondary {
-      border: 0;
-      border-radius: 13px;
-      padding: 14px 18px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: transform .15s, opacity .15s;
-    }
-
-    .primary {
-      width: 100%;
-      color: white;
-      background: linear-gradient(110deg, #8e82ff, #687fff);
-      box-shadow: 0 9px 24px #756cff30;
-    }
-
-    .secondary {
-      color: white;
-      background: #ffffff12;
-      border: 1px solid var(--border);
-    }
-
-    button:hover { transform: translateY(-1px); }
-    button:disabled { opacity: .55; cursor: wait; transform: none; }
-
-    .message {
-      display: none;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-
-    .message.error {
-      display: block;
-      color: #ffdce3;
-      background: #ff6b8318;
-      border: 1px solid #ff7b913d;
-    }
-
-    .message.success {
-      display: block;
-      color: #d2ffed;
-      background: #53d9a018;
-      border: 1px solid #7de2b83d;
-    }
-
-    .small-note {
-      text-align: center;
-      font-size: 12px;
-      margin: 18px 0 0;
-    }
-
-    .dashboard { padding: 28px; }
-
-    .welcome {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .welcome h2 {
-      font-size: clamp(25px, 4vw, 34px);
-      margin-bottom: 8px;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 12px;
-      border: 1px solid #7de2b83d;
-      background: #53d9a018;
-      color: #a7f4d4;
-      border-radius: 30px;
-      font-size: 12px;
-    }
-
-    .status::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      background: var(--success);
-      border-radius: 50%;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 26px;
-    }
-
-    .mini-card {
-      padding: 20px;
-      min-height: 140px;
-      background: #ffffff08;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-    }
-
-    .mini-card .emoji {
-      font-size: 24px;
-      margin-bottom: 14px;
-    }
-
-    .mini-card h3 {
-      font-size: 15px;
-      margin-bottom: 7px;
-    }
-
-    .mini-card p {
-      font-size: 12px;
-      margin: 0;
-      line-height: 1.6;
-    }
-
-    .account {
-      margin-top: 20px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow-wrap: anywhere;
-    }
-
-    .account p {
-      margin: 8px 0 0;
-      font-size: 13px;
-    }
-
-    .hidden { display: none !important; }
-
-    footer {
-      margin-top: 22px;
-      text-align: center;
-      color: #8992af;
-      font-size: 12px;
-    }
-
-    @media (max-width: 600px) {
-      .auth-card, .dashboard { padding: 22px 18px; }
-      .cards { grid-template-columns: 1fr; }
-      .mini-card { min-height: auto; }
-      .brand h1 { font-size: 16px; }
-    }
-  </style>
+/* Attendance status colors + glass controls */
+.att-status{max-width:230px;width:100%;padding:10px 12px;border-radius:12px;color:#f7f6ff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)}
+.att-status[data-status="sick"]{background:rgba(255,55,93,.2);border-color:rgba(255,75,105,.7);color:#ffb8c5}
+.att-status[data-status="excused"]{background:rgba(255,148,36,.2);border-color:rgba(255,163,57,.7);color:#ffd0a0}
+.att-status[data-status="present"]{background:rgba(46,211,151,.16);border-color:rgba(73,229,177,.45);color:#a6f6d9}
+.att-status[data-status="absent"]{background:rgba(155,165,190,.15);border-color:rgba(180,190,215,.35);color:#d2d8ee}
+.att-row-saved td{animation:attSaved .7s ease}@keyframes attSaved{0%{background:rgba(75,225,173,.2)}100%{background:transparent}}
+</style>
 </head>
-
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">B</div>
-        <div>
-          <h1>BilimLand</h1>
-          <p>Электронды журнал</p>
-        </div>
-      </div>
-    </header>
-
-    <section id="authView" class="glass auth-card">
-      <div class="eyebrow">Білім • Даму • Болашақ</div>
-      <h2 id="formTitle">Қайта оралғаныңа қуаныштымыз!</h2>
-      <p id="formDescription" class="muted">
-        Аккаунтыңа кіріп, оқу кеңістігіңді аш.
-      </p>
-
-      <div class="tabs">
-        <button id="loginTab" class="tab active" type="button">
-          Кіру
-        </button>
-        <button id="registerTab" class="tab" type="button">
-          Тіркелу
-        </button>
-      </div>
-
-      <div id="message" class="message" role="status" aria-live="polite"></div>
-
-      <form id="authForm">
-        <div id="nameField" class="field hidden">
-          <label for="fullName">Атың-жөнің</label>
-          <input
-            id="fullName"
-            type="text"
-            maxlength="80"
-            autocomplete="name"
-            placeholder="Атыңды енгіз"
-          >
-        </div>
-
-        <div class="field">
-          <label for="email">Электрондық пошта</label>
-          <input
-            id="email"
-            type="email"
-            autocomplete="email"
-            required
-            placeholder="name@example.com"
-          >
-        </div>
-
-        <div class="field">
-          <label for="password">Құпиясөз</label>
-          <input
-            id="password"
-            type="password"
-            minlength="6"
-            autocomplete="current-password"
-            required
-            placeholder="Кемінде 6 таңба"
-          >
-        </div>
-
-        <button id="submitButton" class="primary" type="submit">
-          Жүйеге кіру →
-        </button>
-      </form>
-
-      <p class="muted small-note">
-        Құпиясөзіңді ешкімге берме.
-      </p>
-    </section>
-
-    <section id="dashboardView" class="glass dashboard hidden">
-      <div class="welcome">
-        <div>
-          <div class="eyebrow">Жеке кабинет</div>
-          <h2 id="welcomeTitle">Сәлем!</h2>
-          <p class="muted">BilimLand оқу кеңістігіне қош келдің.</p>
-        </div>
-        <div class="status">Жүйеге қосылдың</div>
-      </div>
-
-      <div id="dashboardMessage" class="message"></div>
-
-      <div class="cards">
-        <article class="mini-card">
-          <div class="emoji">📚</div>
-          <h3>Оқу материалдары</h3>
-          <p class="muted">Оқу материалдарына арналған бөлім.</p>
-        </article>
-
-        <article class="mini-card">
-          <div class="emoji">📝</div>
-          <h3>Электронды журнал</h3>
-          <p class="muted">Бағалар мен сабақ ақпаратына арналған бөлім.</p>
-        </article>
-
-        <article class="mini-card">
-          <div class="emoji">📢</div>
-          <h3>Хабарландырулар</h3>
-          <p class="muted">Мектеп жаңалықтарына арналған бөлім.</p>
-        </article>
-      </div>
-
-      <div class="account">
-        <strong>Аккаунт ақпараты</strong>
-        <p class="muted">Пошта: <span id="accountEmail"></span></p>
-        <p class="muted">Рөл: <span id="accountRole">Оқушы</span></p>
-      </div>
-
-      <div style="margin-top:20px">
-        <button id="logoutButton" class="secondary" type="button">
-          Жүйеден шығу
-        </button>
-      </div>
-    </section>
-
-    <footer>BilimLand · Электронды журнал</footer>
-  </main>
-
-  <script type="module">
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged,
-      updateProfile
-    } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
-
-    import {
-      getDatabase,
-      ref,
-      get,
-      set,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
-
-    /*
-      МАҢЫЗДЫ:
-      Төмендегі мәндерді Firebase Console ішіндегі
-      Project settings → Your apps бөлімінен алынған
-      ӨЗІҢНІҢ firebaseConfig мәндерімен ауыстыр.
-    */
-    const firebaseConfig = {
-      apiKey: "ОСЫ_ЖЕРГЕ_API_KEY",
-      authDomain: "ОСЫ_ЖЕРГЕ_AUTH_DOMAIN",
-      databaseURL: "ОСЫ_ЖЕРГЕ_DATABASE_URL",
-      projectId: "bilimland-20aea",
-      appId: "ОСЫ_ЖЕРГЕ_APP_ID"
-    };
-
-    const $ = (id) => document.getElementById(id);
-
-    const authView = $("authView");
-    const dashboardView = $("dashboardView");
-    const message = $("message");
-    const authForm = $("authForm");
-    const submitButton = $("submitButton");
-
-    let mode = "login";
-    let auth;
-    let db;
-    let initialized = false;
-
-    function showMessage(text, type = "error") {
-      message.textContent = text;
-      message.className = "message " + type;
-    }
-
-    function clearMessage() {
-      message.textContent = "";
-      message.className = "message";
-    }
-
-    let mode = "login";function setMode(nextMode) {
-      mode = nextMode;
-      const registering = mode === "register";
-
-      $("loginTab").classList.toggle("active", !registering);
-      $("registerTab").classList.toggle("active", registering);
-      $("nameField").classList.toggle("hidden", !registering);
-
-      $("fullName").required = registering;
-      $("password").autocomplete =
-        registering ? "new-password" : "current-password";
-
-      $("formTitle").textContent = registering
-        ? "Аккаунт ашу"
-        : "Қайта оралғаныңа қуаныштымыз!";
-
-      $("formDescription").textContent = registering
-        ? "Деректеріңді енгізіп, жаңа аккаунт құр."
-        : "Аккаунтыңа кіріп, оқу кеңістігіңді аш.";
-
-      submitButton.textContent = registering
-        ? "Тіркелу →"
-        : "Жүйеге кіру →";
-
-      clearMessage();
-    }
-
-    function explainError(error) {
-      const messages = {
-        "auth/invalid-email": "Электрондық пошта форматы дұрыс емес.",
-        "auth/user-not-found": "Мұндай аккаунт табылмады.",
-        "auth/wrong-password": "Құпиясөз дұрыс емес.",
-        "auth/invalid-credential": "Пошта немесе құпиясөз дұрыс емес.",
-        "auth/email-already-in-use": "Бұл пошта бұрын тіркелген.",
-        "auth/weak-password": "Құпиясөз кемінде 6 таңбадан тұруы керек.",
-        "auth/too-many-requests": "Әрекет тым көп. Біраздан соң қайталап көр.",
-        "auth/network-request-failed": "Интернет байланысын тексер.",
-        "auth/operation-not-allowed": "Firebase-та Email/Password кіру әдісін қосу керек.",
-        "auth/invalid-api-key": "Firebase API кілтін тексер.",
-        "auth/unauthorized-domain": "Бұл домен Firebase-та рұқсат етілмеген."
-      };
-
-      return messages[error.code] ||
-        "Қате шықты. Консольдегі қатені тексер: " +
-        (error.code || error.message || "белгісіз қате");
-    }
-
-    function showDashboard(user, profile = null) {
-      authView.classList.add("hidden");
-      dashboardView.classList.remove("hidden");
-
-      $("welcomeTitle").textContent =
-        "Сәлем, " + (profile?.name || user.displayName || "оқушы") + "!";
-
-      $("accountEmail").textContent = user.email || "Көрсетілмеген";
-
-      const roleNames = {
-        student: "Оқушы",
-        teacher: "Мұғалім",
-        admin: "Әкімші"
-      };
-
-      $("accountRole").textContent =
-        roleNames[profile?.role] || "Оқушы";
-    }
-
-    async function loadProfile(user) {
-      try {
-        const snapshot = await get(ref(db, "profiles/" + user.uid));
-
-        if (auth.currentUser?.uid !== user.uid) return;
-
-        if (snapshot.exists()) {
-          showDashboard(user, snapshot.val());
-        } else {
-          showDashboard(user, null);
-          const box = $("dashboardMessage");
-          box.textContent =
-            "Аккаунтың ашылды, бірақ профиль әлі жасалмаған. " +
-            "Firebase Database баптауларын тексер.";
-          box.className = "message error";
-        }
-      } catch (error) {
-        console.error("Профильді оқу қатесі:", error);
-        if (auth.currentUser?.uid !== user.uid) return;
-
-        showDashboard(user, null);
-        const box = $("dashboardMessage");
-        box.textContent =
-          "Аккаунтқа кірдің, бірақ профильді оқу мүмкін болмады. " +
-          "Realtime Database ережелерін тексер.";
-        box.className = "message error";
-      }
-    }
-
-    $("loginTab").addEventListener("click", () => setMode("login"));
-    $("registerTab").addEventListener("click", () => setMode("register"));
-
-    authForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      clearMessage();
-
-      if (!initialized) {
-        showMessage("Firebase баптауларын толтыру қажет.");
-        return;
-      }
-
-      const email = $("email").value.trim();
-      const password = $("password").value;
-      const name = $("fullName").value.trim();
-
-      if (mode === "register" && name.length < 2) {
-        showMessage("Атың-жөніңді енгіз.");
-        return;
-      }
-
-      if (password.length < 6) {
-        showMessage("Құпиясөз кемінде 6 таңба болуы керек.");
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent =
-        mode === "register" ? "Тіркеліп жатыр..." : "Кіріп жатыр...";
-
-      try {
-        if (mode === "register") {
-          const credential = await createUserWithEmailAndPassword(
-            auth, email, password
-          );
-
-          await updateProfile(credential.user, {
-            displayName: name
-          });
-
-          try {
-            await set(ref(db, "profiles/" + credential.user.uid), {
-              name: name,
-              email: email,
-              role: "student",
-              createdAt: serverTimestamp()
-            });
-          } catch (profileError) {
-            console.error("Профиль жасау қатесі:", profileError);
-            showMessage(
-              "Аккаунт ашылды, бірақ профиль сақталмады. " +
-              "Realtime Database ережелерін тексер.",
-              "error"
-            );
-            return;
-          }
-
-          showMessage("Аккаунт сәтті ашылды!", "success");
-          await loadProfile(credential.user);
-        } else {
-          const credential = await signInWithEmailAndPassword(
-            auth, email, password
-          );
-          await loadProfile(credential.user);
-        }
-      } catch (error) {
-        console.error("Firebase қатесі:", error);
-        showMessage(explainError(error));
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent =
-          mode === "register" ? "Тіркелу →" : "Жүйеге кіру →";
-      }
-    });
-
-    $("logoutButton").addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error(error);
-        const box = $("dashboardMessage");
-        box.textContent = explainError(error);
-        box.className = "message error";
-      }
-    });
-
-    try {
-      const hasConfig =
-        firebaseConfig.apiKey !== "AIzaSyDNZxKKs6B7zw-YnL88rAo5fJypsoYad2A"," &&
-        firebaseConfig.authDomain !== ""bilimland-20aea.firebaseapp.com", &&
-        firebaseConfig.databaseURL !== "https://bilimland-20aea-default-rtdb.firebaseio.com" &&
-        firebaseConfig.appId !== "1:420262394105:web:ea6cbcd11ad2da24bcca28";
-
-      if (!hasConfig) {
-        showMessage(
-          "Алдымен код ішіндегі firebaseConfig мәндерін өз жобаңа сай толтыр."
-        );
-      } else {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getDatabase(app);
-        initialized = true;
-
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            await loadProfile(user);
-          } else {
-            dashboardView.classList.add("hidden");
-            authView.classList.remove("hidden");
-            clearMessage();
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Firebase іске қосылмады:", error);
-      showMessage("Firebase конфигурациясын тексер: " + error.message);
-    }
-  </script>
-</body>
-</html>
+<div id="loginScreen" class="login-wrap">
+ <section class="hero"><div class="brand"><div class="mark">B</div>BilimLand</div><h1>Білім алудың<br><span>жаңа кеңістігі.</span></h1><p>Оқушыға, мұғалімге және сыныпқа арналған ортақ электронды журнал.</p><div class="feature-list"><div class="feature"><div class="feature-icon">📘</div><div><b>Ортақ электронды журнал</b><div class="muted">Деректер Firebase бұлтында сақталады</div></div></div><div class="feature"><div class="feature-icon">📊</div><div><b>Баға және оқу көрсеткіші</b><div class="muted">БЖБ, ТЖБ және пайыздар бір жерде</div></div></div><div class="feature"><div class="feature-icon">🔐</div><div><b>Жеке аккаунт</b><div class="muted">Рөлге қарай тиісті ақпарат көрсетіледі</div></div></div></div></section>
+ <section class="panel"><div class="brand mobile-brand" style="margin-bottom:22px"><div class="mark">B</div>BilimLand</div><h2>Қош келдіңіз!</h2><p class="sub">Аккаунтыңызға кіріңіз немесе оқушы ретінде тіркеліңіз.</p><label class="field"><span>Электрондық пошта</span><input id="email" type="email" autocomplete="username" placeholder="name@example.com"></label><label class="field"><span>Құпиясөз</span><input id="password" type="password" autocomplete="current-password" placeholder="Кемінде 6 таңба"></label><label class="field"><span>Аты-жөніңіз (тек жаңа аккаунтқа)</span><input id="fullName" autocomplete="name" placeholder="Мысалы: Айдана Ермек"></label><div id="authError" class="error"></div><button id="signIn" class="full">Жүйеге кіру →</button><button id="signUp" class="secondary full">Оқушы аккаунтын ашу</button><p class="note">Жаңа аккаунт әдепкіде оқушы болады. Мұғалім рөлін Firebase дерекқорындағы профильде әкімші тағайындайды.</p></section>
+</div>
+<div id="appScreen" class="hidden"><header class="topbar"><div class="brand"><div class="mark">B</div>BilimLand</div><div class="profile"><div class="avatar" id="avatar">B</div><div><div class="profile-name" id="displayName">Қолданушы</div><div class="profile-role" id="displayRole">Оқушы</div></div><button id="logout" class="secondary small">Шығу</button></div></header><div class="layout"><aside><div class="nav-label">Мәзір</div><button class="navbtn active" data-page="home">⌂ Шолу</button><button class="navbtn" data-page="classes">▦ Сыныптар</button><button class="navbtn" data-page="journal">▤ Бағалар журналы</button><button class="navbtn" data-page="attendance">◉ Қатысу журналы</button><button class="navbtn" data-page="tasks">✓ Тапсырмалар</button><button class="navbtn" data-page="assessments">▣ БЖБ / ТЖБ</button><button class="navbtn" data-page="schedule">◷ Сабақ кестесі</button><button class="navbtn hidden" data-page="admin" id="adminNav">⚙ Әкімші панелі</button></aside><main class="main"><div id="pageContent"></div></main></div></div><div id="toast" class="toast hidden" role="status"></div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js';
+import { getDatabase, ref, get, set, update, remove, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js';
+const firebaseConfig={apiKey:'AIzaSyDNZxKKs6B7zw-YnL88rAo5fJypsoYad2A',authDomain:'bilimland-20aea.firebaseapp.com',databaseURL:'https://bilimland-20aea-default-rtdb.firebaseio.com',projectId:'bilimland-20aea',storageBucket:'bilimland-20aea.firebasestorage.app',messagingSenderId:'420262394105',appId:'1:420262394105:web:ea6cbcd11ad2da24bcca28'};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
+let me=null,profile=null,page='home',classes=[],grades=[],tasks=[],assessments=[],schedules=[],rosterByClass={};
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(message){$('toast').textContent=message;$('toast').classList.remove('hidden');clearTimeout(window.__blToast);window.__blToast=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
+function showAuthError(message){$('authError').textContent=message;$('authError').style.display='block'}function hideAuthError(){$('authError').style.display='none'}
+function authMessage(code){return ({'auth/invalid-email':'Электрондық пошта дұрыс емес.','auth/missing-password':'Құпиясөзді енгізіңіз.','auth/invalid-credential':'Пошта немесе құпиясөз қате.','auth/email-already-in-use':'Бұл пошта тіркелген. Кіру батырмасын қолданыңыз.','auth/weak-password':'Құпиясөз кемінде 6 таңба болуы керек.','auth/network-request-failed':'Интернет байланысын тексеріңіз.','auth/too-many-requests':'Тым көп әрекет жасалды. Біраздан соң қайталап көріңіз.'}[code])||'Қате шықты. Мәліметтерді тексеріп, қайта көріңіз.'}
+$('signIn').onclick=async()=>{hideAuthError();try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){showAuthError(authMessage(e.code))}};
+$('signUp').onclick=async()=>{hideAuthError();try{const email=$('email').value.trim(),password=$('password').value,name=$('fullName').value.trim();if(!name)throw Error('Аты-жөніңізді енгізіңіз.');if(password.length<6)throw Error('Құпиясөз кемінде 6 таңба болуы керек.');const cred=await createUserWithEmailAndPassword(auth,email,password);await set(ref(db,'profiles/'+cred.user.uid),{name,role:'student',email,createdAt:Date.now()})}catch(e){showAuthError(e.message==='Аты-жөніңізді енгізіңіз.'||e.message.startsWith('Құпиясөз')?e.message:authMessage(e.code))}};
+$('logout').onclick=()=>signOut(auth);document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>{page=b.dataset.page;document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x===b));render()});
+onAuthStateChanged(auth,async user=>{me=user;if(!user){profile=null;$('appScreen').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('adminNav').classList.add('hidden');return}try{const snap=await get(ref(db,'profiles/'+user.uid));profile=snap.val();if(!profile){await signOut(auth);showAuthError('Профиль табылмады. Қайта тіркеліп көріңіз.');return}if(!['student','teacher','admin'].includes(profile.role)){throw Error('Аккаунт рөлі дұрыс емес. Firebase-та profiles/'+user.uid+'/role мәнін student, teacher немесе admin етіп тексеріңіз.')} $('loginScreen').classList.add('hidden');$('appScreen').classList.remove('hidden');$('displayName').textContent=profile.name||user.email||'Қолданушы';$('avatar').textContent=(profile.name||user.email||'B').slice(0,1).toUpperCase();$('displayRole').textContent=profile.role==='admin'?'Әкімші аккаунты':profile.role==='teacher'?'Мұғалім аккаунты':'Оқушы аккаунты';const isAdmin=profile.role==='admin';$('adminNav').classList.toggle('hidden',!isAdmin);document.querySelectorAll('.navbtn').forEach(b=>{if(b.dataset.page!=='home'&&b.dataset.page!=='admin')b.classList.toggle('hidden',isAdmin)});if(isAdmin){page='admin';document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page))}await loadData();render()}catch(e){console.error(e);toast('Жүктеу қатесі: '+(e.message||e.code||String(e)))}});
+async function readCollection(path){const snap=await get(ref(db,path));return snap.val()||{}}
+async function loadData(){classes=[];grades=[];tasks=[];assessments=[];schedules=[];rosterByClass={};if(!me||!profile)throw Error('Аккаунт анықталмады.');if(profile.role==='admin'){const s=await get(ref(db,'classes'));classes=Object.entries(s.val()||{}).map(([id,v])=>({...v,id}))}else if(profile.role==='teacher'){const s=await get(query(ref(db,'classes'),orderByChild('teacherId'),equalTo(me.uid)));classes=Object.entries(s.val()||{}).map(([id,v])=>({...v,id}))}else{const links=await readCollection('userClasses/'+me.uid);for(const [cid,status] of Object.entries(links)){if(status!=='active')continue;const s=await get(ref(db,'classes/'+cid));if(s.exists())classes.push({...s.val(),id:cid})}}
+const errors=[];for(const c of classes){if(profile.role==='teacher'||profile.role==='admin'){try{const requests=await readCollection('joinRequests/'+c.id);rosterByClass[c.id]=Object.entries(requests).filter(([uid,r])=>r&&r.status==='approved').map(([uid,r])=>({uid,name:r.name||r.email||uid,email:r.email||''}))}catch(e){errors.push('Оқушылар тізімі: '+(e.code||e.message))}}
+for(const key of ['grades','tasks','assessments','schedules']){try{const base=ref(db,key+'/'+c.id);let s;if(key==='grades'&&profile.role==='student')s=await get(query(base,orderByChild('studentId'),equalTo(me.uid)));else s=await get(base);for(const [id,v] of Object.entries(s.val()||{})){if(!v||typeof v!=='object')continue;if(profile.role==='student'&&key==='tasks'&&v.studentId&&v.studentId!==me.uid)continue;if(profile.role==='student'&&key==='assessments'&&v.studentId&&v.studentId!==me.uid)continue;({grades,tasks,assessments,schedules}[key]).push({...v,id,classId:c.id,className:c.name||'',subject:v.subject||c.subject||''})}}catch(e){console.error('Load error',key,c.id,e);errors.push(key+' / '+(c.name||c.id)+' ('+(e.code||e.message||'қате')+')')}}}
+if(errors.length){console.error('BilimLand data loading issues:',errors);toast('Кей дерек жүктелмеді: '+errors.slice(0,2).join(' · '));}}
+function classOptions(){return classes.map(c=>`<option value="${esc(c.id)}">${esc(c.name)} · ${esc(c.subject||'Жалпы')}</option>`).join('')}
+function empty(text){return `<div class="card empty">${esc(text)}</div>`}
+function statCard(label,value,hint=''){return `<div class="card"><div class="stat-label">${label}</div><div class="stat">${value}</div><div class="stat-hint">${hint}</div></div>`}
+function percentOf(list){const total=list.reduce((n,g)=>n+Number(g.value||0),0),max=list.reduce((n,g)=>n+Number(g.maxScore||10),0);return max?Math.round(total/max*100):null}
+function predictedGrade(p){if(p===null)return '—';if(p<40)return '2';if(p<65)return '3';if(p<85)return '4';return '5'}
+function metricCard(label,pct,detail){const value=pct===null?'—':pct+'%';const width=pct===null?0:Math.max(0,Math.min(100,pct));return `<div class="metric"><small>${esc(label)}</small><strong>${value}</strong><div class="bar"><span style="width:${width}%"></span></div><small>${esc(detail||'Әзірге дерек жоқ')}</small></div>`}
+function gradeAnalytics(list){const fmt=list.filter(g=>/күнделікті|форматив/i.test(g.type||''));const bjb=list.filter(g=>/бжб/i.test(g.type||''));const tjb=list.filter(g=>/тжб/i.test(g.type||''));return {all:percentOf(list),fmt:percentOf(fmt),bjb:percentOf(bjb),tjb:percentOf(tjb),fmtCount:fmt.length,bjbCount:bjb.length,tjbCount:tjb.length}}
+function render(){if(!me||!profile)return;const el=$('pageContent'),teacher=profile.role==='teacher';if(page==='home'){const own=teacher?grades:grades.filter(g=>g.studentId===me.uid);const total=own.reduce((s,g)=>s+Number(g.value||0),0),max=own.reduce((s,g)=>s+Number(g.maxScore||10),0),pct=max?Math.round(total/max*100):0;el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Жеке кабинет</div><h1>Қош келдіңіз, ${esc((profile.name||'').split(' ')[0])}!</h1><div class="muted">${teacher?'Сыныптарыңыз бен оқу үдерісін бір жерден басқарыңыз.':'Сыныптарыңызды, бағаларыңыз бен тапсырмаларыңызды осы жерден көріңіз.'}</div></div><button class="secondary" id="refreshData">↻ Жаңарту</button></div><div class="grid">${statCard('Менің сыныптарым',classes.length,'Белсенді сыныптар')}${statCard(teacher?'Журналдағы бағалар':'Орташа нәтиже',teacher?own.length:(own.length?pct+'%':'—'),teacher?'Барлық сынып бойынша':(own.length?'Бағалардың пайыздық есебі':'Әзірге баға жоқ'))}${statCard('Тапсырмалар',tasks.length,teacher?'Жарияланған тапсырмалар':'Сынып тапсырмалары')}</div>${!teacher?(()=>{const a=gradeAnalytics(own);return `<div class="section"><div class="section-head"><h2>Оқу үлгерімім</h2><span class="pill">Болжамды баға: ${predictedGrade(a.all)}</span></div><div class="metric-grid">${metricCard('Формативті / күнделікті',a.fmt,a.fmtCount+' баға')}${metricCard('БЖБ пайызы',a.bjb,a.bjbCount+' нәтиже')}${metricCard('ТЖБ пайызы',a.tjb,a.tjbCount+' нәтиже')}${metricCard('Жалпы көрсеткіш',a.all,'Болжамды баға: '+predictedGrade(a.all))}</div><p class="note">Болжамды баға — осы журналдағы жиналған баллдың пайыздық есебі ғана; мектептің нақты тоқсандық бағасын алмастырмайды.</p></div>`})():''}<div class="section"><div class="section-head"><h2>Соңғы бағалар</h2><button class="secondary small" data-goto="journal">Барлығын көру</button></div>${own.length?`<div class="stack">${own.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,4).map(g=>`<div class="item"><div class="item-top"><div><span class="pill">${esc(g.className)}</span><h3>${esc(g.type||'Күнделікті баға')}</h3><div class="muted">${esc(g.subject||'Пән көрсетілмеген')}</div></div><div class="grade">${esc(g.value??'—')}/${esc(g.maxScore||10)} · ${Math.round(Number(g.value||0)/Number(g.maxScore||10)*100)}%</div></div></div>`).join('')}</div>`:empty('Бағалар пайда болғанда осында көрінеді.')}</div><div class="section"><div class="notice">💡 Деректер Firebase-та сақталады. Бір аккаунтпен кірсеңіз, қолжетімді ақпарат басқа құрылғыда да көрінеді.</div></div>`;$('refreshData').onclick=async()=>{try{await loadData();render();toast('Деректер жаңартылды.')}catch(e){toast(e.message||'Жаңарту қатесі')}};wireGoto();return}
+if(page==='admin'){if(profile.role!=='admin'){el.innerHTML=`<div class="card"><h2>Рұқсат жоқ</h2><p class="muted">Бұл бөлім тек әкімшіге арналған.</p></div>`;return}el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Басқару</div><h1>Әкімші панелі</h1><div class="muted">Оқушыларды көру, мұғалімдерді бекіту және барлық сыныптарды басқару.</div></div><button class="secondary small" id="adminRefresh">Жаңарту</button></div><div class="metric-grid"><div class="metric"><small>Аккаунттар</small><strong id="adminUserCount">—</strong></div><div class="metric"><small>Сыныптар</small><strong>${classes.length}</strong></div><div class="metric"><small>Мұғалімдер</small><strong id="adminTeacherCount">—</strong></div></div><div class="section"><div class="section-head"><h2>Аккаунттар</h2></div><div class="card"><p class="muted">Жаңа мұғалімге тек «Мұғалім етіп бекіту» батырмасы арқылы рөл беріңіз. Әкімші рөлін бұл панель арқылы тағайындауға болмайды.</p><div id="adminUsers" class="stack">Аккаунттар жүктелуде…</div></div></div><div class="section"><div class="section-head"><h2>Барлық сыныптар</h2></div><div class="grid" id="adminClasses">${classes.map(c=>`<div class="card"><span class="pill">${esc(c.subject||'Жалпы')}</span><h2 style="margin:10px 0 4px">${esc(c.name||'Атаусыз сынып')}</h2><p class="muted">Мұғалім UID: ${esc(c.teacherId||'—')}</p><p class="muted">Сынып коды: ${esc(c.code||'—')}</p><button class="danger small" data-admin-delete-class="${esc(c.id)}">Сыныпты және деректерін жою</button></div>`).join('')||empty('Сынып жоқ.')}</div></div><div class="note">Әкімші рөлі Firebase-та қолмен беріледі. Әкімші UID-ін ешкімге жарияламаңыз. Сыныпты жою қайтарылмайды.</div>`;async function loadAdminUsers(){const users=await readCollection('profiles');const rows=Object.entries(users).map(([uid,u])=>({uid,...(u||{})}));$('adminUserCount').textContent=rows.length;$('adminTeacherCount').textContent=rows.filter(u=>u.role==='teacher').length;$('adminUsers').innerHTML=rows.map(u=>`<div class="item"><div><b>${esc(u.name||u.email||u.uid)}</b><div class="muted">${esc(u.email||'')} · ${esc(u.role||'рөл жоқ')}</div><div class="note">UID: ${esc(u.uid)}</div></div>${u.role==='student'?`<button class="small" data-promote-teacher="${esc(u.uid)}">Мұғалім етіп бекіту</button>`:''}</div>`).join('')||empty('Аккаунт жоқ.');$('adminUsers').querySelectorAll('[data-promote-teacher]').forEach(btn=>btn.onclick=async()=>{const uid=btn.dataset.promoteTeacher;const target=rows.find(u=>u.uid===uid);if(!target||target.role!=='student')return;if(!confirm(`${target.name||target.email||uid} аккаунтын мұғалім етіп бекітесіз бе?`))return;try{await update(ref(db,'profiles/'+uid),{role:'teacher'});toast('Мұғалім рөлі бекітілді.');await loadAdminUsers()}catch(e){console.error(e);toast('Мұғалім бекітілмеді ('+(e.code||'қате')+'): '+(e.message||String(e)))}})}$('adminRefresh').onclick=async()=>{try{await loadData();render();toast('Әкімші панелі жаңартылды.')}catch(e){toast('Жаңарту қатесі: '+(e.message||String(e)))}};document.querySelectorAll('[data-admin-delete-class]').forEach(b=>b.onclick=()=>deleteClass(b.dataset.adminDeleteClass));loadAdminUsers().catch(e=>{console.error(e);$('adminUsers').textContent='Аккаунттарды оқу қатесі: '+(e.code||e.message||String(e))});return} if(page==='classes'){el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Сыныптар</div><h1>Менің сыныптарым</h1><div class="muted">${teacher?'Сынып құрып, қосылу кодын оқушыларға жіберіңіз.':'Мұғалім берген кодпен сыныпқа қосылуға өтініш жіберіңіз.'}</div></div></div>${teacher?`<div class="card"><h2>＋ Жаңа сынып құру</h2><div class="inline-form" style="margin-top:14px"><input id="cName" placeholder="Сынып атауы (мысалы, 8 Г)"><input id="cSubject" placeholder="Пән (міндетті емес)"><button id="createClass">Сынып құру</button></div></div><div class="section"><div class="section-head"><h2>Оқушылардың өтініштері</h2></div><div id="requests" class="stack">${classes.length?'Сыныпты таңдаңыз: '+classes.map(c=>`<button class="secondary small" data-requests="${esc(c.id)}">${esc(c.name)}</button>`).join(' '):'Алдымен сынып құрыңыз.'}</div></div>`:`<div class="card"><h2>Сыныпқа қосылу</h2><p class="muted">Мұғалім берген кодты енгізіңіз.</p><div class="inline-form"><input id="joinCode" placeholder="DCA-XXXXXX" autocapitalize="characters"><button id="joinClass">Өтініш жіберу</button></div></div>`}<div class="section"><div class="section-head"><h2>${teacher?'Құрған сыныптарым':'Қосылған сыныптар'}</h2></div><div class="grid">${classes.map(c=>`<div class="card"><span class="pill">${esc(c.subject||'Жалпы')}</span><h2 style="margin:10px 0 4px">${esc(c.name)}</h2><p class="muted">Сынып коды</p><div class="code">${esc(c.code||'—')}</div>${teacher?`<p class="muted">Оқушылар: ${(rosterByClass[c.id]||[]).length}</p><div class="class-actions"><button class="secondary small" data-requests="${esc(c.id)}">Өтініштерді қарау</button><button class="danger small" data-delete-class="${esc(c.id)}">Сыныпты жою</button></div>`:''}</div>`).join('')||empty('Әзірге сынып жоқ.')}</div></div>`;if(teacher){$('createClass').onclick=createClass;document.querySelectorAll('[data-requests]').forEach(b=>b.onclick=()=>showRequests(b.dataset.requests));document.querySelectorAll('[data-delete-class]').forEach(b=>b.onclick=()=>deleteClass(b.dataset.deleteClass))}else $('joinClass').onclick=joinClass;return}
+if(page==='attendance'){if(!teacher){el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Қатысу</div><h1>Қатысу журналы</h1><div class="muted">Өз қатысу белгілеріңізді ғана көре аласыз.</div></div></div><div class="card"><label class="field"><span>Сынып</span><select id="attClass">${classOptions()}</select></label><label class="field"><span>Күні</span><input id="attDate" type="date" value="${new Date().toISOString().slice(0,10)}"></label><button id="attLoad">Қатысымды көру</button><div id="attStudentResult" class="section"></div></div>`;const loadStudentAttendance=async()=>{try{const cid=$('attClass').value,date=$('attDate').value;if(!cid||!date)throw Error('Сынып пен күнді таңдаңыз.');const snap=await get(ref(db,`attendance/${cid}/${date}/${me.uid}`));const v=snap.val();$('attStudentResult').innerHTML=v?`<div class="item"><b>Белгі:</b> ${attendanceLabel(v.status)}<div class="muted">Күні: ${esc(date)}</div></div>`:empty('Бұл күнге қатысу белгісі қойылмаған.')}catch(e){toast('Қатысымды оқу қатесі: '+(e.message||e.code||String(e)))}};$('attLoad').onclick=loadStudentAttendance;if(classes.length)loadStudentAttendance();return}el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Мұғалім құралы</div><h1>Қатысу журналы</h1><div class="muted">Оқушылардың қатысуын белгілеңіз. Өзгерістер Firebase-ке сақталады.</div></div></div>${classes.length?`<div class="card"><div class="form-grid"><label class="field"><span>Сынып</span><select id="attClass">${classOptions()}</select></label><label class="field"><span>Күні</span><input id="attDate" type="date" value="${new Date().toISOString().slice(0,10)}"></label></div><div class="actions"><button id="attLoad">Журналды ашу</button><button class="secondary" id="attAllPresent">Барлығы қатысты</button></div><div id="attMessage" class="note">Күн мен сыныпты таңдап, журналды ашыңыз.</div><div id="attTable" class="section"></div></div>`:empty('Қатысу журналын пайдалану үшін алдымен сынып құрыңыз.')}`;if(classes.length){$('attLoad').onclick=loadAttendanceJournal;$('attAllPresent').onclick=async()=>{const cid=$('attClass').value,date=$('attDate').value;if(!cid||!date)return toast('Сынып пен күнді таңдаңыз.');const roster=rosterByClass[cid]||[];if(!roster.length)return toast('Бұл сыныпта мақұлданған оқушылар жоқ.');try{const updates={};roster.forEach(st=>updates[`attendance/${cid}/${date}/${st.uid}`]={status:'present',updatedAt:Date.now(),updatedBy:me.uid});await update(ref(db),updates);await loadAttendanceJournal();toast('Барлық оқушы қатысты деп белгіленді.')}catch(e){console.error(e);toast('Сақтау қатесі: '+(e.code||e.message||String(e)))}};loadAttendanceJournal()}return}
+if(page==='journal'){const own=teacher?grades:grades.filter(g=>g.studentId===me.uid);el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Оқу үлгерімі</div><h1>Бағалар журналы</h1><div class="muted">Бағалар мен пайыздық нәтижелер.</div></div></div>${teacher?`<div class="card"><h2>＋ Баға енгізу</h2>${classes.length?`<div class="form-grid"><label class="field"><span>Сынып</span><select id="gClass">${classOptions()}</select></label><label class="field"><span>Оқушы</span><select id="gStudent"><option value="">Оқушыны таңдаңыз</option></select></label><label class="field"><span>Оқушы UID (тізімде жоқ болса)</span><input id="gStudentUid" placeholder="Firebase UID"></label><label class="field"><span>Баға түрі</span><select id="gType"><option>Күнделікті баға</option><option>БЖБ</option><option>ТЖБ</option></select></label><label class="field"><span>Пән</span><input id="gSubject" placeholder="Математика"></label><label class="field"><span>Жиналған балл</span><input id="gValue" type="number" min="0" step="any" placeholder="Мысалы: 8"></label><label class="field"><span>Ең жоғары балл</span><input id="gMax" type="number" min="1" step="any" value="10"></label></div><button id="saveGrade">Бағаны сақтау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}${!teacher?(()=>{const a=gradeAnalytics(own);return `<div class="metric-grid">${metricCard('Формативті / күнделікті',a.fmt,a.fmtCount+' баға')}${metricCard('БЖБ пайызы',a.bjb,a.bjbCount+' нәтиже')}${metricCard('ТЖБ пайызы',a.tjb,a.tjbCount+' нәтиже')}${metricCard('Жалпы нәтиже',a.all,'Болжамды баға: '+predictedGrade(a.all))}</div><p class="note">Пайыздар — жиналған балл / максималды балл. Болжамды баға ақпараттық сипатта.</p>`})():''}<div class="section"><div class="table-wrap"><table><thead><tr><th>Сынып</th><th>Оқушы</th><th>Пән</th><th>Түрі</th><th>Балл</th><th>Пайыз</th></tr></thead><tbody>${own.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(g=>`<tr><td>${esc(g.className)}</td><td>${esc(g.studentName||g.studentId||'—')}</td><td>${esc(g.subject||'—')}</td><td>${esc(g.type||'Баға')}</td><td class="grade">${esc(g.value??'—')}/${esc(g.maxScore||10)}</td><td>${Math.round(Number(g.value||0)/Number(g.maxScore||10)*100)}%</td></tr>`).join('')||`<tr><td colspan="6" class="empty">Бағалар әзірге жоқ.</td></tr>`}</tbody></table></div></div>`;if(teacher&&classes.length){$('gClass').onchange=populateStudents;$('saveGrade').onclick=saveGrade;populateStudents()}return}
+if(page==='tasks'){el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Оқу жұмысы</div><h1>Тапсырмалар</h1><div class="muted">Мерзімі мен тапсырма туралы ақпарат.</div></div></div>${teacher?`<div class="card"><h2>＋ Тапсырма жариялау</h2>${classes.length?`<div class="form-grid"><label class="field"><span>Сынып</span><select id="tClass">${classOptions()}</select></label><label class="field"><span>Тапсырма атауы</span><input id="tTitle" placeholder="Мысалы: 45-бет, 6-есеп"></label><label class="field"><span>Пән</span><input id="tSubject" placeholder="Математика"></label><label class="field"><span>Мерзімі</span><input id="tDue" type="date"></label><label class="field"><span>Түсіндірме</span><textarea id="tDescription" rows="2" placeholder="Қосымша нұсқау (міндетті емес)"></textarea></label></div><button id="saveTask">Жариялау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="section"><div class="stack">${tasks.slice().sort((a,b)=>(a.due||'').localeCompare(b.due||'')).map(t=>`<div class="item"><div class="item-top"><div><span class="pill">${esc(t.className)}</span><h3>${esc(t.title||'Тапсырма')}</h3><div class="muted">${esc(t.subject||'')} ${t.due?'· Мерзімі: '+esc(t.due):''}</div></div>${t.due?`<span class="pill gold">${esc(t.due)}</span>`:''}</div>${t.description?`<p>${esc(t.description)}</p>`:''}</div>`).join('')||empty('Тапсырмалар әлі жарияланбаған.')}</div></div>`;if(teacher&&classes.length)$('saveTask').onclick=saveTask;return}
+if(page==='assessments'){el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Қорытынды бағалау</div><h1>БЖБ / ТЖБ</h1><div class="muted">Бөлім және тоқсан бойынша жиынтық бағалау.</div></div></div>${teacher?`<div class="card"><h2>＋ БЖБ / ТЖБ кестесіне қосу</h2>${classes.length?`<div class="form-grid"><label class="field"><span>Сынып</span><select id="aClass">${classOptions()}</select></label><label class="field"><span>Түрі</span><select id="aType"><option>БЖБ</option><option>ТЖБ</option></select></label><label class="field"><span>Пән</span><input id="aSubject" placeholder="Математика"></label><label class="field"><span>Күні</span><input id="aDate" type="date"></label><label class="field"><span>Тақырып</span><input id="aTitle" placeholder="Бөлім атауы"></label></div><button id="saveAssessment">Жариялау</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="section"><div class="grid">${assessments.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(a=>`<div class="card"><span class="pill ${a.type==='ТЖБ'?'gold':''}">${esc(a.type||'БЖБ')}</span><div class="eyebrow" style="margin-top:13px">${esc(a.date||'Күні белгісіз')}</div><h3>${esc(a.title||a.subject||'Бағалау')}</h3><p class="muted">${esc(a.subject||'')} · ${esc(a.className)}</p></div>`).join('')||empty('БЖБ / ТЖБ кестесі әзірге бос.')}</div></div>`;if(teacher&&classes.length)$('saveAssessment').onclick=saveAssessment;return}
+if(page==='schedule'){el.innerHTML=`<div class="welcome"><div><div class="eyebrow">Апталық жоспар</div><h1>Сабақ кестесі</h1><div class="muted">Апта күндері бойынша сабақ уақыттары.</div></div></div>${teacher?`<div class="card"><h2>＋ Сабақ қосу</h2>${classes.length?`<div class="form-grid"><label class="field"><span>Сынып</span><select id="sClass">${classOptions()}</select></label><label class="field"><span>Күн</span><select id="sDay"><option>Дүйсенбі</option><option>Сейсенбі</option><option>Сәрсенбі</option><option>Бейсенбі</option><option>Жұма</option><option>Сенбі</option></select></label><label class="field"><span>Пән</span><input id="sSubject" placeholder="Математика"></label><label class="field"><span>Уақыты</span><input id="sTime" placeholder="09:00–09:45"></label><label class="field"><span>Кабинет</span><input id="sRoom" placeholder="Кабинет (міндетті емес)"></label></div><button id="saveSchedule">Кестеге қосу</button>`:'Алдымен сынып құрыңыз.'}</div>`:''}<div class="section"><div class="table-wrap"><table><thead><tr><th>Күн</th><th>Уақыт</th><th>Пән</th><th>Сынып</th><th>Кабинет</th>${teacher?'<th>Әрекет</th>':''}</tr></thead><tbody>${schedules.map(s=>`<tr><td>${esc(s.day||'')}</td><td>${esc(s.time||'')}</td><td>${esc(s.subject||'')}</td><td>${esc(s.className)}</td><td>${esc(s.room||'—')}</td>${teacher?`<td><button class="danger small" data-delete-schedule="${esc(s.classId)}|${esc(s.id)}">Өшіру</button></td>`:''}</tr>`).join('')||`<tr><td colspan="${teacher?6:5}" class="empty">Сабақ кестесі бос.</td></tr>`}</tbody></table></div></div>`;if(teacher&&classes.length)$('saveSchedule').onclick=saveSchedule;if(teacher)document.querySelectorAll('[data-delete-schedule]').forEach(b=>b.onclick=()=>{const [cid,id]=b.dataset.deleteSchedule.split('|');deleteSchedule(cid,id)});return}}
+function attendanceLabel(status){return ({present:'Қатысты',sick:'А — Ауырып жатыр',excused:'С — Себепті',absent:'Жоқ'})[status]||'Белгі қойылмаған'}
+async function loadAttendanceJournal(){try{const cid=$('attClass')?.value,date=$('attDate')?.value;if(!cid||!date)throw Error('Сынып пен күнді таңдаңыз.');const c=classes.find(x=>x.id===cid);if(!c||c.teacherId!==me.uid)throw Error('Бұл сыныпты ашуға рұқсатыңыз жоқ.');const roster=rosterByClass[cid]||[];const snap=await get(ref(db,`attendance/${cid}/${date}`));const rows=snap.val()||{};const statusOptions=(uid,current)=>`<select class="att-status" data-att-uid="${esc(uid)}"><option value="" ${!current?'selected':''}>Белгі таңдаңыз</option><option value="present" ${current==='present'?'selected':''}>Қатысты</option><option value="sick" ${current==='sick'?'selected':''}>А — Ауырып жатыр</option><option value="excused" ${current==='excused'?'selected':''}>С — Себепті</option><option value="absent" ${current==='absent'?'selected':''}>Жоқ</option></select>`;$('attTable').innerHTML=roster.length?`<div class="table-wrap"><table><thead><tr><th>№</th><th>Оқушы</th><th>Қатысу белгісі</th><th>Сақтау</th></tr></thead><tbody>${roster.map((st,i)=>{const status=rows[st.uid]?.status||'';return `<tr><td>${i+1}</td><td>${esc(st.name)}</td><td>${statusOptions(st.uid,status)}</td><td><button class="small" data-save-att="${esc(st.uid)}">Сақтау</button></td></tr>`}).join('')}</tbody></table></div><div class="note">А — қызыл, С — оранжевый. Әр оқушының белгісін жеке сақтаңыз.</div>`:empty('Мақұлданған оқушылар жоқ. Алдымен «Сыныптар» бөлімінен өтініштерді қабылдаңыз.');$('attTable').querySelectorAll('[data-save-att]').forEach(btn=>btn.onclick=async()=>{const uid=btn.dataset.saveAtt,select=$('attTable').querySelector(`[data-att-uid="${CSS.escape(uid)}"]`);try{if(!select.value)throw Error('Алдымен қатысу белгісін таңдаңыз.');await set(ref(db,`attendance/${cid}/${date}/${uid}`),{status:select.value,updatedAt:Date.now(),updatedBy:me.uid});const tr=btn.closest('tr');tr.classList.remove('att-row-saved');void tr.offsetWidth;tr.classList.add('att-row-saved');toast('Қатысу белгісі сақталды.')}catch(e){console.error(e);toast('Сақтау қатесі ('+(e.code||'қате')+'): '+(e.message||String(e)))}});document.querySelectorAll('.att-status').forEach(sel=>{const paint=()=>{sel.dataset.status=sel.value};sel.onchange=paint;paint()});$('attMessage').textContent=`${c.name} · ${date} · ${roster.length} оқушы`;}catch(e){console.error(e);toast('Журналды ашу қатесі: '+(e.code||e.message||String(e)))}}
+function wireGoto(){document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{page=b.dataset.goto;document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.page===page));render()})}
+function populateStudents(){const cid=$('gClass')?.value,select=$('gStudent');if(!select)return;const roster=rosterByClass[cid]||[];select.innerHTML='<option value="">Оқушыны таңдаңыз</option>'+roster.map(s=>`<option value="${esc(s.uid)}">${esc(s.name)}${s.email?' · '+esc(s.email):''}</option>`).join('');}
+async function createClass(){try{const name=$('cName').value.trim(),subject=$('cSubject').value.trim();if(!name)throw Error('Сынып атауын енгізіңіз.');const id=push(ref(db,'classes')).key,code='DCA-'+Math.random().toString(36).slice(2,8).toUpperCase();await set(ref(db,'classes/'+id
