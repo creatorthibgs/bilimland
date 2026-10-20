@@ -117,4 +117,159 @@ if(page==='schedule'){el.innerHTML=`<div class="welcome"><div><div class="eyebro
 function attendanceLabel(status){return ({present:'Қатысты',sick:'А — Ауырып жатыр',excused:'С — Себепті',absent:'Жоқ'})[status]||'Белгі қойылмаған'}
 async function loadAttendanceJournal(){try{const cid=$('attClass')?.value,date=$('attDate')?.value;if(!cid||!date)throw Error('Сынып пен күнді таңдаңыз.');const c=classes.find(x=>x.id===cid);if(!c||c.teacherId!==me.uid)throw Error('Бұл сыныпты ашуға рұқсатыңыз жоқ.');const roster=rosterByClass[cid]||[];const snap=await get(ref(db,`attendance/${cid}/${date}`));const rows=snap.val()||{};const statusOptions=(uid,current)=>`<select class="att-status" data-att-uid="${esc(uid)}"><option value="" ${!current?'selected':''}>Белгі таңдаңыз</option><option value="present" ${current==='present'?'selected':''}>Қатысты</option><option value="sick" ${current==='sick'?'selected':''}>А — Ауырып жатыр</option><option value="excused" ${current==='excused'?'selected':''}>С — Себепті</option><option value="absent" ${current==='absent'?'selected':''}>Жоқ</option></select>`;$('attTable').innerHTML=roster.length?`<div class="table-wrap"><table><thead><tr><th>№</th><th>Оқушы</th><th>Қатысу белгісі</th><th>Сақтау</th></tr></thead><tbody>${roster.map((st,i)=>{const status=rows[st.uid]?.status||'';return `<tr><td>${i+1}</td><td>${esc(st.name)}</td><td>${statusOptions(st.uid,status)}</td><td><button class="small" data-save-att="${esc(st.uid)}">Сақтау</button></td></tr>`}).join('')}</tbody></table></div><div class="note">А — қызыл, С — оранжевый. Әр оқушының белгісін жеке сақтаңыз.</div>`:empty('Мақұлданған оқушылар жоқ. Алдымен «Сыныптар» бөлімінен өтініштерді қабылдаңыз.');$('attTable').querySelectorAll('[data-save-att]').forEach(btn=>btn.onclick=async()=>{const uid=btn.dataset.saveAtt,select=$('attTable').querySelector(`[data-att-uid="${CSS.escape(uid)}"]`);try{if(!select.value)throw Error('Алдымен қатысу белгісін таңдаңыз.');await set(ref(db,`attendance/${cid}/${date}/${uid}`),{status:select.value,updatedAt:Date.now(),updatedBy:me.uid});const tr=btn.closest('tr');tr.classList.remove('att-row-saved');void tr.offsetWidth;tr.classList.add('att-row-saved');toast('Қатысу белгісі сақталды.')}catch(e){console.error(e);toast('Сақтау қатесі ('+(e.code||'қате')+'): '+(e.message||String(e)))}});document.querySelectorAll('.att-status').forEach(sel=>{const paint=()=>{sel.dataset.status=sel.value};sel.onchange=paint;paint()});$('attMessage').textContent=`${c.name} · ${date} · ${roster.length} оқушы`;}catch(e){console.error(e);toast('Журналды ашу қатесі: '+(e.code||e.message||String(e)))}}
 function wireGoto(){document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{page=b.dataset.goto;document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.page===page));render()})}
-function populateStudents(){const cid=$('gClass')?.value,select=$('gStudent');if(!select)return;const roster=rosterByClass[cid]||[];select.innerHTML='<option value="">Оқушыны таңдаңыз</option>'+roster.map(s=>`<option value="${esc(s.uid)}">${esc(s.name)}${s.email?' · '
+function populateStudents(){const cid=$('gClass')?.value,select=$('gStudent');if(!select)return;const roster=rosterByClass[cid]||[];select.innerHTML='<option value="">Оқушыны таңдаңыз</option>'+roster.map(s=>`<option value="${esc(s.uid)}">${esc(s.name)}${s.email?' · '+esc(s.email):''}</option>`).join('');}
+async function createClass(){
+  try{
+    if(profile?.role!=='teacher')throw Error('Сыныпты тек мұғалім құра алады.');
+    const name=$('cName').value.trim(),subject=$('cSubject').value.trim();
+    if(!name)throw Error('Сынып атауын енгізіңіз.');
+    const id=push(ref(db,'classes')).key;
+    const code='DCA-'+Math.random().toString(36).slice(2,8).toUpperCase();
+    await set(ref(db,'classes/'+id),{name,subject,teacherId:me.uid,code,createdAt:Date.now()});
+    await loadData();render();toast('«'+name+'» сыныбы құрылды. Код: '+code);
+  }catch(e){console.error(e);toast('Сынып құру қатесі ('+(e.code||'қате')+'): '+(e.message||String(e)));}
+}
+
+async function joinClass(){
+  try{
+    if(!me||profile?.role!=='student')throw Error('Сыныпқа оқушы аккаунтымен қосылыңыз.');
+    const code=$('joinCode').value.trim().toUpperCase().replace(/\s/g,'');
+    if(!code)throw Error('Мұғалім берген кодты енгізіңіз.');
+    const all=await readCollection('classes');
+    const match=Object.entries(all).find(([,c])=>String(c?.code||'').toUpperCase()===code);
+    if(!match)throw Error('Бұл кодпен сынып табылмады. Кодты тексеріңіз.');
+    const [cid,c]=match;
+    const reqRef=ref(db,'joinRequests/'+cid+'/'+me.uid);
+    const old=await get(reqRef),status=old.val()?.status;
+    if(status==='approved')throw Error('Сіз бұл сыныпқа әлдеқашан қосылғансыз.');
+    if(status==='pending')throw Error('Өтінішіңіз мұғалімнің қарауында.');
+    await set(reqRef,{name:profile.name||me.displayName||me.email||'Оқушы',email:me.email||profile.email||'',status:'pending',requestedAt:Date.now(),updatedAt:Date.now()});
+    $('joinCode').value='';
+    toast('«'+(c.name||'Сынып')+'» сыныбына өтініш жіберілді. Мұғалімнің қабылдауын күтіңіз.');
+  }catch(e){console.error(e);toast('Өтініш жіберу қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function showRequests(classId){
+  const holder=$('requests');
+  if(!holder)return;
+  try{
+    if(profile?.role!=='teacher')throw Error('Бұл бөлім тек мұғалімге арналған.');
+    const c=classes.find(x=>x.id===classId);
+    if(!c||c.teacherId!==me.uid)throw Error('Бұл сыныпқа рұқсатыңыз жоқ.');
+    holder.innerHTML='Өтініштер жүктелуде…';
+    const data=await readCollection('joinRequests/'+classId);
+    const rows=Object.entries(data).map(([uid,v])=>({uid,...(v||{})})).sort((a,b)=>(b.requestedAt||0)-(a.requestedAt||0));
+    holder.innerHTML=`<div class="item"><div class="item-top"><div><b>${esc(c.name||'Сынып')}</b><div class="muted">Оқушылардың қосылу өтініштері</div></div><button class="secondary small" id="refreshRequests">Жаңарту</button></div></div>`+
+      (rows.length?rows.map(r=>{
+        const status=r.status||'pending';
+        const label=status==='approved'?'Қабылданды':status==='rejected'?'Қабылданбады':'Күтуде';
+        return `<div class="item"><div class="item-top"><div><b>${esc(r.name||r.email||r.uid)}</b><div class="muted">${esc(r.email||'Email көрсетілмеген')}</div><span class="pill ${status==='approved'?'green':status==='rejected'?'gold':''}">${label}</span></div><div class="actions">${status!=='approved'?`<button class="small" data-request-action="approve" data-request-uid="${esc(r.uid)}">Қабылдау</button>`:''}${status!=='rejected'?`<button class="danger small" data-request-action="reject" data-request-uid="${esc(r.uid)}">Қайтару</button>`:''}</div></div></div>`;
+      }).join(''):empty('Бұл сыныпқа әзірге өтініш келмеген.'));
+    $('refreshRequests').onclick=()=>showRequests(classId);
+    holder.querySelectorAll('[data-request-action]').forEach(btn=>btn.onclick=async()=>{
+      const uid=btn.dataset.requestUid,action=btn.dataset.requestAction;
+      try{
+        const latest=await get(ref(db,'joinRequests/'+classId+'/'+uid));
+        if(!latest.exists())throw Error('Өтініш табылмады. Жаңартып көріңіз.');
+        await update(ref(db,'joinRequests/'+classId+'/'+uid),{status:action==='approve'?'approved':'rejected',reviewedAt:Date.now(),reviewedBy:me.uid});
+        if(action==='approve')await set(ref(db,'userClasses/'+uid+'/'+classId),'active');
+        else await remove(ref(db,'userClasses/'+uid+'/'+classId));
+        await loadData();render();
+        await showRequests(classId);
+        toast(action==='approve'?'Оқушы сыныпқа қабылданды.':'Өтініш қайтарылды.');
+      }catch(e){console.error(e);toast('Өтінішті өңдеу қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+    });
+  }catch(e){console.error(e);holder.innerHTML=empty(e.message||'Өтініштерді жүктеу қатесі.');}
+}
+
+async function deleteClass(classId){
+  try{
+    if(!['teacher','admin'].includes(profile?.role))throw Error('Сыныпты жоюға рұқсатыңыз жоқ.');
+    const snap=await get(ref(db,'classes/'+classId));
+    if(!snap.exists())throw Error('Сынып табылмады.');
+    const c=snap.val();
+    if(profile.role==='teacher'&&c.teacherId!==me.uid)throw Error('Тек өз сыныбыңызды жоя аласыз.');
+    if(!confirm('«'+(c.name||'Сынып')+'» сыныбын және оған қатысты бағалар, тапсырмалар, кесте мен қатысу деректерін жоясыз ба? Бұл әрекетті қайтару мүмкін емес.'))return;
+    const reqSnap=await get(ref(db,'joinRequests/'+classId));
+    const updates={};
+    for(const key of ['classes','grades','tasks','assessments','schedules','attendance','joinRequests'])updates[key+'/'+classId]=null;
+    for(const uid of Object.keys(reqSnap.val()||{}))updates['userClasses/'+uid+'/'+classId]=null;
+    await update(ref(db),updates);
+    await loadData();render();toast('Сынып және оған қатысты деректер жойылды.');
+  }catch(e){console.error(e);toast('Сыныпты жою қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function saveGrade(){
+  try{
+    if(profile?.role!=='teacher')throw Error('Бағаны тек мұғалім енгізе алады.');
+    const cid=$('gClass').value,c=classes.find(x=>x.id===cid);
+    if(!c||c.teacherId!==me.uid)throw Error('Сыныпты таңдаңыз.');
+    const selected=$('gStudent').value,manual=$('gStudentUid').value.trim(),studentId=selected||manual;
+    if(!studentId)throw Error('Оқушыны тізімнен таңдаңыз немесе UID енгізіңіз.');
+    const roster=rosterByClass[cid]||[],student=roster.find(s=>s.uid===studentId);
+    const rawValue=$('gValue').value,rawMax=$('gMax').value;
+    if(rawValue==='')throw Error('Жиналған баллды енгізіңіз.');
+    const value=Number(rawValue),maxScore=Number(rawMax);
+    if(!Number.isFinite(value)||value<0)throw Error('Жиналған балл 0 немесе одан жоғары сан болуы керек.');
+    if(!Number.isFinite(maxScore)||maxScore<=0)throw Error('Ең жоғары балл 0-ден үлкен болуы керек.');
+    if(value>maxScore)throw Error('Жиналған балл ең жоғары баллдан аспауы керек.');
+    const subject=$('gSubject').value.trim()||c.subject||'';
+    await set(push(ref(db,'grades/'+cid)),{studentId,studentName:student?.name||studentId,type:$('gType').value,subject,value,maxScore,createdAt:Date.now(),createdBy:me.uid});
+    $('gValue').value='';$('gStudentUid').value='';
+    await loadData();render();toast('Баға сақталды.');
+  }catch(e){console.error(e);toast('Бағаны сақтау қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function saveTask(){
+  try{
+    if(profile?.role!=='teacher')throw Error('Тапсырманы тек мұғалім жариялай алады.');
+    const cid=$('tClass').value,c=classes.find(x=>x.id===cid),title=$('tTitle').value.trim();
+    if(!c||c.teacherId!==me.uid)throw Error('Сыныпты таңдаңыз.');
+    if(!title)throw Error('Тапсырма атауын енгізіңіз.');
+    const subject=$('tSubject').value.trim()||c.subject||'';
+    await set(push(ref(db,'tasks/'+cid)),{title,subject,due:$('tDue').value||'',description:$('tDescription').value.trim(),createdAt:Date.now(),createdBy:me.uid});
+    $('tTitle').value='';$('tDue').value='';$('tDescription').value='';
+    await loadData();render();toast('Тапсырма жарияланды.');
+  }catch(e){console.error(e);toast('Тапсырманы сақтау қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function saveAssessment(){
+  try{
+    if(profile?.role!=='teacher')throw Error('БЖБ/ТЖБ кестесін тек мұғалім өзгерте алады.');
+    const cid=$('aClass').value,c=classes.find(x=>x.id===cid),type=$('aType').value,date=$('aDate').value;
+    if(!c||c.teacherId!==me.uid)throw Error('Сыныпты таңдаңыз.');
+    if(!date)throw Error('Бағалау күнін таңдаңыз.');
+    const subject=$('aSubject').value.trim()||c.subject||'',title=$('aTitle').value.trim()||subject||type;
+    await set(push(ref(db,'assessments/'+cid)),{type,date,subject,title,createdAt:Date.now(),createdBy:me.uid});
+    $('aDate').value='';$('aTitle').value='';
+    await loadData();render();toast(type+' кестеге қосылды.');
+  }catch(e){console.error(e);toast('БЖБ/ТЖБ сақтау қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function saveSchedule(){
+  try{
+    if(profile?.role!=='teacher')throw Error('Сабақ кестесін тек мұғалім өзгерте алады.');
+    const cid=$('sClass').value,c=classes.find(x=>x.id===cid),day=$('sDay').value,time=$('sTime').value.trim();
+    if(!c||c.teacherId!==me.uid)throw Error('Сыныпты таңдаңыз.');
+    if(!time)throw Error('Сабақ уақытын енгізіңіз.');
+    const subject=$('sSubject').value.trim()||c.subject||'';
+    if(!subject)throw Error('Пән атауын енгізіңіз.');
+    await set(push(ref(db,'schedules/'+cid)),{day,time,subject,room:$('sRoom').value.trim(),createdAt:Date.now(),createdBy:me.uid});
+    $('sTime').value='';$('sSubject').value='';$('sRoom').value='';
+    await loadData();render();toast('Сабақ кестеге қосылды.');
+  }catch(e){console.error(e);toast('Кестені сақтау қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+
+async function deleteSchedule(classId,scheduleId){
+  try{
+    if(profile?.role!=='teacher')throw Error('Кестені тек мұғалім өзгерте алады.');
+    const c=classes.find(x=>x.id===classId);
+    if(!c||c.teacherId!==me.uid)throw Error('Бұл сыныпқа рұқсатыңыз жоқ.');
+    if(!confirm('Осы сабақты кестеден өшіресіз бе?'))return;
+    await remove(ref(db,'schedules/'+classId+'/'+scheduleId));
+    await loadData();render();toast('Сабақ кестеден өшірілді.');
+  }catch(e){console.error(e);toast('Сабақты өшіру қатесі ('+(e.code||'')+'): '+(e.message||String(e)));}
+}
+</script>
+</body>
+</html>
