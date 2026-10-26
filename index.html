@@ -88,7 +88,18 @@
 
     <script>
         let currentUser = null;
-        let supportTickets = []; // Қолдау қызметіне түскен хаттарды сақтау массиві
+
+        // LocalStorage арқылы деректерді сақтау және алу
+        let supportTickets = JSON.parse(localStorage.getItem('bilimland_tickets')) || [];
+        let currentAnnouncement = localStorage.getItem('bilimland_announcement') || '';
+
+        window.onload = function() {
+            if(currentAnnouncement) {
+                const banner = document.getElementById('announcement-banner');
+                document.getElementById('announcement-text').innerText = currentAnnouncement;
+                banner.classList.remove('hidden');
+            }
+        };
 
         function handleLogin(e) {
             e.preventDefault();
@@ -129,7 +140,7 @@
             if (currentUser.role === 'admin') {
                 let ticketsHtml = supportTickets.length === 0 
                     ? '<p class="text-sm text-slate-400">Әзірге қолдау қызметіне келген сұрақтар жоқ.</p>' 
-                    : supportTickets.map((t, index) => `
+                    : supportTickets.map((t) => `
                         <div class="p-3 bg-slate-800/50 rounded-xl mb-2 border border-slate-700">
                             <span class="text-xs text-cyan-400 font-bold">${t.sender}</span>
                             <p class="text-sm text-slate-200 mt-1">${t.message}</p>
@@ -157,9 +168,8 @@
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">Тоқсандық бағаны қорыту</h4>
                             <p class="text-sm text-slate-400 mb-3">БЖБ және ТЖБ негізінде тоқсандық бағаларды автоматты түрде есептеу.</p>
-                            <button onclick="alert('Тоқсандық бағалар сәтті қорытылды!')" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-xl text-sm">Бағаларды қорыту</button>
+                            <button onclick="alert('Тоқсандық бағалар сәтті қорытылды және журналға жазылды!')" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-xl text-sm">Бағаларды қорыту</button>
                         </div>
-                        <!-- Қолдау қызметіне жүгіну -->
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">🛟 Қолдау қызметіне хабарласу</h4>
                             <textarea id="support-msg" placeholder="Техникалық мәселе немесе сұрақ жазыңыз..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2 h-20"></textarea>
@@ -175,11 +185,10 @@
                             <h4 class="font-semibold mb-2">Менің бағаларым</h4>
                             <p class="text-sm text-slate-400">Мұнда тек сіздің жеке бағаларыңыз көрсетіледі (Құпиялылық сақталған).</p>
                             <div class="mt-3 flex gap-2">
-                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs">Математика: 5</span>
+                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs">Математика: 5 (ТЖБ: 28/30)</span>
                                 <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs">Физика: 5</span>
                             </div>
                         </div>
-                        <!-- Қолдау қызметіне жүгіну -->
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">🛟 Қолдау қызметіне жүгіну</h4>
                             <textarea id="support-msg" placeholder="Әкімшіге сұрақ немесе шағым жазыңыз..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2 h-20"></textarea>
@@ -193,6 +202,9 @@
         function postAnnouncement() {
             const text = document.getElementById('new-announcement').value;
             if(!text) return;
+            currentAnnouncement = text;
+            localStorage.setItem('bilimland_announcement', text);
+            
             const banner = document.getElementById('announcement-banner');
             document.getElementById('announcement-text').innerText = text;
             banner.classList.remove('hidden');
@@ -208,8 +220,9 @@
                 message: msg
             });
             
+            localStorage.setItem('bilimland_tickets', JSON.stringify(supportTickets));
             document.getElementById('support-msg').value = '';
-            alert('Хабарламаңыз қолдау қызметіне (Әкімшіге) сәтті жіберілді!');
+            alert('Хабарламаңыз қолдау қызметіне сәтті жіберілді!');
         }
     </script>
 </body>
