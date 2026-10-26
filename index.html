@@ -6,83 +6,109 @@
     <title>BilimLand — Білім берудің бірыңғай жүйесі</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.05); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
-            100% { transform: translate(0px, 0px) scale(1); }
+        @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-15px) scale(1.03); }
+            100% { transform: translateY(0px) scale(1); }
         }
-        .animate-blob {
-            animation: blob 10s infinite;
+        .floating-blob {
+            animation: float 8s ease-in-out infinite;
         }
-        .glass {
-            background: rgba(15, 23, 42, 0.65);
+        .glass-light {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+        }
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen font-sans relative overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950">
+<body class="bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/50 text-slate-800 min-h-screen font-sans relative flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
     <!-- Background Decorative Elements -->
-    <div class="absolute top-0 -left-4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-    <div class="absolute top-0 -right-4 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" style="animation-delay: 3s;"></div>
-    <div class="absolute -bottom-8 left-20 w-96 h-96 bg-teal-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" style="animation-delay: 6s;"></div>
+    <div class="absolute top-0 -left-10 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 floating-blob pointer-events-none"></div>
+    <div class="absolute top-20 -right-10 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 floating-blob pointer-events-none" style="animation-delay: 3s;"></div>
+    <div class="absolute -bottom-10 left-1/3 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 floating-blob pointer-events-none" style="animation-delay: 6s;"></div>
 
-    <div class="relative z-10 max-w-7xl mx-auto p-4 md:p-8">
+    <div class="relative z-10 max-w-7xl mx-auto p-4 md:p-8 w-full flex-1 flex flex-col justify-between">
         
         <!-- Header -->
-        <header class="flex justify-between items-center py-4 mb-10 glass rounded-2xl px-6 shadow-2xl border-b border-white/5">
+        <header class="flex justify-between items-center py-4 px-6 glass-light rounded-2xl shadow-sm transition-all duration-300">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-700 flex items-center justify-center font-bold text-lg shadow-inner text-white tracking-wider">BL</div>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-md shadow-blue-500/20">BL</div>
                 <div>
-                    <h1 class="text-base font-bold tracking-wide text-slate-100">BilimLand <span class="text-xs px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-full border border-cyan-500/20 ml-1">Enterprise</span></h1>
-                    <p class="text-xs text-slate-400">Электронды білім беру платформасы</p>
+                    <h1 class="text-base font-extrabold tracking-tight text-slate-900">BilimLand <span class="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-semibold ml-1">Enterprise</span></h1>
+                    <p class="text-[11px] text-slate-500">Электронды білім беру платформасы</p>
                 </div>
             </div>
             <div id="user-info" class="hidden flex items-center space-x-4">
-                <span id="welcome-text" class="text-sm font-medium text-slate-300"></span>
-                <button onclick="logout()" class="px-4 py-2 bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 rounded-xl text-xs font-medium transition-all">Жүйеден шығу</button>
+                <span id="welcome-text" class="text-sm font-semibold text-slate-700"></span>
+                <button onclick="logout()" class="px-4 py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-semibold transition-all shadow-sm">Жүйеден шығу</button>
             </div>
         </header>
 
-        <!-- Login Section (Clean & Secure) -->
-        <div id="login-section" class="max-w-md mx-auto mt-20 glass p-8 rounded-3xl shadow-2xl border border-slate-800/80">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Қауіпсіз кіру</h2>
-                <p class="text-slate-400 text-xs mt-1">Әкімші тарапынан берілген жеке деректеріңізді енгізіңіз</p>
+        <!-- Login Section (Clean White Liquid Glass) -->
+        <main class="flex-1 flex items-center justify-center my-12">
+            <div id="login-section" class="w-full max-w-md glass-card p-8 md:p-10 rounded-3xl transition-all duration-500">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight">Жүйеге кіру</h2>
+                    <p class="text-slate-500 text-xs mt-1">Әкімші берген жеке реквизиттеріңізді енгізіңіз</p>
+                </div>
+                
+                <form onsubmit="handleLogin(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Логин</label>
+                        <input type="text" id="login-username" required class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 transition-all placeholder:text-slate-400 shadow-sm" placeholder="Логиніңіз">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Пароль</label>
+                        <input type="password" id="login-password" required class="w-full bg-white/80 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 transition-all placeholder:text-slate-400 shadow-sm" placeholder="••••••••">
+                    </div>
+                    <div id="login-error" class="hidden text-rose-600 text-xs text-center font-semibold bg-rose-50 border border-rose-100 py-2.5 rounded-xl shadow-sm"></div>
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-600/25 transition-all transform active:scale-[0.99]">Кіру</button>
+                </form>
             </div>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Логин</label>
-                    <input type="text" id="login-username" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm text-slate-100 transition-all placeholder:text-slate-600" placeholder="Логиніңіз">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Пароль</label>
-                    <input type="password" id="login-password" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm text-slate-100 transition-all placeholder:text-slate-600" placeholder="••••••••">
-                </div>
-                <div id="login-error" class="hidden text-rose-400 text-xs text-center font-medium bg-rose-500/10 border border-rose-500/20 py-2 rounded-lg"></div>
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-semibold text-sm shadow-lg shadow-cyan-900/20 transition-all">Жүйеге кіру</button>
-            </form>
-        </div>
 
-        <!-- Dashboard Section -->
-        <div id="dashboard-section" class="hidden space-y-6">
-            <div id="announcement-banner" class="hidden glass p-4 rounded-2xl border-cyan-500/20 bg-cyan-950/20 flex justify-between items-center">
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400">Хабарландыру</h4>
-                    <p id="announcement-text" class="text-sm text-slate-200 mt-0.5"></p>
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="hidden w-full space-y-6">
+                <div id="announcement-banner" class="hidden glass-light p-4 rounded-2xl border-blue-200 bg-blue-50/80 flex justify-between items-center shadow-sm">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-blue-600">Хабарландыру</h4>
+                        <p id="announcement-text" class="text-sm text-slate-700 mt-0.5 font-medium"></p>
+                    </div>
                 </div>
+                <div id="role-panel" class="glass-card p-6 md:p-8 rounded-3xl transition-all duration-500"></div>
             </div>
-            <div id="role-panel" class="glass p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-800/80"></div>
-        </div>
+        </main>
+
+        <!-- Professional Footer (Құқықтар, қауіпсіздік, бақылау) -->
+        <footer class="glass-light rounded-2xl p-6 mt-8 shadow-sm text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4 border border-white/60">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-800">BilimLand Enterprise © 2026.</span>
+                <span>Барлық құқықтар қорғалған.</span>
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 font-medium text-slate-600">
+                <span class="hover:text-blue-600 transition-colors cursor-pointer">Қолдану шарттары</span>
+                <span>•</span>
+                <span class="hover:text-blue-600 transition-colors cursor-pointer">Қауіпсіздік шарттары</span>
+                <span>•</span>
+                <span class="text-blue-600 font-bold bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">🔒 Қатаң бақылау жүйесі</span>
+            </div>
+        </footer>
 
     </div>
 
     <script>
-        // Бастапқы тек қауіпсіз бас әкімші (басқа логиндер мүлде жазылмаған)
         const initialAdmin = [
             { username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші' }
         ];
@@ -90,7 +116,6 @@
         let users = JSON.parse(localStorage.getItem('bilimland_users')) || initialAdmin;
         let classes = JSON.parse(localStorage.getItem('bilimland_classes')) || [];
         let grades = JSON.parse(localStorage.getItem('bilimland_grades')) || {}; 
-        let attendance = JSON.parse(localStorage.getItem('bilimland_attendance')) || {}; 
         let supportTickets = JSON.parse(localStorage.getItem('bilimland_tickets')) || [];
         let currentAnnouncement = localStorage.getItem('bilimland_announcement') || '';
         let currentUser = null;
@@ -144,75 +169,73 @@
             
             if (currentUser.role === 'admin') {
                 let usersList = users.map(u => `
-                    <div class="flex justify-between items-center py-2.5 px-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm">
+                    <div class="flex justify-between items-center py-2.5 px-3.5 bg-white/60 rounded-xl mb-2 border border-slate-200 text-sm shadow-sm">
                         <div>
-                            <span class="font-semibold text-slate-200">${u.name}</span> 
-                            <span class="text-xs text-slate-400 font-mono ml-1">(@${u.username})</span>
-                            <span class="ml-2 px-2 py-0.5 text-xs rounded-md bg-slate-800 text-cyan-400 border border-slate-700">${u.role}</span>
+                            <span class="font-bold text-slate-800">${u.name}</span> 
+                            <span class="text-xs text-slate-500 font-mono ml-1">(@${u.username})</span>
+                            <span class="ml-2 px-2 py-0.5 text-xs rounded-md bg-blue-50 text-blue-600 border border-blue-100 font-semibold">${u.role}</span>
                         </div>
-                        ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-xs transition-all">Жою</button>` : ''}
+                        ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-all">Жою</button>` : ''}
                     </div>
                 `).join('');
 
                 let classesList = classes.map(c => `
-                    <div class="p-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm flex justify-between items-center">
+                    <div class="p-3.5 bg-white/60 rounded-xl mb-2 border border-slate-200 text-sm flex justify-between items-center shadow-sm">
                         <div>
-                            <span class="font-semibold text-slate-200">${c.className}</span>
-                            <span class="text-xs text-slate-400 ml-2">Мұғалім: ${c.teacher}</span>
+                            <span class="font-bold text-slate-800">${c.className}</span>
+                            <span class="text-xs text-slate-500 ml-2">Мұғалім: ${c.teacher}</span>
                         </div>
-                        <span class="text-xs text-cyan-400 font-mono bg-cyan-950/40 px-2.5 py-1 rounded-lg border border-cyan-800/30">Кілт: ${c.dcaKey}</span>
+                        <span class="text-xs text-blue-600 font-mono bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 font-bold">Кілт: ${c.dcaKey}</span>
                     </div>
                 `).join('');
 
                 let ticketsList = supportTickets.map(t => `
-                    <div class="p-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm">
-                        <span class="text-xs font-bold text-cyan-400">${t.sender}</span>
-                        <p class="text-slate-300 mt-1">${t.message}</p>
+                    <div class="p-3.5 bg-white/60 rounded-xl mb-2 border border-slate-200 text-sm shadow-sm">
+                        <span class="text-xs font-bold text-blue-600">${t.sender}</span>
+                        <p class="text-slate-700 mt-1">${t.message}</p>
                     </div>
                 `).join('');
 
                 panel.innerHTML = `
-                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <h3 class="text-lg font-black mb-6 text-slate-900 border-b border-slate-200 pb-3 flex items-center justify-between">
                         <span>Әкімші басқару панелі</span>
-                        <span class="text-xs text-slate-400 font-normal">Жүйелік статус: <span class="text-emerald-400">Қорғалған</span></span>
+                        <span class="text-xs text-slate-500 font-normal">Статус: <span class="text-emerald-600 font-bold">Қатаң бақылауда 🛡️</span></span>
                     </h3>
                     <div class="space-y-6">
-                        <!-- Жаңа аккаунт беру -->
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Пайдаланушыға жаңа логин мен пароль ашу</h4>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Пайдаланушыға жаңа логин мен пароль беру</h4>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                                <input type="text" id="new-name" placeholder="Аты-жөні" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
-                                <input type="text" id="new-user" placeholder="Жеке логин" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
-                                <input type="text" id="new-pass" placeholder="Пароль" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
-                                <select id="new-role" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <input type="text" id="new-name" placeholder="Аты-жөні" class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                                <input type="text" id="new-user" placeholder="Логин" class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                                <input type="text" id="new-pass" placeholder="Пароль" class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                                <select id="new-role" class="bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm font-medium">
                                     <option value="student">Оқушы</option>
                                     <option value="teacher">Мұғалім</option>
                                 </select>
                             </div>
-                            <button onclick="addNewUser()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Тіркеу және логин беру</button>
+                            <button onclick="addNewUser()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all">Тіркеу және логин беру</button>
                         </div>
 
-                        <!-- Хабарландыру -->
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Мектеп бойынша хабарландыру тарату</h4>
-                            <input type="text" id="new-announcement" placeholder="Барлық оқушылар мен мұғалімдерге..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 mb-3 focus:outline-none focus:border-cyan-500">
-                            <button onclick="postAnnouncement()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-all border border-slate-700">Жариялау</button>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Мектеп бойынша хабарландыру тарату</h4>
+                            <input type="text" id="new-announcement" placeholder="Барлық оқушылар мен мұғалімдерге..." class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 mb-3 focus:outline-none focus:border-blue-600 shadow-sm">
+                            <button onclick="postAnnouncement()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm">Жариялау</button>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                                <h4 class="text-sm font-semibold mb-3 text-slate-200">Тіркелген аккаунттар (${users.length})</h4>
+                            <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                                <h4 class="text-sm font-bold mb-3 text-slate-800">Тіркелген аккаунттар (${users.length})</h4>
                                 <div class="max-h-56 overflow-y-auto pr-1">${usersList}</div>
                             </div>
-                            <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                                <h4 class="text-sm font-semibold mb-3 text-slate-200">Сыныптар мен DCA кілттер</h4>
-                                <div class="max-h-56 overflow-y-auto pr-1">${classesList.length ? classesList : '<p class="text-xs text-slate-500">Әзірге сыныптар жоқ</p>'}</div>
+                            <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                                <h4 class="text-sm font-bold mb-3 text-slate-800">Сыныптар мен DCA кілттер</h4>
+                                <div class="max-h-56 overflow-y-auto pr-1">${classesList.length ? classesList : '<p class="text-xs text-slate-400">Әзірге сыныптар жоқ</p>'}</div>
                             </div>
                         </div>
 
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметі (Support) хаттары</h4>
-                            <div class="max-h-40 overflow-y-auto">${ticketsList.length ? ticketsList : '<p class="text-xs text-slate-500">Хаттар түскен жоқ</p>'}</div>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Қолдау қызметі (Support) хаттары</h4>
+                            <div class="max-h-40 overflow-y-auto">${ticketsList.length ? ticketsList : '<p class="text-xs text-slate-400">Хаттар түскен жоқ</p>'}</div>
                         </div>
                     </div>
                 `;
@@ -228,123 +251,123 @@
                         let studentObj = users.find(u => u.username === sUser);
                         let sName = studentObj ? studentObj.name : sUser;
                         let sGrades = grades[sUser] || { bjb: '', tjb: '', term: '-', daily: [] };
-                        let dailyList = sGrades.daily?.map(d => `<span class="px-2 py-0.5 bg-slate-950 rounded text-xs text-cyan-400 font-mono border border-slate-800">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Жоқ';
+                        let dailyList = sGrades.daily?.map(d => `<span class="px-2 py-0.5 bg-white rounded-md text-xs text-blue-600 font-mono border border-slate-200 shadow-xs">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Жоқ';
 
                         return `
-                            <div class="p-4 bg-slate-900/40 rounded-2xl mb-3 border border-slate-800/80">
+                            <div class="p-4 bg-white/80 rounded-2xl mb-3 border border-slate-200 shadow-sm">
                                 <div class="flex justify-between items-center mb-3">
-                                    <span class="font-semibold text-slate-200 text-sm">${sName} <span class="text-xs text-slate-500 font-mono">(@${sUser})</span></span>
+                                    <span class="font-bold text-slate-800 text-sm">${sName} <span class="text-xs text-slate-400 font-mono">(@${sUser})</span></span>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-xs">
                                     <div>
-                                        <label class="text-slate-400 block mb-1">Күнделікті баға (1-5):</label>
+                                        <label class="text-slate-500 font-semibold block mb-1">Күнделікті баға (1-5):</label>
                                         <div class="flex gap-1.5">
-                                            <input type="date" id="daily_date_${sUser}" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 text-xs w-32">
-                                            <input type="number" min="1" max="5" id="daily_mark_${sUser}" placeholder="Баға" class="w-14 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 text-center text-xs">
-                                            <button onclick="saveDailyGrade('${sUser}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-lg text-white transition-all">Қою</button>
+                                            <input type="date" id="daily_date_${sUser}" class="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-slate-800 text-xs w-32 shadow-xs">
+                                            <input type="number" min="1" max="5" id="daily_mark_${sUser}" placeholder="Баға" class="w-14 bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-slate-800 text-center text-xs shadow-xs">
+                                            <button onclick="saveDailyGrade('${sUser}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-lg text-white transition-all shadow-xs">Қою</button>
                                         </div>
                                     </div>
                                     <div class="col-span-2 flex items-center flex-wrap gap-1.5">
-                                        <span class="text-slate-400 text-xs">Журналдағы бағалар:</span> ${dailyList}
+                                        <span class="text-slate-500 text-xs font-semibold">Бағалар:</span> ${dailyList}
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs border-t border-slate-800/80 pt-3">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs border-t border-slate-200 pt-3">
                                     <div>
-                                        <label class="text-slate-400 block mb-1">БЖБ (барлығы/жинаған):</label>
-                                        <input type="text" id="bjb_${sUser}" value="${sGrades.bjb || ''}" placeholder="15/12" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs">
+                                        <label class="text-slate-500 font-semibold block mb-1">БЖБ (бар./жинаған):</label>
+                                        <input type="text" id="bjb_${sUser}" value="${sGrades.bjb || ''}" placeholder="15/12" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs shadow-xs">
                                     </div>
                                     <div>
-                                        <label class="text-slate-400 block mb-1">ТЖБ (барлығы/жинаған):</label>
-                                        <input type="text" id="tjb_${sUser}" value="${sGrades.tjb || ''}" placeholder="30/25" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs">
+                                        <label class="text-slate-500 font-semibold block mb-1">ТЖБ (бар./жинаған):</label>
+                                        <input type="text" id="tjb_${sUser}" value="${sGrades.tjb || ''}" placeholder="30/25" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 text-xs shadow-xs">
                                     </div>
                                     <div class="flex items-end">
-                                        <button onclick="saveStudentGrades('${sUser}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-500 font-semibold rounded-lg text-white transition-all">Баллдарды сақтау</button>
+                                        <button onclick="saveStudentGrades('${sUser}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-white transition-all shadow-xs">Балл сақтау</button>
                                     </div>
                                 </div>
-                                <div class="mt-3 text-xs text-slate-300 flex justify-between items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-                                    <span>Сақталған БЖБ: <b>${sGrades.bjb || 'Жоқ'}</b> | ТЖБ: <b>${sGrades.tjb || 'Жоқ'}</b></span>
-                                    <button onclick="computeTermGrade('${sUser}')" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition-all">Тоқсандық есептеу</button>
+                                <div class="mt-3 text-xs text-slate-700 flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                                    <span>БЖБ: <b>${sGrades.bjb || 'Жоқ'}</b> | ТЖБ: <b>${sGrades.tjb || 'Жоқ'}</b></span>
+                                    <button onclick="computeTermGrade('${sUser}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all shadow-xs">Тоқсандық есептеу</button>
                                 </div>
-                                <div class="mt-2 text-xs text-cyan-400 font-semibold">Қорытынды тоқсандық баға: ${sGrades.term || 'Қорытылмаған'}</div>
+                                <div class="mt-2 text-xs text-blue-600 font-bold">Қорытынды баға: ${sGrades.term || 'Қорытылмаған'}</div>
                             </div>
                         `;
                     }).join('');
                 }
 
                 panel.innerHTML = `
-                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3">Мұғалім кабинеті</h3>
+                    <h3 class="text-lg font-black mb-6 text-slate-900 border-b border-slate-200 pb-3">Мұғалім кабинеті</h3>
                     <div class="space-y-6">
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Жаңа сынып ашу</h4>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Жаңа сынып ашу</h4>
                             <div class="flex gap-3">
-                                <input type="text" id="new-class-name" placeholder="Сынып атауы (мысалы: 10 'А')" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
-                                <button onclick="createClass()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs transition-all">Сынып құру</button>
+                                <input type="text" id="new-class-name" placeholder="Сынып атауы (мысалы: 10 'А')" class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm">
+                                <button onclick="createClass()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm">Сынып құру</button>
                             </div>
                         </div>
 
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
                             <div class="flex justify-between items-center mb-4">
-                                <h4 class="text-sm font-semibold text-slate-200">Электронды журнал мен бағалар</h4>
-                                <select id="teacher-class-select" onchange="renderDashboard()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <h4 class="text-sm font-bold text-slate-800">Электронды журнал</h4>
+                                <select id="teacher-class-select" onchange="renderDashboard()" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 shadow-sm font-semibold">
                                     ${classOptions || '<option>Сыныптар жоқ</option>'}
                                 </select>
                             </div>
                             <div class="max-h-[500px] overflow-y-auto pr-1">
-                                ${studentsListHtml || '<p class="text-xs text-slate-500">Бұл сыныпта әзірге оқушылар жоқ немесе сынып таңдалмады.</p>'}
+                                ${studentsListHtml || '<p class="text-xs text-slate-400">Бұл сыныпта әзірге оқушылар жоқ немесе сынып таңдалмады.</p>'}
                             </div>
                         </div>
 
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметіне (Support) хабарласу</h4>
-                            <textarea id="support-msg" placeholder="Техникалық мәселе немесе ұсыныс..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 mb-3 h-20 focus:outline-none focus:border-cyan-500"></textarea>
-                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Хабарлама жіберу</button>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Қолдау қызметіне (Support) хабарласу</h4>
+                            <textarea id="support-msg" placeholder="Техникалық мәселе..." class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-800 mb-3 h-20 focus:outline-none focus:border-blue-600 shadow-sm"></textarea>
+                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm">Хабарлама жіберу</button>
                         </div>
                     </div>
                 `;
             } else {
                 let myClass = classes.find(c => c.students.includes(currentUser.username));
                 let sGrades = grades[currentUser.username] || { bjb: 'Жоқ', tjb: 'Жоқ', term: 'Қорытылмаған', daily: [] };
-                let studentDailyList = sGrades.daily?.map(d => `<span class="px-2.5 py-1 bg-slate-900 rounded-lg text-xs text-cyan-400 font-mono border border-slate-800">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Әзірге бағалар жоқ';
+                let studentDailyList = sGrades.daily?.map(d => `<span class="px-2.5 py-1 bg-white rounded-lg text-xs text-blue-600 font-mono border border-slate-200 shadow-xs">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Әзірге бағалар жоқ';
 
                 panel.innerHTML = `
-                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3">Оқушы кабинеті</h3>
+                    <h3 class="text-lg font-black mb-6 text-slate-900 border-b border-slate-200 pb-3">Оқушы кабинеті</h3>
                     <div class="space-y-6">
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-2 text-slate-200">Сыныпқа қосылу (DCA кілті)</h4>
-                            <p class="text-xs text-slate-400 mb-3">Мұғалім берген арнайы кілтті енгізіңіз:</p>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-2 text-slate-800">Сыныпқа қосылу (DCA кілті)</h4>
+                            <p class="text-xs text-slate-500 mb-3">Мұғалім берген арнайы кілтті енгізіңіз:</p>
                             <div class="flex gap-3">
-                                <input type="text" id="dca-input" placeholder="DCA-XXXXX" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 uppercase focus:outline-none focus:border-cyan-500">
-                                <button onclick="joinClassByDCA()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs transition-all">Қосылу</button>
+                                <input type="text" id="dca-input" placeholder="DCA-XXXXX" class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-800 uppercase focus:outline-none focus:border-blue-600 shadow-sm">
+                                <button onclick="joinClassByDCA()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm">Қосылу</button>
                             </div>
-                            <p class="text-xs text-cyan-400 mt-2.5">Қазіргі сыныбыңыз: <b class="text-slate-200">${myClass ? myClass.className : 'Тіркелмегенсіз'}</b></p>
+                            <p class="text-xs text-blue-600 mt-2.5 font-semibold">Қазіргі сыныбыңыз: <b class="text-slate-800">${myClass ? myClass.className : 'Тіркелмегенсіз'}</b></p>
                         </div>
 
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-4 text-slate-200">Менің оқу үлгерімім</h4>
-                            <div class="space-y-3 text-sm text-slate-300">
-                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                                    <span class="text-xs text-slate-400 block mb-1.5">Күнделікті бағалар:</span>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-4 text-slate-800">Менің оқу үлгерімім</h4>
+                            <div class="space-y-3 text-sm text-slate-700">
+                                <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
+                                    <span class="text-xs text-slate-500 font-semibold block mb-1.5">Күнделікті бағалар:</span>
                                     <div class="flex flex-wrap gap-1.5">${studentDailyList}</div>
                                 </div>
-                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center">
-                                    <span class="text-slate-400 text-xs">БЖБ нәтижесі:</span>
-                                    <span class="font-mono text-cyan-400 text-xs font-bold">${sGrades.bjb || 'Жоқ'}</span>
+                                <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+                                    <span class="text-slate-500 text-xs font-semibold">БЖБ нәтижесі:</span>
+                                    <span class="font-mono text-blue-600 text-xs font-bold">${sGrades.bjb || 'Жоқ'}</span>
                                 </div>
-                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center">
-                                    <span class="text-slate-400 text-xs">ТЖБ нәтижесі:</span>
-                                    <span class="font-mono text-cyan-400 text-xs font-bold">${sGrades.tjb || 'Жоқ'}</span>
+                                <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs flex justify-between items-center">
+                                    <span class="text-slate-500 text-xs font-semibold">ТЖБ нәтижесі:</span>
+                                    <span class="font-mono text-blue-600 text-xs font-bold">${sGrades.tjb || 'Жоқ'}</span>
                                 </div>
-                                <div class="p-3 bg-cyan-950/30 border border-cyan-800/30 rounded-xl flex justify-between items-center font-bold">
-                                    <span class="text-cyan-300 text-xs">Тоқсандық қорытынды баға:</span>
-                                    <span class="text-cyan-400 text-sm">${sGrades.term || 'Қорытылмаған'}</span>
+                                <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl flex justify-between items-center font-bold shadow-xs">
+                                    <span class="text-blue-700 text-xs">Тоқсандық қорытынды баға:</span>
+                                    <span class="text-blue-600 text-sm">${sGrades.term || 'Қорытылмаған'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
-                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметіне хабарласу</h4>
-                            <textarea id="support-msg" placeholder="Әкімшіге сұрақ..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 mb-3 h-20 focus:outline-none focus:border-cyan-500"></textarea>
-                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Хат жіберу</button>
+                        <div class="p-5 bg-white/80 rounded-2xl border border-slate-200 shadow-sm">
+                            <h4 class="text-sm font-bold mb-3 text-slate-800">Қолдау қызметіне хабарласу</h4>
+                            <textarea id="support-msg" placeholder="Әкімшіге сұрақ..." class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-800 mb-3 h-20 focus:outline-none focus:border-blue-600 shadow-sm"></textarea>
+                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm">Хат жіберу</button>
                         </div>
                     </div>
                 `;
