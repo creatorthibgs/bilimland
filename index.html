@@ -47,23 +47,26 @@
         <!-- Login Section -->
         <div id="login-section" class="max-w-md mx-auto mt-16 glass p-8 rounded-3xl shadow-2xl">
             <h2 class="text-2xl font-bold mb-2 text-center">Жүйеге кіру</h2>
-            <p class="text-slate-400 text-sm text-center mb-6">Логин мен пароліңізді енгізіңіз</p>
+            <p class="text-slate-400 text-sm text-center mb-6">Жеке логин мен пароліңізді енгізіңіз</p>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Email / Логин</label>
-                    <input type="text" id="login-email" required class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm" placeholder="student@school.kz">
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Логин</label>
+                    <input type="text" id="login-username" required class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm" placeholder="Логиніңізді енгізіңіз">
                 </div>
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Пароль</label>
                     <input type="password" id="login-password" required class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm" placeholder="••••••••">
                 </div>
+                <div id="login-error" class="hidden text-rose-400 text-xs text-center font-medium"></div>
                 <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-all">Кіру</button>
             </form>
 
-            <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800 pt-4">
-                Тест аккаунттар: 
-                <span class="block mt-1 text-cyan-400">admin@school.kz / teacher@school.kz / student@school.kz</span>
+            <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800 pt-4 space-y-1">
+                <p class="font-bold text-slate-300 mb-1">Әдепкі аккаунттар:</p>
+                <p>👑 Әкімші: <span class="text-cyan-400 font-mono">admin</span> / <span class="text-cyan-400 font-mono">admin123</span></p>
+                <p>📚 Мұғалім: <span class="text-indigo-400 font-mono">teacher1</span> / <span class="text-indigo-400 font-mono">teach123</span></p>
+                <p>🎓 Оқушы: <span class="text-emerald-400 font-mono">student1</span> / <span class="text-emerald-400 font-mono">stud123</span></p>
             </div>
         </div>
 
@@ -87,11 +90,20 @@
     </div>
 
     <script>
-        let currentUser = null;
+        const defaultUsers = [
+            { username: 'admin', password: 'admin123', role: 'admin', name: 'Бас әкімші' },
+            { username: 'teacher1', password: 'teach123', role: 'teacher', name: 'Ахметова А.Б.' },
+            { username: 'student1', password: 'stud123', role: 'student', name: 'Арман Сериков' }
+        ];
 
-        // LocalStorage арқылы деректерді сақтау және алу
+        let users = JSON.parse(localStorage.getItem('bilimland_users')) || defaultUsers;
         let supportTickets = JSON.parse(localStorage.getItem('bilimland_tickets')) || [];
         let currentAnnouncement = localStorage.getItem('bilimland_announcement') || '';
+        let currentUser = null;
+
+        if(!localStorage.getItem('bilimland_users')) {
+            localStorage.setItem('bilimland_users', JSON.stringify(defaultUsers));
+        }
 
         window.onload = function() {
             if(currentAnnouncement) {
@@ -103,26 +115,26 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            
-            let role = 'student';
-            let name = 'Оқушы';
-            if (email.includes('admin')) {
-                role = 'admin';
-                name = 'Әкімші';
-            } else if (email.includes('teacher')) {
-                role = 'teacher';
-                name = 'Мұғалім';
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value.trim();
+            const errorDiv = document.getElementById('login-error');
+
+            const foundUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
+
+            if (foundUser) {
+                currentUser = foundUser;
+                errorDiv.classList.add('hidden');
+                
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('welcome-text').innerText = `${currentUser.name} (${currentUser.username})`;
+
+                renderDashboard();
+            } else {
+                errorDiv.innerText = 'Логин немесе пароль қате!';
+                errorDiv.classList.remove('hidden');
             }
-
-            currentUser = { email, role, name };
-            
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('user-info').classList.remove('hidden');
-            document.getElementById('welcome-text').innerText = `${name} (${email})`;
-
-            renderDashboard();
         }
 
         function logout() {
@@ -130,8 +142,9 @@
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
-            document.getElementById('login-email').value = '';
+            document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
+            document.getElementById('login-error').classList.add('hidden');
         }
 
         function renderDashboard() {
@@ -147,14 +160,52 @@
                         </div>
                     `).join('');
 
+                let usersListHtml = users.map(u => `
+                    <div class="flex justify-between items-center py-2 border-b border-slate-800 text-sm">
+                        <div>
+                            <span class="font-bold text-slate-200">${u.name}</span> 
+                            <span class="text-xs text-slate-400">(@${u.username})</span>
+                            <span class="ml-2 px-2 py-0.5 text-xs rounded-lg ${u.role === 'admin' ? 'bg-cyan-500/20 text-cyan-300' : u.role === 'teacher' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-emerald-500/20 text-emerald-300'}">${u.role}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editUser('${u.username}')" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded text-xs transition-all">Өзгерту</button>
+                            ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-xs transition-all">Жою</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
                 panel.innerHTML = `
                     <h3 class="text-xl font-bold mb-4 text-cyan-400">👑 Әкімші панелі</h3>
-                    <div class="space-y-4">
+                    <div class="space-y-6">
+                        <!-- Хабарландыру -->
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">Хабарландыру жариялау</h4>
+                            <h4 class="font-semibold mb-2">📢 Хабарландыру жариялау</h4>
                             <input type="text" id="new-announcement" placeholder="Барлық оқушылар мен мұғалімдерге хабар..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2">
                             <button onclick="postAnnouncement()" class="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm">Жіберу</button>
                         </div>
+
+                        <!-- Жаңа аккаунт қосу -->
+                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+                            <h4 class="font-semibold mb-3">➕ Жаңа Мұғалім немесе Оқушы қосу</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <input type="text" id="new-name" placeholder="Толық аты-жөні" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                                <input type="text" id="new-user" placeholder="Логин" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                                <input type="password" id="new-pass" placeholder="Пароль" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                                <select id="new-role" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                                    <option value="student">Оқушы</option>
+                                    <option value="teacher">Мұғалім</option>
+                                </select>
+                            </div>
+                            <button onclick="addNewUser()" class="px-4 py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl text-sm">Қосу</button>
+                        </div>
+
+                        <!-- Пайдаланушылар тізімі -->
+                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+                            <h4 class="font-semibold mb-2">👥 Тіркелген аккаунттар тізімі</h4>
+                            <div class="max-h-48 overflow-y-auto">${usersListHtml}</div>
+                        </div>
+
+                        <!-- Қолдау қызметі -->
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">🛠️ Қолдау қызметі (Түскен сұрақтар)</h4>
                             <div class="max-h-40 overflow-y-auto">${ticketsHtml}</div>
@@ -168,7 +219,7 @@
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">Тоқсандық бағаны қорыту</h4>
                             <p class="text-sm text-slate-400 mb-3">БЖБ және ТЖБ негізінде тоқсандық бағаларды автоматты түрде есептеу.</p>
-                            <button onclick="alert('Тоқсандық бағалар сәтті қорытылды және журналға жазылды!')" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-xl text-sm">Бағаларды қорыту</button>
+                            <button onclick="alert('Тоқсандық бағалар сәтті қорытылды!')" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-xl text-sm">Бағаларды қорыту</button>
                         </div>
                         <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
                             <h4 class="font-semibold mb-2">🛟 Қолдау қызметіне хабарласу</h4>
@@ -216,13 +267,62 @@
             if(!msg) return alert('Хабарлама бос болмауы тиіс!');
             
             supportTickets.push({
-                sender: `${currentUser.name} (${currentUser.email})`,
+                sender: `${currentUser.name} (@${currentUser.username})`,
                 message: msg
             });
             
             localStorage.setItem('bilimland_tickets', JSON.stringify(supportTickets));
             document.getElementById('support-msg').value = '';
             alert('Хабарламаңыз қолдау қызметіне сәтті жіберілді!');
+        }
+
+        function addNewUser() {
+            const name = document.getElementById('new-name').value.trim();
+            const username = document.getElementById('new-user').value.trim();
+            const password = document.getElementById('new-pass').value.trim();
+            const role = document.getElementById('new-role').value;
+
+            if(!name || !username || !password) return alert('Барлық ұяшықты толтырыңыз!');
+
+            if(users.some(u => u.username === username)) {
+                return alert('Бұл логин бос емес! Басқа логин таңдаңыз.');
+            }
+
+            users.push({ name, username, password, role });
+            localStorage.setItem('bilimland_users', JSON.stringify(users));
+
+            alert(`Жаңа аккаунт қосылды!\nЛогин: ${username}\nПароль: ${password}`);
+            renderDashboard();
+        }
+
+        function deleteUser(username) {
+            if(confirm(`"${username}" аккаунтын тізімнен өшіргіңіз келе ме?`)) {
+                users = users.filter(u => u.username !== username);
+                localStorage.setItem('bilimland_users', JSON.stringify(users));
+                renderDashboard();
+            }
+        }
+
+        function editUser(username) {
+            const user = users.find(u => u.username === username);
+            if(!user) return;
+
+            const newName = prompt("Жаңа аты-жөнін енгізіңіз:", user.name);
+            if(newName === null) return;
+
+            const newPass = prompt("Жаңа парольді енгізіңіз:", user.password);
+            if(newPass === null) return;
+
+            if(newName.trim() === '' || newPass.trim() === '') {
+                return alert('Аты-жөні мен пароль бос болмауы тиіс!');
+            }
+
+            user.name = newName.trim();
+            user.password = newPass.trim();
+
+            localStorage.setItem('bilimland_users', JSON.stringify(users));
+            alert('Аккаунт деректері сәтті өзгертілді!');
+            renderDashboard();
         }
     </script>
 </body>
