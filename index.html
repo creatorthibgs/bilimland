@@ -3,106 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilimLand - Электронды Журнал</title>
+    <title>BilimLand — Білім берудің бірыңғай жүйесі</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
             100% { transform: translate(0px, 0px) scale(1); }
         }
         .animate-blob {
-            animation: blob 7s infinite;
+            animation: blob 10s infinite;
         }
         .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans relative overflow-x-hidden">
+<body class="bg-slate-950 text-slate-200 min-h-screen font-sans relative overflow-x-hidden selection:bg-cyan-500 selection:text-slate-950">
 
-    <!-- Background Decorative Blobs -->
-    <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-    <div class="absolute top-0 -right-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" style="animation-delay: 2s;"></div>
-    <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" style="animation-delay: 4s;"></div>
+    <!-- Background Decorative Elements -->
+    <div class="absolute top-0 -left-4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+    <div class="absolute top-0 -right-4 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" style="animation-delay: 3s;"></div>
+    <div class="absolute -bottom-8 left-20 w-96 h-96 bg-teal-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" style="animation-delay: 6s;"></div>
 
-    <div class="relative z-10 max-w-6xl mx-auto p-4 md:p-6">
+    <div class="relative z-10 max-w-7xl mx-auto p-4 md:p-8">
         
         <!-- Header -->
-        <header class="flex justify-between items-center py-4 mb-8 glass rounded-2xl px-6 shadow-2xl">
+        <header class="flex justify-between items-center py-4 mb-10 glass rounded-2xl px-6 shadow-2xl border-b border-white/5">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-bold text-xl shadow-lg">B</div>
-                <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">BilimLand</span>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-700 flex items-center justify-center font-bold text-lg shadow-inner text-white tracking-wider">BL</div>
+                <div>
+                    <h1 class="text-base font-bold tracking-wide text-slate-100">BilimLand <span class="text-xs px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-full border border-cyan-500/20 ml-1">Enterprise</span></h1>
+                    <p class="text-xs text-slate-400">Электронды білім беру платформасы</p>
+                </div>
             </div>
             <div id="user-info" class="hidden flex items-center space-x-4">
-                <span id="welcome-text" class="text-sm text-slate-300"></span>
-                <button onclick="logout()" class="px-4 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 rounded-xl text-sm transition-all">Шығу</button>
+                <span id="welcome-text" class="text-sm font-medium text-slate-300"></span>
+                <button onclick="logout()" class="px-4 py-2 bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/30 rounded-xl text-xs font-medium transition-all">Жүйеден шығу</button>
             </div>
         </header>
 
-        <!-- Login Section -->
-        <div id="login-section" class="max-w-md mx-auto mt-16 glass p-8 rounded-3xl shadow-2xl">
-            <h2 class="text-2xl font-bold mb-2 text-center">Жүйеге кіру</h2>
-            <p class="text-slate-400 text-sm text-center mb-6">Жеке логин мен пароліңізді енгізіңіз</p>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Логин</label>
-                    <input type="text" id="login-username" required class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm" placeholder="Логиніңізді енгізіңіз">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Пароль</label>
-                    <input type="password" id="login-password" required class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm" placeholder="••••••••">
-                </div>
-                <div id="login-error" class="hidden text-rose-400 text-xs text-center font-medium"></div>
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-all">Кіру</button>
-            </form>
-
-            <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800 pt-4 space-y-1">
-                <p class="font-bold text-slate-300 mb-1">Әдепкі аккаунттар:</p>
-                <p>👑 Әкімші: <span class="text-cyan-400 font-mono">admin</span> / <span class="text-cyan-400 font-mono">admin123</span></p>
-                <p>📚 Мұғалім: <span class="text-indigo-400 font-mono">teacher1</span> / <span class="text-indigo-400 font-mono">teach123</span></p>
-                <p>🎓 Оқушы: <span class="text-emerald-400 font-mono">student1</span> / <span class="text-emerald-400 font-mono">stud123</span></p>
+        <!-- Login Section (Clean & Secure) -->
+        <div id="login-section" class="max-w-md mx-auto mt-20 glass p-8 rounded-3xl shadow-2xl border border-slate-800/80">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Қауіпсіз кіру</h2>
+                <p class="text-slate-400 text-xs mt-1">Әкімші тарапынан берілген жеке деректеріңізді енгізіңіз</p>
             </div>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Логин</label>
+                    <input type="text" id="login-username" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm text-slate-100 transition-all placeholder:text-slate-600" placeholder="Логиніңіз">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Пароль</label>
+                    <input type="password" id="login-password" required class="w-full bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500 text-sm text-slate-100 transition-all placeholder:text-slate-600" placeholder="••••••••">
+                </div>
+                <div id="login-error" class="hidden text-rose-400 text-xs text-center font-medium bg-rose-500/10 border border-rose-500/20 py-2 rounded-lg"></div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-semibold text-sm shadow-lg shadow-cyan-900/20 transition-all">Жүйеге кіру</button>
+            </form>
         </div>
 
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden space-y-6">
-            
-            <!-- Announcements Banner -->
-            <div id="announcement-banner" class="hidden glass p-4 rounded-2xl border-cyan-500/30 bg-cyan-500/10 flex justify-between items-center">
+            <div id="announcement-banner" class="hidden glass p-4 rounded-2xl border-cyan-500/20 bg-cyan-950/20 flex justify-between items-center">
                 <div>
-                    <h4 class="text-sm font-bold text-cyan-300">📢 Әкімші хабарландыруы:</h4>
-                    <p id="announcement-text" class="text-sm text-slate-200 mt-1"></p>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400">Хабарландыру</h4>
+                    <p id="announcement-text" class="text-sm text-slate-200 mt-0.5"></p>
                 </div>
             </div>
-
-            <!-- Role Based Panels -->
-            <div id="role-panel" class="glass p-6 rounded-3xl shadow-2xl">
-                <!-- Content will be injected dynamically via JS -->
-            </div>
+            <div id="role-panel" class="glass p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-800/80"></div>
         </div>
 
     </div>
 
     <script>
-        const defaultUsers = [
-            { username: 'admin', password: 'admin123', role: 'admin', name: 'Бас әкімші' },
-            { username: 'teacher1', password: 'teach123', role: 'teacher', name: 'Ахметова А.Б.' },
-            { username: 'student1', password: 'stud123', role: 'student', name: 'Арман Сериков' }
+        // Бастапқы тек қауіпсіз бас әкімші (басқа логиндер мүлде жазылмаған)
+        const initialAdmin = [
+            { username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші' }
         ];
 
-        let users = JSON.parse(localStorage.getItem('bilimland_users')) || defaultUsers;
+        let users = JSON.parse(localStorage.getItem('bilimland_users')) || initialAdmin;
+        let classes = JSON.parse(localStorage.getItem('bilimland_classes')) || [];
+        let grades = JSON.parse(localStorage.getItem('bilimland_grades')) || {}; 
+        let attendance = JSON.parse(localStorage.getItem('bilimland_attendance')) || {}; 
         let supportTickets = JSON.parse(localStorage.getItem('bilimland_tickets')) || [];
         let currentAnnouncement = localStorage.getItem('bilimland_announcement') || '';
         let currentUser = null;
 
         if(!localStorage.getItem('bilimland_users')) {
-            localStorage.setItem('bilimland_users', JSON.stringify(defaultUsers));
+            localStorage.setItem('bilimland_users', JSON.stringify(initialAdmin));
         }
 
         window.onload = function() {
@@ -124,15 +118,13 @@
             if (foundUser) {
                 currentUser = foundUser;
                 errorDiv.classList.add('hidden');
-                
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('welcome-text').innerText = `${currentUser.name} (${currentUser.username})`;
-
                 renderDashboard();
             } else {
-                errorDiv.innerText = 'Логин немесе пароль қате!';
+                errorDiv.innerText = 'Қате логин немесе пароль!';
                 errorDiv.classList.remove('hidden');
             }
         }
@@ -151,103 +143,289 @@
             const panel = document.getElementById('role-panel');
             
             if (currentUser.role === 'admin') {
-                let ticketsHtml = supportTickets.length === 0 
-                    ? '<p class="text-sm text-slate-400">Әзірге қолдау қызметіне келген сұрақтар жоқ.</p>' 
-                    : supportTickets.map((t) => `
-                        <div class="p-3 bg-slate-800/50 rounded-xl mb-2 border border-slate-700">
-                            <span class="text-xs text-cyan-400 font-bold">${t.sender}</span>
-                            <p class="text-sm text-slate-200 mt-1">${t.message}</p>
-                        </div>
-                    `).join('');
-
-                let usersListHtml = users.map(u => `
-                    <div class="flex justify-between items-center py-2 border-b border-slate-800 text-sm">
+                let usersList = users.map(u => `
+                    <div class="flex justify-between items-center py-2.5 px-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm">
                         <div>
-                            <span class="font-bold text-slate-200">${u.name}</span> 
-                            <span class="text-xs text-slate-400">(@${u.username})</span>
-                            <span class="ml-2 px-2 py-0.5 text-xs rounded-lg ${u.role === 'admin' ? 'bg-cyan-500/20 text-cyan-300' : u.role === 'teacher' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-emerald-500/20 text-emerald-300'}">${u.role}</span>
+                            <span class="font-semibold text-slate-200">${u.name}</span> 
+                            <span class="text-xs text-slate-400 font-mono ml-1">(@${u.username})</span>
+                            <span class="ml-2 px-2 py-0.5 text-xs rounded-md bg-slate-800 text-cyan-400 border border-slate-700">${u.role}</span>
                         </div>
-                        <div class="flex space-x-2">
-                            <button onclick="editUser('${u.username}')" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded text-xs transition-all">Өзгерту</button>
-                            ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-xs transition-all">Жою</button>` : ''}
+                        ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-xs transition-all">Жою</button>` : ''}
+                    </div>
+                `).join('');
+
+                let classesList = classes.map(c => `
+                    <div class="p-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm flex justify-between items-center">
+                        <div>
+                            <span class="font-semibold text-slate-200">${c.className}</span>
+                            <span class="text-xs text-slate-400 ml-2">Мұғалім: ${c.teacher}</span>
                         </div>
+                        <span class="text-xs text-cyan-400 font-mono bg-cyan-950/40 px-2.5 py-1 rounded-lg border border-cyan-800/30">Кілт: ${c.dcaKey}</span>
+                    </div>
+                `).join('');
+
+                let ticketsList = supportTickets.map(t => `
+                    <div class="p-3 bg-slate-900/40 rounded-xl mb-2 border border-slate-800/60 text-sm">
+                        <span class="text-xs font-bold text-cyan-400">${t.sender}</span>
+                        <p class="text-slate-300 mt-1">${t.message}</p>
                     </div>
                 `).join('');
 
                 panel.innerHTML = `
-                    <h3 class="text-xl font-bold mb-4 text-cyan-400">👑 Әкімші панелі</h3>
+                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3 flex items-center justify-between">
+                        <span>Әкімші басқару панелі</span>
+                        <span class="text-xs text-slate-400 font-normal">Жүйелік статус: <span class="text-emerald-400">Қорғалған</span></span>
+                    </h3>
                     <div class="space-y-6">
-                        <!-- Хабарландыру -->
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">📢 Хабарландыру жариялау</h4>
-                            <input type="text" id="new-announcement" placeholder="Барлық оқушылар мен мұғалімдерге хабар..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2">
-                            <button onclick="postAnnouncement()" class="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm">Жіберу</button>
-                        </div>
-
-                        <!-- Жаңа аккаунт қосу -->
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-3">➕ Жаңа Мұғалім немесе Оқушы қосу</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                <input type="text" id="new-name" placeholder="Толық аты-жөні" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
-                                <input type="text" id="new-user" placeholder="Логин" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
-                                <input type="password" id="new-pass" placeholder="Пароль" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
-                                <select id="new-role" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                        <!-- Жаңа аккаунт беру -->
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Пайдаланушыға жаңа логин мен пароль ашу</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                                <input type="text" id="new-name" placeholder="Аты-жөні" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <input type="text" id="new-user" placeholder="Жеке логин" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <input type="text" id="new-pass" placeholder="Пароль" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <select id="new-role" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
                                     <option value="student">Оқушы</option>
                                     <option value="teacher">Мұғалім</option>
                                 </select>
                             </div>
-                            <button onclick="addNewUser()" class="px-4 py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl text-sm">Қосу</button>
+                            <button onclick="addNewUser()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Тіркеу және логин беру</button>
                         </div>
 
-                        <!-- Пайдаланушылар тізімі -->
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">👥 Тіркелген аккаунттар тізімі</h4>
-                            <div class="max-h-48 overflow-y-auto">${usersListHtml}</div>
+                        <!-- Хабарландыру -->
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Мектеп бойынша хабарландыру тарату</h4>
+                            <input type="text" id="new-announcement" placeholder="Барлық оқушылар мен мұғалімдерге..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 mb-3 focus:outline-none focus:border-cyan-500">
+                            <button onclick="postAnnouncement()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-all border border-slate-700">Жариялау</button>
                         </div>
 
-                        <!-- Қолдау қызметі -->
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">🛠️ Қолдау қызметі (Түскен сұрақтар)</h4>
-                            <div class="max-h-40 overflow-y-auto">${ticketsHtml}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                                <h4 class="text-sm font-semibold mb-3 text-slate-200">Тіркелген аккаунттар (${users.length})</h4>
+                                <div class="max-h-56 overflow-y-auto pr-1">${usersList}</div>
+                            </div>
+                            <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                                <h4 class="text-sm font-semibold mb-3 text-slate-200">Сыныптар мен DCA кілттер</h4>
+                                <div class="max-h-56 overflow-y-auto pr-1">${classesList.length ? classesList : '<p class="text-xs text-slate-500">Әзірге сыныптар жоқ</p>'}</div>
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметі (Support) хаттары</h4>
+                            <div class="max-h-40 overflow-y-auto">${ticketsList.length ? ticketsList : '<p class="text-xs text-slate-500">Хаттар түскен жоқ</p>'}</div>
                         </div>
                     </div>
                 `;
             } else if (currentUser.role === 'teacher') {
+                let myClasses = classes.filter(c => c.teacher === currentUser.username);
+                let selectedClassKey = document.getElementById('teacher-class-select')?.value || (myClasses[0] ? myClasses[0].dcaKey : '');
+                let activeClass = classes.find(c => c.dcaKey === selectedClassKey);
+                let classOptions = myClasses.map(c => `<option value="${c.dcaKey}" ${c.dcaKey === selectedClassKey ? 'selected' : ''}>${c.className} (Кілт: ${c.dcaKey})</option>`).join('');
+
+                let studentsListHtml = '';
+                if(activeClass) {
+                    studentsListHtml = activeClass.students.map(sUser => {
+                        let studentObj = users.find(u => u.username === sUser);
+                        let sName = studentObj ? studentObj.name : sUser;
+                        let sGrades = grades[sUser] || { bjb: '', tjb: '', term: '-', daily: [] };
+                        let dailyList = sGrades.daily?.map(d => `<span class="px-2 py-0.5 bg-slate-950 rounded text-xs text-cyan-400 font-mono border border-slate-800">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Жоқ';
+
+                        return `
+                            <div class="p-4 bg-slate-900/40 rounded-2xl mb-3 border border-slate-800/80">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="font-semibold text-slate-200 text-sm">${sName} <span class="text-xs text-slate-500 font-mono">(@${sUser})</span></span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-xs">
+                                    <div>
+                                        <label class="text-slate-400 block mb-1">Күнделікті баға (1-5):</label>
+                                        <div class="flex gap-1.5">
+                                            <input type="date" id="daily_date_${sUser}" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 text-xs w-32">
+                                            <input type="number" min="1" max="5" id="daily_mark_${sUser}" placeholder="Баға" class="w-14 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 text-center text-xs">
+                                            <button onclick="saveDailyGrade('${sUser}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-lg text-white transition-all">Қою</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-span-2 flex items-center flex-wrap gap-1.5">
+                                        <span class="text-slate-400 text-xs">Журналдағы бағалар:</span> ${dailyList}
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs border-t border-slate-800/80 pt-3">
+                                    <div>
+                                        <label class="text-slate-400 block mb-1">БЖБ (барлығы/жинаған):</label>
+                                        <input type="text" id="bjb_${sUser}" value="${sGrades.bjb || ''}" placeholder="15/12" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="text-slate-400 block mb-1">ТЖБ (барлығы/жинаған):</label>
+                                        <input type="text" id="tjb_${sUser}" value="${sGrades.tjb || ''}" placeholder="30/25" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button onclick="saveStudentGrades('${sUser}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-500 font-semibold rounded-lg text-white transition-all">Баллдарды сақтау</button>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-xs text-slate-300 flex justify-between items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                                    <span>Сақталған БЖБ: <b>${sGrades.bjb || 'Жоқ'}</b> | ТЖБ: <b>${sGrades.tjb || 'Жоқ'}</b></span>
+                                    <button onclick="computeTermGrade('${sUser}')" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition-all">Тоқсандық есептеу</button>
+                                </div>
+                                <div class="mt-2 text-xs text-cyan-400 font-semibold">Қорытынды тоқсандық баға: ${sGrades.term || 'Қорытылмаған'}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
                 panel.innerHTML = `
-                    <h3 class="text-xl font-bold mb-4 text-indigo-400">📚 Мұғалім кабинеті</h3>
-                    <div class="space-y-4">
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">Тоқсандық бағаны қорыту</h4>
-                            <p class="text-sm text-slate-400 mb-3">БЖБ және ТЖБ негізінде тоқсандық бағаларды автоматты түрде есептеу.</p>
-                            <button onclick="alert('Тоқсандық бағалар сәтті қорытылды!')" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-xl text-sm">Бағаларды қорыту</button>
+                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3">Мұғалім кабинеті</h3>
+                    <div class="space-y-6">
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Жаңа сынып ашу</h4>
+                            <div class="flex gap-3">
+                                <input type="text" id="new-class-name" placeholder="Сынып атауы (мысалы: 10 'А')" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                <button onclick="createClass()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs transition-all">Сынып құру</button>
+                            </div>
                         </div>
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">🛟 Қолдау қызметіне хабарласу</h4>
-                            <textarea id="support-msg" placeholder="Техникалық мәселе немесе сұрақ жазыңыз..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2 h-20"></textarea>
-                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm">Жіберу</button>
+
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-sm font-semibold text-slate-200">Электронды журнал мен бағалар</h4>
+                                <select id="teacher-class-select" onchange="renderDashboard()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                                    ${classOptions || '<option>Сыныптар жоқ</option>'}
+                                </select>
+                            </div>
+                            <div class="max-h-[500px] overflow-y-auto pr-1">
+                                ${studentsListHtml || '<p class="text-xs text-slate-500">Бұл сыныпта әзірге оқушылар жоқ немесе сынып таңдалмады.</p>'}
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметіне (Support) хабарласу</h4>
+                            <textarea id="support-msg" placeholder="Техникалық мәселе немесе ұсыныс..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 mb-3 h-20 focus:outline-none focus:border-cyan-500"></textarea>
+                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Хабарлама жіберу</button>
                         </div>
                     </div>
                 `;
             } else {
+                let myClass = classes.find(c => c.students.includes(currentUser.username));
+                let sGrades = grades[currentUser.username] || { bjb: 'Жоқ', tjb: 'Жоқ', term: 'Қорытылмаған', daily: [] };
+                let studentDailyList = sGrades.daily?.map(d => `<span class="px-2.5 py-1 bg-slate-900 rounded-lg text-xs text-cyan-400 font-mono border border-slate-800">${d.date}: <b>${d.mark}</b></span>`).join(' ') || 'Әзірге бағалар жоқ';
+
                 panel.innerHTML = `
-                    <h3 class="text-xl font-bold mb-4 text-emerald-400">🎓 Оқушы кабинеті</h3>
-                    <div class="space-y-4">
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">Менің бағаларым</h4>
-                            <p class="text-sm text-slate-400">Мұнда тек сіздің жеке бағаларыңыз көрсетіледі (Құпиялылық сақталған).</p>
-                            <div class="mt-3 flex gap-2">
-                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs">Математика: 5 (ТЖБ: 28/30)</span>
-                                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-xs">Физика: 5</span>
+                    <h3 class="text-lg font-bold mb-6 text-slate-100 border-b border-slate-800 pb-3">Оқушы кабинеті</h3>
+                    <div class="space-y-6">
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-2 text-slate-200">Сыныпқа қосылу (DCA кілті)</h4>
+                            <p class="text-xs text-slate-400 mb-3">Мұғалім берген арнайы кілтті енгізіңіз:</p>
+                            <div class="flex gap-3">
+                                <input type="text" id="dca-input" placeholder="DCA-XXXXX" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 uppercase focus:outline-none focus:border-cyan-500">
+                                <button onclick="joinClassByDCA()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs transition-all">Қосылу</button>
+                            </div>
+                            <p class="text-xs text-cyan-400 mt-2.5">Қазіргі сыныбыңыз: <b class="text-slate-200">${myClass ? myClass.className : 'Тіркелмегенсіз'}</b></p>
+                        </div>
+
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-4 text-slate-200">Менің оқу үлгерімім</h4>
+                            <div class="space-y-3 text-sm text-slate-300">
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                                    <span class="text-xs text-slate-400 block mb-1.5">Күнделікті бағалар:</span>
+                                    <div class="flex flex-wrap gap-1.5">${studentDailyList}</div>
+                                </div>
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center">
+                                    <span class="text-slate-400 text-xs">БЖБ нәтижесі:</span>
+                                    <span class="font-mono text-cyan-400 text-xs font-bold">${sGrades.bjb || 'Жоқ'}</span>
+                                </div>
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex justify-between items-center">
+                                    <span class="text-slate-400 text-xs">ТЖБ нәтижесі:</span>
+                                    <span class="font-mono text-cyan-400 text-xs font-bold">${sGrades.tjb || 'Жоқ'}</span>
+                                </div>
+                                <div class="p-3 bg-cyan-950/30 border border-cyan-800/30 rounded-xl flex justify-between items-center font-bold">
+                                    <span class="text-cyan-300 text-xs">Тоқсандық қорытынды баға:</span>
+                                    <span class="text-cyan-400 text-sm">${sGrades.term || 'Қорытылмаған'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-                            <h4 class="font-semibold mb-2">🛟 Қолдау қызметіне жүгіну</h4>
-                            <textarea id="support-msg" placeholder="Әкімшіге сұрақ немесе шағым жазыңыз..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm mb-2 h-20"></textarea>
-                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm">Хабарлама жіберу</button>
+
+                        <div class="p-5 bg-slate-900/60 rounded-2xl border border-slate-800">
+                            <h4 class="text-sm font-semibold mb-3 text-slate-200">Қолдау қызметіне хабарласу</h4>
+                            <textarea id="support-msg" placeholder="Әкімшіге сұрақ..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 mb-3 h-20 focus:outline-none focus:border-cyan-500"></textarea>
+                            <button onclick="sendSupportTicket()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl text-xs transition-all">Хат жіберу</button>
                         </div>
                     </div>
                 `;
             }
+        }
+
+        function createClass() {
+            const className = document.getElementById('new-class-name').value.trim();
+            if(!className) return alert('Сынып атауын енгізіңіз!');
+            const randomKey = 'DCA-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+            
+            classes.push({ className, dcaKey: randomKey, teacher: currentUser.username, students: [] });
+            localStorage.setItem('bilimland_classes', JSON.stringify(classes));
+            alert(`Сынып сәтті құрылды!\nDCA Кілт: ${randomKey}`);
+            renderDashboard();
+        }
+
+        function joinClassByDCA() {
+            const key = document.getElementById('dca-input').value.trim().toUpperCase();
+            const targetClass = classes.find(c => c.dcaKey === key);
+            if(!targetClass) return alert('Мұндай DCA кілті табылмады!');
+
+            classes.forEach(c => {
+                c.students = c.students.filter(s => s !== currentUser.username);
+            });
+
+            targetClass.students.push(currentUser.username);
+            localStorage.setItem('bilimland_classes', JSON.stringify(classes));
+            alert(`"${targetClass.className}" сыныбына сәтті қосылдыңыз!`);
+            renderDashboard();
+        }
+
+        function saveDailyGrade(sUser) {
+            const date = document.getElementById(`daily_date_${sUser}`).value;
+            const mark = document.getElementById(`daily_mark_${sUser}`).value;
+
+            if(!date || !mark) return alert('Күнді және бағаны енгізіңіз!');
+
+            if(!grades[sUser]) grades[sUser] = { bjb: '', tjb: '', term: '-', daily: [] };
+            if(!grades[sUser].daily) grades[sUser].daily = [];
+
+            grades[sUser].daily.push({ date, mark });
+            localStorage.setItem('bilimland_grades', JSON.stringify(grades));
+            alert('Күнделікті баға сәтті қойылды!');
+            renderDashboard();
+        }
+
+        function saveStudentGrades(sUser) {
+            const bjb = document.getElementById(`bjb_${sUser}`).value.trim();
+            const tjb = document.getElementById(`tjb_${sUser}`).value.trim();
+
+            if(!grades[sUser]) grades[sUser] = { bjb: '', tjb: '', term: '-', daily: [] };
+
+            if(bjb) grades[sUser].bjb = bjb;
+            if(tjb) grades[sUser].tjb = tjb;
+
+            localStorage.setItem('bilimland_grades', JSON.stringify(grades));
+            alert('Баллдар сақталды!');
+            renderDashboard();
+        }
+
+        function computeTermGrade(sUser) {
+            let sGrades = grades[sUser];
+            if(!sGrades || !sGrades.tjb) return alert('ТЖБ балдарын енгізіңіз!');
+
+            let parts = sGrades.tjb.split('/');
+            let scored = parseFloat(parts[1] || parts[0]);
+            let total = parseFloat(parts[0] && parts[1] ? parts[0] : '30');
+
+            let percentage = (scored / total) * 100;
+            let finalGrade = 2;
+
+            if(percentage >= 85) finalGrade = 5;
+            else if(percentage >= 65) finalGrade = 4;
+            else if(percentage >= 40) finalGrade = 3;
+            else finalGrade = 2;
+
+            sGrades.term = `${finalGrade} (${Math.round(percentage)}%)`;
+            localStorage.setItem('bilimland_grades', JSON.stringify(grades));
+            alert(`Тоқсандық есептелді: ${finalGrade} (${Math.round(percentage)}%)`);
+            renderDashboard();
         }
 
         function postAnnouncement() {
@@ -255,25 +433,18 @@
             if(!text) return;
             currentAnnouncement = text;
             localStorage.setItem('bilimland_announcement', text);
-            
-            const banner = document.getElementById('announcement-banner');
             document.getElementById('announcement-text').innerText = text;
-            banner.classList.remove('hidden');
-            alert('Хабарландыру сәтті жарияланды!');
+            document.getElementById('announcement-banner').classList.remove('hidden');
+            alert('Хабарландыру жарияланды!');
         }
 
         function sendSupportTicket() {
             const msg = document.getElementById('support-msg').value;
             if(!msg) return alert('Хабарлама бос болмауы тиіс!');
-            
-            supportTickets.push({
-                sender: `${currentUser.name} (@${currentUser.username})`,
-                message: msg
-            });
-            
+            supportTickets.push({ sender: `${currentUser.name} (@${currentUser.username})`, message: msg });
             localStorage.setItem('bilimland_tickets', JSON.stringify(supportTickets));
             document.getElementById('support-msg').value = '';
-            alert('Хабарламаңыз қолдау қызметіне сәтті жіберілді!');
+            alert('Хат қолдау қызметіне жіберілді!');
         }
 
         function addNewUser() {
@@ -282,47 +453,25 @@
             const password = document.getElementById('new-pass').value.trim();
             const role = document.getElementById('new-role').value;
 
-            if(!name || !username || !password) return alert('Барлық ұяшықты толтырыңыз!');
+            if(!name || !username || !password) return alert('Барлық өрістерді толтырыңыз!');
 
             if(users.some(u => u.username === username)) {
-                return alert('Бұл логин бос емес! Басқа логин таңдаңыз.');
+                return alert('Бұл логин бос емес!');
             }
 
             users.push({ name, username, password, role });
             localStorage.setItem('bilimland_users', JSON.stringify(users));
 
-            alert(`Жаңа аккаунт қосылды!\nЛогин: ${username}\nПароль: ${password}`);
+            alert(`Аккаунт құрылды!\nЛогин: ${username}\nПароль: ${password}`);
             renderDashboard();
         }
 
         function deleteUser(username) {
-            if(confirm(`"${username}" аккаунтын тізімнен өшіргіңіз келе ме?`)) {
+            if(confirm(`"${username}" аккаунтын жоюға сенімдісіз бе?`)) {
                 users = users.filter(u => u.username !== username);
                 localStorage.setItem('bilimland_users', JSON.stringify(users));
                 renderDashboard();
             }
-        }
-
-        function editUser(username) {
-            const user = users.find(u => u.username === username);
-            if(!user) return;
-
-            const newName = prompt("Жаңа аты-жөнін енгізіңіз:", user.name);
-            if(newName === null) return;
-
-            const newPass = prompt("Жаңа парольді енгізіңіз:", user.password);
-            if(newPass === null) return;
-
-            if(newName.trim() === '' || newPass.trim() === '') {
-                return alert('Аты-жөні мен пароль бос болмауы тиіс!');
-            }
-
-            user.name = newName.trim();
-            user.password = newPass.trim();
-
-            localStorage.setItem('bilimland_users', JSON.stringify(users));
-            alert('Аккаунт деректері сәтті өзгертілді!');
-            renderDashboard();
         }
     </script>
 </body>
