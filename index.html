@@ -13,30 +13,65 @@
         .gov-header { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
         .gov-table th { background-color: #e2e8f0; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; border: 1px solid #cbd5e1; padding: 8px; }
         .gov-table td { border: 1px solid #cbd5e1; padding: 6px 8px; background-color: #ffffff; font-size: 11px; }
-        .sidebar-btn { transition: all 0.2s ease; }
-        .sidebar-btn:hover { background-color: #f8fafc; color: #2563eb; }
+        .sidebar-btn { transition: all 0.25s ease; }
+        .sidebar-btn:hover { background-color: #f8fafc; color: #2563eb; transform: translateX(2px); }
         .sidebar-btn.active { background-color: #eff6ff; color: #1d4ed8; border-left: 4px solid #1d4ed8; font-weight: 700; }
-        .animate-fade { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Win10 & Custom Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes winDots {
+            0% { transform: translateX(0); opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { transform: translateX(20px); opacity: 0.2; }
+        }
+        .win-dot { width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; display: inline-block; animation: winDots 1.2s infinite ease-in-out; }
+        .win-dot:nth-child(2) { animation-delay: 0.2s; }
+        .win-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        #win10-boot {
+            position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.6s ease;
+        }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
-    <!-- HEADER: BilimClass Govt Standard -->
+    <!-- WIN10 BOOT SCREEN ANIMATION -->
+    <div id="win10-boot">
+        <div class="text-center space-y-6 animate-fade">
+            <div class="w-16 h-16 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/50 text-2xl font-black text-white">BC</div>
+            <div class="text-sm font-semibold tracking-wider text-slate-300">BilimClass OS Initializing...</div>
+            <div class="flex space-x-2 justify-center">
+                <span class="win-dot"></span>
+                <span class="win-dot"></span>
+                <span class="win-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
     <header class="gov-header sticky top-0 z-50 py-3 px-6 shadow-md flex justify-between items-center text-white">
         <div class="flex items-center space-x-3">
             <div class="w-9 h-9 rounded bg-white text-blue-900 flex items-center justify-center font-black text-sm shadow">BC</div>
             <div>
                 <h1 class="text-xs font-extrabold tracking-wider">BilimClass <span class="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white rounded font-bold ml-1">Enterprise Cloud</span></h1>
-                <p class="text-[9px] text-slate-300">Мемлекеттік бірыңғай мектеп журналы</p>
+                <p id="header-subtitle" class="text-[9px] text-slate-300">Мемлекеттік бірыңғай мектеп журналы</p>
             </div>
         </div>
-        <div id="user-info" class="hidden flex items-center space-x-4">
-            <div class="text-right">
-                <span id="welcome-text" class="text-xs font-bold block text-white"></span>
-                <span id="welcome-role" class="text-[9px] text-blue-300 font-semibold block uppercase tracking-wider"></span>
+        <div class="flex items-center space-x-4">
+            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-blue-900/80 text-white border border-blue-700 rounded px-2 py-1 text-[11px] font-bold focus:outline-none">
+                <option value="kk">Қаз</option>
+                <option value="ru">Рус</option>
+                <option value="en">Eng</option>
+            </select>
+            <div id="user-info" class="hidden flex items-center space-x-4">
+                <div class="text-right">
+                    <span id="welcome-text" class="text-xs font-bold block text-white"></span>
+                    <span id="welcome-role" class="text-[9px] text-blue-300 font-semibold block uppercase tracking-wider"></span>
+                </div>
+                <button onclick="logout()" id="btn-logout" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-bold transition-all shadow-xs">Шығу</button>
             </div>
-            <button onclick="logout()" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-bold transition-all shadow-xs">Жүйеден шығу</button>
         </div>
     </header>
 
@@ -46,56 +81,56 @@
         <!-- LOGIN SECTION -->
         <div id="login-section" class="w-full max-w-md mx-auto my-auto bg-white p-8 rounded-xl shadow-xl border border-slate-200 animate-fade">
             <div class="text-center mb-6">
-                <h2 class="text-lg font-extrabold text-slate-900">Жүйеге кіру</h2>
-                <p class="text-slate-500 text-xs mt-1">BilimClass бірыңғай электронды журналы</p>
+                <h2 id="login-title" class="text-lg font-extrabold text-slate-900">Жүйеге кіру</h2>
+                <p id="login-subtitle" class="text-slate-500 text-xs mt-1">BilimClass бірыңғай электронды журналы</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
+                    <label id="lbl-user" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
                     <input type="text" id="login-username" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="Логиніңіз">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
+                    <label id="lbl-pass" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
                     <input type="password" id="login-password" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded border border-red-200"></div>
-                <button type="submit" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
+                <button type="submit" id="btn-login" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
             </form>
         </div>
 
         <!-- DASHBOARD SECTION -->
         <div id="dashboard-section" class="hidden grid grid-cols-1 md:grid-cols-5 gap-4 w-full items-start animate-fade">
             <aside class="bg-white rounded-xl p-3 md:col-span-1 shadow-sm border border-slate-200 sticky top-16">
-                <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
+                <div id="menu-title" class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
                 <nav id="sidebar-menu" class="space-y-1 text-xs font-semibold text-slate-600"></nav>
             </aside>
             <main class="md:col-span-4 space-y-3">
-                <!-- WARNING NOTIFICATION BANNER FOR STUDENTS -->
-                <div id="student-warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3">
+                <!-- STUDENT WARNING BANNER -->
+                <div id="student-warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">⚠️</span>
                     <div>
-                        <b class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
+                        <b id="warn-title" class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
                         <span id="student-warning-reason"></span>
                     </div>
                 </div>
 
                 <!-- ANNOUNCEMENT BANNER -->
-                <div id="announcement-banner" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs shadow-xs flex items-center space-x-3">
+                <div id="announcement-banner" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">📢</span>
                     <div>
-                        <b class="font-bold uppercase text-[10px] text-blue-700">Мектеп хабарландыруы:</b>
+                        <b id="ann-title" class="font-bold uppercase text-[10px] text-blue-700">Мектеп хабарландыруы:</b>
                         <p id="announcement-text" class="mt-0.5"></p>
                     </div>
                 </div>
 
-                <div id="active-content-panel" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 min-h-[550px]"></div>
+                <div id="active-content-panel" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 min-h-[550px] animate-fade"></div>
             </main>
         </div>
     </div>
 
     <!-- FOOTER -->
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
-        <span class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
+        <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
         <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған</span>
     </footer>
 
@@ -118,16 +153,111 @@
 
         let currentUser = null;
         let activeTab = '';
+        let currentLang = 'kk';
         let users = [];
-        let classes = [];
+        let classesList = [];
         let schedules = [];
-        let grades = {};
-        let attendance = {};
+        let grades = {}; // { username: { subject: { form: '9/10', bzhb: '18/20', tzhb: '27/30', final: '5' } } }
+        let attendance = {}; // { username: { date: status } }
         let ktpList = [];
         let supportTickets = [];
+        let messages = [];
         let currentAnnouncement = '';
 
+        const translations = {
+            kk: {
+                subtitle: "Мемлекеттік бірыңғай мектеп журналы",
+                loginTitle: "Жүйеге кіру",
+                loginSub: "BilimClass бірыңғай электронды журналы",
+                userLbl: "Логин",
+                passLbl: "Пароль",
+                loginBtn: "Кіру",
+                logoutBtn: "Шығу",
+                menuTitle: "Басқару панелі",
+                footer: "BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.",
+                adminMon: "📊 Сыныптар мен оқушылар мониторингі",
+                adminSanc: "🛡️ Moderations & Sanctions",
+                adminSched: "📅 Сабақ кестесін жасау",
+                adminUsers: "👥 Логин мен парольдерді реттеу",
+                adminAnn: "📢 Хабарландыру тарату",
+                teachJorn: "📖 Бағалар журналы",
+                teachAtt: "📋 Қатысу журналы",
+                teachClass: "➕ Сынып ашу",
+                teachSched: "📅 Сабақ кестесі",
+                teachKtp: "📑 КТЖ (Күнтізбелік жоспар)",
+                teachSup: "🛟 Қолдау қызметі",
+                studGrades: "📊 Менің бағаларым",
+                studSched: "📅 Менің кестем",
+                studHw: "📚 Үй тапсырмасы",
+                studContact: "💬 Мұғаліммен байланыс",
+                studJoin: "🔑 Сыныпқа қосылу",
+                studSup: "🛟 Қолдау"
+            },
+            ru: {
+                subtitle: "Государственная единая школьная система",
+                loginTitle: "Вход в систему",
+                loginSub: "Электронный журнал BilimClass",
+                userLbl: "Логин",
+                passLbl: "Пароль",
+                loginBtn: "Войти",
+                logoutBtn: "Выйти",
+                menuTitle: "Панель управления",
+                footer: "BilimClass Enterprise Cloud © 2026. Все права защищены.",
+                adminMon: "📊 Мониторинг классов и учеников",
+                adminSanc: "🛡️ Модерация и санкции",
+                adminSched: "📅 Составление расписания",
+                adminUsers: "👥 Управление логинами и паролями",
+                adminAnn: "📢 Рассылка объявлений",
+                teachJorn: "📖 Журнал оценок",
+                teachAtt: "📋 Журнал посещаемости",
+                teachClass: "➕ Создать класс",
+                teachSched: "📅 Расписание уроков",
+                teachKtp: "📑 КТП (Календарный план)",
+                teachSup: "🛟 Служба поддержки",
+                studGrades: "📊 Мои оценки",
+                studSched: "📅 Мое расписание",
+                studHw: "📚 Домашние задания",
+                studContact: "💬 Связь с учителем",
+                studJoin: "🔑 Присоединиться к классу",
+                studSup: "🛟 Поддержка"
+            },
+            en: {
+                subtitle: "State Unified School System",
+                loginTitle: "Sign In",
+                loginSub: "BilimClass Electronic Journal",
+                userLbl: "Username",
+                passLbl: "Password",
+                loginBtn: "Login",
+                logoutBtn: "Logout",
+                menuTitle: "Control Panel",
+                footer: "BilimClass Enterprise Cloud © 2026. All rights reserved.",
+                adminMon: "📊 Class & Student Monitoring",
+                adminSanc: "🛡️ Moderations & Sanctions",
+                adminSched: "📅 Create Schedule",
+                adminUsers: "👥 Manage Users & Passwords",
+                adminAnn: "📢 Announcements",
+                teachJorn: "📖 Gradebook",
+                teachAtt: "📋 Attendance",
+                teachClass: "➕ Create Class",
+                teachSched: "📅 Schedule",
+                teachKtp: "📑 KTP (Calendar Plan)",
+                teachSup: "🛟 Support",
+                studGrades: "📊 My Grades",
+                studSched: "📅 My Schedule",
+                studHw: "📚 Homework",
+                studContact: "💬 Contact Teacher",
+                studJoin: "🔑 Join Class",
+                studSup: "🛟 Support"
+            }
+        };
+
         window.onload = async function() {
+            setTimeout(() => {
+                const boot = document.getElementById('win10-boot');
+                boot.style.opacity = '0';
+                setTimeout(() => boot.remove(), 600);
+            }, 800);
+
             await loadDataFromCloud();
             if(!users.some(u => u.username === 'admin')) {
                 users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші', warningReason: '', status: 'active' });
@@ -138,16 +268,17 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_data").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v2").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
-                        classes = data.classes || [];
+                        classesList = data.classesList || [];
                         schedules = data.schedules || [];
                         grades = data.grades || {};
                         attendance = data.attendance || {};
                         ktpList = data.ktpList || [];
                         supportTickets = data.supportTickets || [];
+                        messages = data.messages || [];
                         currentAnnouncement = data.announcement || '';
                     }
                 } catch(e) { console.error(e); }
@@ -157,11 +288,26 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_data").set({
-                        users, classes, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
+                    await db.collection("bilimland").doc("enterprise_v2").set({
+                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, messages, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
             }
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.getElementById('header-subtitle').innerText = t.subtitle;
+            document.getElementById('login-title').innerText = t.loginTitle;
+            document.getElementById('login-subtitle').innerText = t.loginSub;
+            document.getElementById('lbl-user').innerText = t.userLbl;
+            document.getElementById('lbl-pass').innerText = t.passLbl;
+            document.getElementById('btn-login').innerText = t.loginBtn;
+            document.getElementById('btn-logout').innerText = t.logoutBtn;
+            document.getElementById('menu-title').innerText = t.menuTitle;
+            document.getElementById('footer-text').innerText = t.footer;
+            if(currentUser) renderSidebar();
         }
 
         async function handleLogin(e) {
@@ -171,11 +317,6 @@
             const errorDiv = document.getElementById('login-error');
 
             await loadDataFromCloud();
-            if(users.length === 0) {
-                users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші', warningReason: '', status: 'active' });
-                await saveDataToCloud();
-            }
-
             const foundUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
             if (foundUser) {
                 if(foundUser.status === 'blocked') {
@@ -209,7 +350,6 @@
         }
 
         function checkBanners() {
-            // Announcement banner
             const annBanner = document.getElementById('announcement-banner');
             const annText = document.getElementById('announcement-text');
             if(currentAnnouncement) {
@@ -219,7 +359,6 @@
                 annBanner.classList.add('hidden');
             }
 
-            // Student warning banner
             const warnBanner = document.getElementById('student-warning-banner');
             const warnText = document.getElementById('student-warning-reason');
             if(currentUser.role === 'student' && currentUser.warningReason) {
@@ -243,33 +382,33 @@
 
         function renderSidebar() {
             const menu = document.getElementById('sidebar-menu');
+            const t = translations[currentLang];
             let links = [];
             if (currentUser.role === 'admin') {
                 links = [
-                    { id: 'admin_monitoring', label: '📊 Сыныптар мен оқушылар мониторингі' },
-                    { id: 'admin_sanctions', label: '🛡️ Moderations & Sanctions' },
-                    { id: 'admin_schedule', label: '📅 Сабақ кестесін жасау' },
-                    { id: 'admin_users', label: '👥 Логин мен парольдерді реттеу' },
-                    { id: 'admin_announcement', label: '📢 Хабарландыру тарату' }
+                    { id: 'admin_monitoring', label: t.adminMon },
+                    { id: 'admin_sanctions', label: t.adminSanc },
+                    { id: 'admin_schedule', label: t.adminSched },
+                    { id: 'admin_users', label: t.adminUsers },
+                    { id: 'admin_announcement', label: t.adminAnn }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
-                    { id: 'teacher_journal', label: '📖 Бағалар журналы' },
-                    { id: 'teacher_attendance', label: '📋 Қатысу журналы' },
-                    { id: 'teacher_classes', label: '➕ Сынып ашу' },
-                    { id: 'teacher_schedule', label: '📅 Сабақ кестесі' },
-                    { id: 'teacher_ktp', label: '📑 КТЖ (Күнтізбелік жоспар)' },
-                    { id: 'teacher_analytics', label: '📈 Аналитика және мониторинг' },
-                    { id: 'teacher_support', label: '🛟 Қолдау қызметі' }
+                    { id: 'teacher_journal', label: t.teachJorn },
+                    { id: 'teacher_attendance', label: t.teachAtt },
+                    { id: 'teacher_classes', label: t.teachClass },
+                    { id: 'teacher_schedule', label: t.teachSched },
+                    { id: 'teacher_ktp', label: t.teachKtp },
+                    { id: 'teacher_support', label: t.teachSup }
                 ];
             } else {
                 links = [
-                    { id: 'student_grades', label: '📊 Менің бағаларым' },
-                    { id: 'student_schedule', label: '📅 Менің кестем' },
-                    { id: 'student_homework', label: '📚 Үй тапсырмасы' },
-                    { id: 'student_contact', label: '💬 Мұғаліммен байланыс' },
-                    { id: 'student_join', label: '🔑 Сыныпқа қосылу' },
-                    { id: 'student_support', label: '🛟 Қолдау' }
+                    { id: 'student_grades', label: t.studGrades },
+                    { id: 'student_schedule', label: t.studSched },
+                    { id: 'student_homework', label: t.studHw },
+                    { id: 'student_contact', label: t.studContact },
+                    { id: 'student_join', label: t.studJoin },
+                    { id: 'student_support', label: t.studSup }
                 ];
             }
             menu.innerHTML = links.map(l => `
@@ -289,43 +428,14 @@
             await loadDataFromCloud();
             const panel = document.getElementById('active-content-panel');
 
-            // --- ADMIN PANELS ---
             if (currentUser.role === 'admin') {
                 if (activeTab === 'admin_monitoring') {
+                    let studentsCount = users.filter(u => u.role === 'student').length;
+                    let teachersCount = users.filter(u => u.role === 'teacher').length;
+                    let classRows = classesList.length > 0 ? classesList.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td>${studentsCount} оқушы</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Әзірге сыныптар тіркелмеген</td></tr>';
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп бойынша сыныптар және БЖБ/ТЖБ мониторингі</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full gov-table">
-                                <thead>
-                                    <tr>
-                                        <th>Сынып</th>
-                                        <th>Жетекші мұғалім</th>
-                                        <th>Оқушы саны</th>
-                                        <th>Сабаққа қатысу</th>
-                                        <th>БЖБ тапсыру %</th>
-                                        <th>ТЖБ тапсыру %</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><b>10 «А»</b></td>
-                                        <td>Абдрахманова Д.</td>
-                                        <td>24</td>
-                                        <td>98%</td>
-                                        <td>95%</td>
-                                        <td>90%</td>
-                                    </tr>
-                                    <tr>
-                                        <td><b>11 «Б»</b></td>
-                                        <td>Қасымов М.</td>
-                                        <td>21</td>
-                                        <td>96%</td>
-                                        <td>92%</td>
-                                        <td>88%</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп бойынша тіркелген сыныптар мен мониторинг</h3>
+                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Жетекші мұғалім</th><th>Саны</th></tr></thead><tbody>${classRows}</tbody></table></div>
                     `;
                 } else if (activeTab === 'admin_sanctions') {
                     let studentList = users.filter(u => u.role === 'student').map(u => `
@@ -341,28 +451,19 @@
                     `).join('');
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions (Тәртіп бақылауы)</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full gov-table">
-                                <thead>
-                                    <tr>
-                                        <th>Оқушы аты-жөні</th>
-                                        <th>Мәртебесі</th>
-                                        <th>Берілген ескерту себебі</th>
-                                        <th>Әрекеттер</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${studentList || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар тіркелмеген</td></tr>'}</tbody>
-                            </table>
-                        </div>
+                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Оқушы аты-жөні</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${studentList || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}</tbody></table></div>
                     `;
                 } else if (activeTab === 'admin_schedule') {
+                    let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер әлі бекітілмеген</td></tr>';
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесін бекіту (Әр сыныпқа жеке)</h3>
-                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3">
-                            <select class="w-full border rounded p-2 text-xs bg-white"><option>10 «А» сыныбы</option><option>11 «Б» сыныбы</option></select>
-                            <input type="text" placeholder="Пән мен уақыты (Мысалы: Дүйсенбі 08:30 - Алгебра)" class="w-full border rounded p-2 text-xs bg-white">
-                            <button onclick="alert('Сабақ кестесі сыныпқа сәтті бекітілді!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені сақтау</button>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесін бекіту</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
+                            <input type="text" id="sched-class" placeholder="Сынып (Мысалы: 10 «А»)" class="w-full border rounded p-2 text-xs bg-white">
+                            <input type="text" id="sched-subject" placeholder="Пән (Мысалы: Алгебра)" class="w-full border rounded p-2 text-xs bg-white">
+                            <input type="text" id="sched-time" placeholder="Уақыты (Мысалы: Дүйсенбі 08:30)" class="w-full border rounded p-2 text-xs bg-white">
+                            <button onclick="saveSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені бекіту</button>
                         </div>
+                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedRows}</tbody></table></div>
                     `;
                 } else if (activeTab === 'admin_users') {
                     let allUsersList = users.map(u => `
@@ -375,7 +476,7 @@
                         </tr>
                     `).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">👥 Логин мен парольдерді басқару және тіркеу</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">👥 Логин мен парольдерді басқару</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border mb-4">
                             <h4 class="text-xs font-bold mb-2 text-slate-700">Жаңа пайдаланушы қосу</h4>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
@@ -390,7 +491,7 @@
                     `;
                 } else if (activeTab === 'admin_announcement') {
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📢 Мектеп бойынша хабарландыру тарату</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📢 Хабарландыру тарату</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border space-y-3 max-w-xl">
                             <textarea id="announcement-input" rows="4" class="w-full border rounded p-3 text-xs bg-white" placeholder="Барлық оқушылар мен мұғалімдерге хабарлама жазыңыз...">${currentAnnouncement}</textarea>
                             <div class="flex space-x-2">
@@ -401,12 +502,11 @@
                     `;
                 }
             }
-            // --- TEACHER PANELS ---
             else if (currentUser.role === 'teacher') {
                 if (activeTab === 'teacher_journal') {
                     let students = users.filter(u => u.role === 'student');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Формативті (10 балдық) және БЖБ/ТЖБ)</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Формативті [макс. 10] және БЖБ / ТЖБ)</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
                                 <thead>
@@ -416,18 +516,23 @@
                                         <th>БЖБ (жинады / макс.)</th>
                                         <th>ТЖБ (жинады / макс.)</th>
                                         <th>Қорытынды</th>
+                                        <th>Әрекет</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${students.length > 0 ? students.map(s => `
-                                        <tr>
-                                            <td class="font-bold text-left">${s.name}</td>
-                                            <td><input type="text" class="w-16 text-center border rounded py-1" placeholder="8/10" value="9/10"></td>
-                                            <td><input type="text" class="w-20 text-center border rounded py-1 font-bold text-blue-600" placeholder="18/20" value="18/20"></td>
-                                            <td><input type="text" class="w-20 text-center border rounded py-1 font-bold text-indigo-600" placeholder="27/30" value="27/30"></td>
-                                            <td class="font-extrabold text-emerald-600">5</td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="5" class="text-center text-slate-400 py-4">Оқушылар жоқ. Әкімші арқылы оқушы тіркеңіз.</td></tr>'}
+                                    ${students.length > 0 ? students.map(s => {
+                                        let studentGrade = (grades[s.username] || {})['math'] || { form: '', bzhb: '', tzhb: '', final: '' };
+                                        return `
+                                            <tr>
+                                                <td class="font-bold text-left">${s.name}</td>
+                                                <td><input type="text" id="form_${s.username}" class="w-16 text-center border rounded py-1" placeholder="9/10" value="${studentGrade.form}"></td>
+                                                <td><input type="text" id="bzhb_${s.username}" class="w-20 text-center border rounded py-1 font-bold text-blue-600" placeholder="18/20" value="${studentGrade.bzhb}"></td>
+                                                <td><input type="text" id="tzhb_${s.username}" class="w-20 text-center border rounded py-1 font-bold text-indigo-600" placeholder="27/30" value="${studentGrade.tzhb}"></td>
+                                                <td><input type="text" id="final_${s.username}" class="w-12 text-center border rounded py-1 font-extrabold text-emerald-600" placeholder="5" value="${studentGrade.final}"></td>
+                                                <td><button onclick="saveStudentGrade('${s.username}')" class="px-3 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button></td>
+                                            </tr>
+                                        `;
+                                    }).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Оқушылар жоқ</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
@@ -435,18 +540,26 @@
                 } else if (activeTab === 'teacher_attendance') {
                     let students = users.filter(u => u.role === 'student');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📋 Сабаққа қатысу журналы</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📋 Қатысу журналы</h3>
+                        <div class="p-3 bg-slate-50 rounded border mb-3 flex gap-2 items-center">
+                            <input type="date" id="att-date" class="border rounded p-1 text-xs bg-white">
+                            <span class="text-xs text-slate-500">Күнді таңдап, оқушының қатысуын белгілеп сақтаңыз.</span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
-                                <thead><tr><th>Оқушы</th><th>Бүгінгі сабақ</th><th>Журналға белгілеу</th></tr></thead>
+                                <thead><tr><th>Оқушы</th><th>Мәртебесі</th><th>Қатысуды таңдау</th><th>Әрекет</th></tr></thead>
                                 <tbody>
-                                    ${students.map(s => `
-                                        <tr>
-                                            <td class="font-bold text-left">${s.name}</td>
-                                            <td><span class="text-emerald-600 font-bold">Қатысты (+)</span></td>
-                                            <td><select class="border rounded p-1 text-xs"><option>Қатысты (+)</option><option>Қатыспады (С)</option><option>Себепті (Б)</option></select></td>
-                                        </tr>
-                                    `).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}
+                                    ${students.map(s => {
+                                        let attRecord = (attendance[s.username] || {})['today'] || '+';
+                                        return `
+                                            <tr>
+                                                <td class="font-bold text-left">${s.name}</td>
+                                                <td><span class="font-bold">${attRecord}</span></td>
+                                                <td><select id="att_status_${s.username}" class="border rounded p-1 text-xs bg-white"><option value="+">Қатысты (+)</option><option value="С">Себепті (С)</option><option value="А">Ауырып жатыр (А)</option></select></td>
+                                                <td><button onclick="saveAttendance('${s.username}')" class="px-3 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button></td>
+                                            </tr>
+                                        `;
+                                    }).join('') || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
@@ -455,48 +568,147 @@
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">➕ Сынып ашу</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-md space-y-3">
-                            <input type="text" placeholder="Сынып аты (Мысалы: 10 «В»)" class="w-full border rounded p-2 text-xs bg-white">
-                            <button onclick="alert('Сынып сәтті ашылды!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Ашу</button>
+                            <input type="text" id="new-class-name" placeholder="Сынып аты (Мысалы: 10 «В»)" class="w-full border rounded p-2 text-xs bg-white">
+                            <button onclick="createNewClass()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Сыныпты тіркеу</button>
                         </div>
                     `;
                 } else if (activeTab === 'teacher_schedule') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><p class="text-xs text-slate-500">Бекітілген кестелер осында көрінеді.</p>`;
+                    let mySched = schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('');
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${mySched || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
                 } else if (activeTab === 'teacher_ktp') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📑 КТЖ (Күнтізбелік-тематикалық жоспарлау)</h3><p class="text-xs text-slate-500">Тоқсандық тақырыптар тізімі.</p>`;
-                } else if (activeTab === 'teacher_analytics') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📈 Аналитика және мониторинг</h3><p class="text-xs text-slate-500">Үлгерім көрсеткіштері.</p>`;
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📑 КТЖ (Күнтізбелік-тематикалық жоспарлау)</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-3">
+                            <input type="text" id="ktp-title" placeholder="Тақырып / Бөлім атауы" class="w-full border rounded p-2 text-xs bg-white">
+                            <button onclick="saveKtp()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">КТЖ қосу</button>
+                        </div>
+                        <ul class="list-disc pl-5 text-xs space-y-1">${ktpList.map(k => `<li>${k}</li>`).join('') || '<p class="text-slate-400">КТЖ жазбалары жоқ</p>'}</ul>
+                    `;
                 } else if (activeTab === 'teacher_support') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі</h3><p class="text-xs text-slate-500">Техникалық көмек.</p>`;
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3">
+                            <textarea id="support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Техникалық сұрақ немесе көмек туралы жазыңыз..."></textarea>
+                            <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
+                        </div>
+                    `;
                 }
             }
-            // --- STUDENT PANELS ---
             else {
                 if (activeTab === 'student_grades') {
+                    let myGrades = grades[currentUser.username] || {};
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Менің бағаларым</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
                                 <thead><tr><th>Пән</th><th>Формативті (10 б.)</th><th>БЖБ</th><th>ТЖБ</th><th>Қорытынды</th></tr></thead>
                                 <tbody>
-                                    <tr><td class="font-bold text-left">Алгебра</td><td>9/10, 10/10</td><td>18/20</td><td>27/30</td><td class="font-bold text-emerald-600">5</td></tr>
-                                    <tr><td class="font-bold text-left">Қазақ тілі</td><td>10/10, 9/10</td><td>19/20</td><td>28/30</td><td class="font-bold text-emerald-600">5</td></tr>
-                                    <tr><td class="font-bold text-left">Физика</td><td>8/10, 7/10</td><td>15/20</td><td>23/30</td><td class="font-bold text-blue-600">4</td></tr>
+                                    <tr>
+                                        <td class="font-bold text-left">Математика / Алгебра</td>
+                                        <td>${myGrades.math ? myGrades.math.form : 'Баға қойылмаған'}</td>
+                                        <td>${myGrades.math ? myGrades.math.bzhb : '—'}</td>
+                                        <td>${myGrades.math ? myGrades.math.tzhb : '—'}</td>
+                                        <td class="font-bold text-emerald-600">${myGrades.math ? myGrades.math.final : '—'}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     `;
                 } else if (activeTab === 'student_schedule') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><p class="text-xs text-slate-500">Күндік сабақтар тізімі.</p>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
                 } else if (activeTab === 'student_homework') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмалары</h3><p class="text-xs text-slate-500">Орындалуға тиіс тапсырмалар.</p>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмалары</h3><p class="text-xs text-slate-500">Мұғалімдер берген үй тапсырмалары осында көрінеді.</p>`;
                 } else if (activeTab === 'student_contact') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💬 Мұғаліммен байланыс</h3><p class="text-xs text-slate-500">Пән мұғалімдеріне хат жазу.</p>`;
+                    let chatMsgs = messages.filter(m => m.to === currentUser.username || m.from === currentUser.username).map(m => `<div class="p-2 border-b text-xs"><b>${m.from}:</b> ${m.text}</div>`).join('');
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💬 Мұғаліммен байланыс</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-3">
+                            <input type="text" id="chat-recipient" placeholder="Мұғалім логині (Мысалы: teacher)" class="w-full border rounded p-2 text-xs bg-white">
+                            <textarea id="chat-text" rows="2" class="w-full border rounded p-2 text-xs bg-white" placeholder="Хабарлама жазу..."></textarea>
+                            <button onclick="sendMessageToTeacher()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Жіберу</button>
+                        </div>
+                        <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${chatMsgs || '<p class="text-xs text-slate-400">Хабарламалар жоқ</p>'}</div>
+                    `;
                 } else if (activeTab === 'student_join') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🔑 Сыныпқа қосылу</h3><input type="text" placeholder="Кодты енгізіңіз..." class="border rounded p-2 text-xs w-64 block mb-2"><button onclick="alert('Қосылдыңыз!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Қосылу</button>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🔑 Сыныпқа қосылу</h3><input type="text" placeholder="Кодты енгізіңіз..." class="border rounded p-2 text-xs w-64 block mb-2"><button onclick="alert('Сыныпқа сәтті қосылдыңыз!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Қосылу</button>`;
                 } else if (activeTab === 'student_support') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау</h3>`;
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3">
+                            <textarea id="stud-support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Сұрағыңызды жазыңыз..."></textarea>
+                            <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Жіберу</button>
+                        </div>
+                    `;
                 }
             }
+        }
+
+        async function saveStudentGrade(username) {
+            let formVal = document.getElementById(`form_${username}`).value;
+            let bzhbVal = document.getElementById(`bzhb_${username}`).value;
+            let tzhbVal = document.getElementById(`tzhb_${username}`).value;
+            let finalVal = document.getElementById(`final_${username}`).value;
+
+            if(!grades[username]) grades[username] = {};
+            grades[username]['math'] = { form: formVal, bzhb: bzhbVal, tzhb: tzhbVal, final: finalVal };
+
+            await saveDataToCloud();
+            alert('Баға сәтті сақталды және оқушы парақшасына жіберілді!');
+        }
+
+        async function saveAttendance(username) {
+            let status = document.getElementById(`att_status_${username}`).value;
+            if(!attendance[username]) attendance[username] = {};
+            attendance[username]['today'] = status;
+            await saveDataToCloud();
+            alert('Қатысу белгісі сақталды!');
+        }
+
+        async function createNewClass() {
+            let className = document.getElementById('new-class-name').value.trim();
+            if(!className) return alert('Сынып атын енгізіңіз!');
+            classesList.push({ name: className, teacher: currentUser.name });
+            await saveDataToCloud();
+            alert('Сынып сәтті ашылды және базаға қосылды!');
+            renderTabContent();
+        }
+
+        async function saveSchedule() {
+            let className = document.getElementById('sched-class').value.trim();
+            let subject = document.getElementById('sched-subject').value.trim();
+            let time = document.getElementById('sched-time').value.trim();
+            if(!className || !subject || !time) return alert('Барлық өрістерді толтырыңыз!');
+            schedules.push({ className, subject, time });
+            await saveDataToCloud();
+            alert('Сабақ кестесі бекітілді!');
+            renderTabContent();
+        }
+
+        async function saveKtp() {
+            let ktpText = document.getElementById('ktp-title').value.trim();
+            if(!ktpText) return;
+            ktpList.push(ktpText);
+            await saveDataToCloud();
+            alert('КТЖ қосылды!');
+            renderTabContent();
+        }
+
+        async function sendSupportMessage() {
+            let msg = document.getElementById('support-msg')?.value || document.getElementById('stud-support-msg')?.value;
+            if(!msg) return alert('Хабарлама бос болмауы тиіс!');
+            supportTickets.push({ from: currentUser.username, text: msg });
+            await saveDataToCloud();
+            alert('Қолдау қызметіне өтініш жіберілді!');
+        }
+
+        async function sendMessageToTeacher() {
+            let toUser = document.getElementById('chat-recipient').value.trim();
+            let text = document.getElementById('chat-text').value.trim();
+            if(!toUser || !text) return;
+            messages.push({ from: currentUser.username, to: toUser, text });
+            await saveDataToCloud();
+            alert('Хабарлама жіберілді!');
+            renderTabContent();
         }
 
         async function registerNewUser() {
@@ -529,7 +741,7 @@
             if(!u) return;
             u.warningReason = reason;
             await saveDataToCloud();
-            alert('Ескерту себебімен қоса сәтті берілді!');
+            alert('Ескерту себебі оқушыға көрсетілу үшін жіберілді!');
             renderTabContent();
         }
 
