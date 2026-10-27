@@ -60,14 +60,14 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Логин</label>
-                    <input type="text" id="login-username" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 transition-all placeholder:text-slate-400 shadow-2xs" placeholder="Логиніңіз">
+                    <input type="text" id="login-username" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 text-sm text-slate-800 shadow-2xs" placeholder="Логиніңіз">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Пароль</label>
-                    <input type="password" id="login-password" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 transition-all placeholder:text-slate-400 shadow-2xs" placeholder="••••••••">
+                    <input type="password" id="login-password" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 text-sm text-slate-800 shadow-2xs" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-rose-600 text-xs text-center font-bold bg-rose-50 border border-rose-100 py-2.5 rounded-xl"></div>
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-600/20 transition-all active:scale-[0.99]">Жүйеге кіру</button>
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-sm shadow-md transition-all">Жүйеге кіру</button>
             </form>
         </div>
 
@@ -88,15 +88,11 @@
         </div>
     </div>
 
-    <footer class="glass-light rounded-2xl p-5 my-4 mx-4 md:mx-8 shadow-2xs text-xs text-slate-500 flex flex-col md:flex-row justify-between items-center gap-3 border border-white/80">
-        <div class="flex items-center space-x-2">
-            <span class="font-extrabold text-slate-800">BilimLand Cloud Enterprise © 2026.</span>
-            <span>Барлық құқықтар қорғалған.</span>
-        </div>
+    <footer class="glass-light rounded-2xl p-5 my-4 mx-4 md:mx-8 shadow-2xs text-xs text-slate-500 flex justify-between items-center border border-white/80">
+        <span class="font-extrabold text-slate-800">BilimLand Cloud Enterprise © 2026.</span>
     </footer>
 
     <script>
-        // === ЖАҢА FIREBASE КОНФИГУРАЦИЯСЫ ===
         const firebaseConfig = {
             apiKey: "AIzaSyB6JbuStN3ivrBMuca4RFFO_njwCN-jRSw",
             authDomain: "bilimland-app.firebaseapp.com",
@@ -111,14 +107,10 @@
             firebase.initializeApp(firebaseConfig);
             var db = firebase.firestore();
             useFirebase = true;
-        } catch(e) {
-            console.log("Firebase қатесі:", e);
-        }
-
-        const badWords = ['лай', 'дурак', 'мал', 'акмак', 'ңңс', 'блять', 'сука', 'пароль бер'];
+        } catch(e) { console.log(e); }
 
         let currentUser = null;
-        let activeTab = 'home';
+        let activeTab = 'users';
         let users = [];
         let classes = [];
         let grades = {};
@@ -145,7 +137,7 @@
                         supportTickets = data.supportTickets || [];
                         currentAnnouncement = data.announcement || '';
                     }
-                } catch(e) { console.error("Жүктеу қатесі:", e); }
+                } catch(e) { console.error(e); }
             }
         }
 
@@ -155,7 +147,7 @@
                     await db.collection("bilimland").doc("main_data").set({
                         users, classes, grades, supportTickets, announcement: currentAnnouncement
                     });
-                } catch(e) { console.error("Сақтау қатесі:", e); }
+                } catch(e) { console.error(e); }
             }
         }
 
@@ -166,29 +158,22 @@
             const errorDiv = document.getElementById('login-error');
 
             await loadDataFromCloud();
-            
             if(users.length === 0) {
                 users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші', warnings: 0, status: 'active' });
                 await saveDataToCloud();
             }
 
             const foundUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
-
             if (foundUser) {
-                if (foundUser.status === 'blocked') {
-                    errorDiv.innerText = 'Аккаунт бұғатталған!';
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
                 currentUser = foundUser;
                 errorDiv.classList.add('hidden');
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 document.getElementById('user-info').classList.remove('hidden');
                 document.getElementById('welcome-text').innerText = currentUser.name;
-                document.getElementById('welcome-role').innerText = currentUser.role === 'admin' ? 'Бас әкімші' : currentUser.role === 'teacher' ? 'Мұғалім' : 'Оқушы';
+                document.getElementById('welcome-role').innerText = currentUser.role === 'admin' ? 'Бас әкімші' : 'Мұғалім';
 
-                activeTab = currentUser.role === 'admin' ? 'users' : currentUser.role === 'teacher' ? 'journal' : 'my_grades';
+                activeTab = currentUser.role === 'admin' ? 'users' : 'journal';
                 renderSidebar();
                 renderTabContent();
             } else {
@@ -204,7 +189,6 @@
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
-            document.getElementById('login-error').classList.add('hidden');
         }
 
         function renderSidebar() {
@@ -218,16 +202,9 @@
                     { id: 'announcement', label: '📢 Хабарландыру' },
                     { id: 'support', label: '🛠️ Қолдау' }
                 ];
-            } else if (currentUser.role === 'teacher') {
-                links = [
-                    { id: 'journal', label: '📖 Журнал' },
-                    { id: 'create_class', label: '➕ Сынып ашу' },
-                    { id: 'support', label: '🛟 Қолдау' }
-                ];
             } else {
                 links = [
-                    { id: 'my_grades', label: '📊 Бағаларым' },
-                    { id: 'join_class', label: '🔑 Сыныпқа қосылу' },
+                    { id: 'journal', label: '📖 Журнал' },
                     { id: 'support', label: '🛟 Қолдау' }
                 ];
             }
@@ -247,27 +224,39 @@
         async function renderTabContent() {
             await loadDataFromCloud();
             const panel = document.getElementById('active-content-panel');
+
             if (currentUser.role === 'admin') {
                 if (activeTab === 'users') {
                     let usersList = users.map(u => `
-                        <div class="flex justify-between items-center py-2 px-3 bg-white rounded-xl mb-2 border border-slate-200 text-xs">
-                            <div><b>${u.name}</b> (@${u.username}) <span class="text-blue-600">[${u.role}]</span></div>
-                            ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg font-bold">Жою</button>` : ''}
+                        <div class="flex justify-between items-center py-2 px-3 bg-white rounded-xl mb-2 border border-slate-200 text-xs shadow-2xs">
+                            <div><b>${u.name}</b> (@${u.username}) <span class="text-blue-600 font-bold">[${u.role}]</span></div>
+                            ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg font-bold">Жою</button>` : ''}
                         </div>
                     `).join('');
+
                     panel.innerHTML = `
                         <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">Пайдаланушыларды басқару</h3>
-                        <div class="p-4 bg-white/90 rounded-2xl border mb-4">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+                        <div class="p-4 bg-white/90 rounded-2xl border mb-6 shadow-2xs">
+                            <h4 class="text-xs font-bold mb-3 text-slate-800">Жаңа аккаунт қосу</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
                                 <input type="text" id="new-name" placeholder="Аты-жөні" class="border rounded-xl px-3 py-2 text-xs">
                                 <input type="text" id="new-user" placeholder="Логин" class="border rounded-xl px-3 py-2 text-xs">
                                 <input type="text" id="new-pass" placeholder="Пароль" class="border rounded-xl px-3 py-2 text-xs">
-                                <select id="new-role" class="border rounded-xl px-3 py-2 text-xs"><option value="student">Оқушы</option><option value="teacher">Мұғалім</option></select>
+                                <select id="new-role" class="border rounded-xl px-3 py-2 text-xs font-bold"><option value="student">Оқушы</option><option value="teacher">Мұғалім</option></select>
                             </div>
                             <button onclick="addNewUser()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Тіркеу</button>
                         </div>
-                        <div>${usersList}</div>
+                        <h4 class="text-xs font-bold mb-2 text-slate-700">Бар қолданушылар:</h4>
+                        <div class="max-h-72 overflow-y-auto">${usersList}</div>
                     `;
+                } else if (activeTab === 'sanctions') {
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🛡️ Тәртіп және Санкциялар</h3><p class="text-xs text-slate-500">Бұл бөлімде оқушылардың тәртібі мен ескертулері басқарылады.</p>`;
+                } else if (activeTab === 'classes') {
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🏫 Сыныптар тізімі</h3><p class="text-xs text-slate-500">Барлық сыныптар мен DCA кілттер осында көрсетіледі.</p>`;
+                } else if (activeTab === 'announcement') {
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">📢 Хабарландыру тарату</h3><p class="text-xs text-slate-500">Барлық қолданушыларға хабарлама жіберу панелі.</p>`;
+                } else if (activeTab === 'support') {
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🛠️ Қолдау қызметі</h3><p class="text-xs text-slate-500">Түскен хаттар мен сұрақтар тізімі.</p>`;
                 }
             }
         }
@@ -278,16 +267,20 @@
             const password = document.getElementById('new-pass').value.trim();
             const role = document.getElementById('new-role').value;
             if(!name || !username || !password) return alert('Барлығын толтырыңыз!');
+            if(users.some(u => u.username === username)) return alert('Бұл логин бос емес!');
+
             users.push({ name, username, password, role, warnings: 0, status: 'active' });
             await saveDataToCloud();
-            alert('Сақталды!');
+            alert('Сәтті тіркелді!');
             renderTabContent();
         }
 
         async function deleteUser(username) {
-            users = users.filter(u => u.username !== username);
-            await saveDataToCloud();
-            renderTabContent();
+            if(confirm('Өшіргіңіз келетініне сенімдісіз бе?')) {
+                users = users.filter(u => u.username !== username);
+                await saveDataToCloud();
+                renderTabContent();
+            }
         }
     </script>
 </body>
