@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
         .gov-header { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
         .gov-table th { background-color: #e2e8f0; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; border: 1px solid #cbd5e1; padding: 8px; }
         .gov-table td { border: 1px solid #cbd5e1; padding: 6px 8px; background-color: #ffffff; font-size: 11px; }
@@ -17,7 +17,7 @@
         .sidebar-btn:hover { background-color: #f8fafc; color: #2563eb; transform: translateX(2px); }
         .sidebar-btn.active { background-color: #eff6ff; color: #1d4ed8; border-left: 4px solid #1d4ed8; font-weight: 700; }
         
-        /* Win10 & Custom Animations */
+        /* Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
@@ -33,15 +33,27 @@
         #win10-boot {
             position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.6s ease;
         }
+
+        /* Top bar loading dots on click */
+        #top-loader {
+            position: fixed; top: 0; left: 0; right: 0; height: 3px; background: transparent; z-index: 99999; overflow: hidden; display: none;
+        }
+        .loader-bar {
+            width: 100%; height: 100%; background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            animation: moveLoader 1s infinite linear;
+        }
+        @keyframes moveLoader { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white" onclick="triggerClickAnimation()">
 
-    <!-- WIN10 BOOT SCREEN ANIMATION -->
+    <div id="top-loader"><div class="loader-bar"></div></div>
+
+    <!-- WIN10 BOOT SCREEN (No OS text) -->
     <div id="win10-boot">
         <div class="text-center space-y-6 animate-fade">
             <div class="w-16 h-16 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/50 text-2xl font-black text-white">BC</div>
-            <div class="text-sm font-semibold tracking-wider text-slate-300">BilimClass OS Initializing...</div>
+            <div class="text-sm font-semibold tracking-wider text-slate-300">BilimClass Cloud Initializing...</div>
             <div class="flex space-x-2 justify-center">
                 <span class="win-dot"></span>
                 <span class="win-dot"></span>
@@ -105,12 +117,12 @@
                 <nav id="sidebar-menu" class="space-y-1 text-xs font-semibold text-slate-600"></nav>
             </aside>
             <main class="md:col-span-4 space-y-3">
-                <!-- STUDENT WARNING BANNER -->
-                <div id="student-warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3 animate-fade">
+                <!-- WARNING BANNER -->
+                <div id="warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">⚠️</span>
                     <div>
-                        <b id="warn-title" class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
-                        <span id="student-warning-reason"></span>
+                        <b class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
+                        <span id="warning-reason-text"></span>
                     </div>
                 </div>
 
@@ -118,7 +130,7 @@
                 <div id="announcement-banner" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">📢</span>
                     <div>
-                        <b id="ann-title" class="font-bold uppercase text-[10px] text-blue-700">Мектеп хабарландыруы:</b>
+                        <b class="font-bold uppercase text-[10px] text-blue-700">Мектеп хабарландыруы:</b>
                         <p id="announcement-text" class="mt-0.5"></p>
                     </div>
                 </div>
@@ -151,17 +163,24 @@
             useFirebase = true;
         } catch(e) { console.error(e); }
 
+        const subjectsList = [
+            "Математика", "Қазақ тілі", "Қазақ әдебиеті", "Ағылшын тілі", 
+            "Орыс тілі", "Физика", "Химия", "Биология", "География", 
+            "Қазақстан тарихы", "Дүние жүзі тарихы", "Информатика", 
+            "Дене шынықтыру", "Алгебра", "Геометрия", "Адам және қоғам", 
+            "Музыка", "Көркем еңбек"
+        ];
+
         let currentUser = null;
         let activeTab = '';
         let currentLang = 'kk';
         let users = [];
         let classesList = [];
         let schedules = [];
-        let grades = {}; // { username: { subject: { form: '9/10', bzhb: '18/20', tzhb: '27/30', final: '5' } } }
+        let grades = {}; // { username: { subjectName: { form: '', bzhb: '', tzhb: '', final: '', percent: 0 } } }
         let attendance = {}; // { username: { date: status } }
         let ktpList = [];
         let supportTickets = [];
-        let messages = [];
         let currentAnnouncement = '';
 
         const translations = {
@@ -175,11 +194,12 @@
                 logoutBtn: "Шығу",
                 menuTitle: "Басқару панелі",
                 footer: "BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.",
-                adminMon: "📊 Сыныптар мен оқушылар мониторингі",
+                adminMon: "📊 Мониторинг",
                 adminSanc: "🛡️ Moderations & Sanctions",
-                adminSched: "📅 Сабақ кестесін жасау",
-                adminUsers: "👥 Логин мен парольдерді реттеу",
-                adminAnn: "📢 Хабарландыру тарату",
+                adminSched: "📅 Сабақ кестесі",
+                adminUsers: "👥 Логин/парольдер",
+                adminAnn: "📢 Хабарландыру",
+                adminSupport: "🛟 Қолдау кірістері",
                 teachJorn: "📖 Бағалар журналы",
                 teachAtt: "📋 Қатысу журналы",
                 teachClass: "➕ Сынып ашу",
@@ -203,22 +223,23 @@
                 logoutBtn: "Выйти",
                 menuTitle: "Панель управления",
                 footer: "BilimClass Enterprise Cloud © 2026. Все права защищены.",
-                adminMon: "📊 Мониторинг классов и учеников",
+                adminMon: "📊 Мониторинг",
                 adminSanc: "🛡️ Модерация и санкции",
-                adminSched: "📅 Составление расписания",
-                adminUsers: "👥 Управление логинами и паролями",
-                adminAnn: "📢 Рассылка объявлений",
+                adminSched: "📅 Расписание",
+                adminUsers: "👥 Управление пользователями",
+                adminAnn: "📢 Объявления",
+                adminSupport: "🛟 Входящие тикеты",
                 teachJorn: "📖 Журнал оценок",
-                teachAtt: "📋 Журнал посещаемости",
+                teachAtt: "📋 Посещаемость",
                 teachClass: "➕ Создать класс",
-                teachSched: "📅 Расписание уроков",
-                teachKtp: "📑 КТП (Календарный план)",
-                teachSup: "🛟 Служба поддержки",
+                teachSched: "📅 Расписание",
+                teachKtp: "📑 КТП",
+                teachSup: "🛟 Поддержка",
                 studGrades: "📊 Мои оценки",
                 studSched: "📅 Мое расписание",
-                studHw: "📚 Домашние задания",
+                studHw: "📚 Домашка",
                 studContact: "💬 Связь с учителем",
-                studJoin: "🔑 Присоединиться к классу",
+                studJoin: "🔑 Вступить в класс",
                 studSup: "🛟 Поддержка"
             },
             en: {
@@ -231,21 +252,22 @@
                 logoutBtn: "Logout",
                 menuTitle: "Control Panel",
                 footer: "BilimClass Enterprise Cloud © 2026. All rights reserved.",
-                adminMon: "📊 Class & Student Monitoring",
+                adminMon: "📊 Monitoring",
                 adminSanc: "🛡️ Moderations & Sanctions",
-                adminSched: "📅 Create Schedule",
-                adminUsers: "👥 Manage Users & Passwords",
+                adminSched: "📅 Schedule",
+                adminUsers: "👥 Users",
                 adminAnn: "📢 Announcements",
+                adminSupport: "🛟 Support Tickets",
                 teachJorn: "📖 Gradebook",
                 teachAtt: "📋 Attendance",
                 teachClass: "➕ Create Class",
                 teachSched: "📅 Schedule",
-                teachKtp: "📑 KTP (Calendar Plan)",
+                teachKtp: "📑 KTP",
                 teachSup: "🛟 Support",
                 studGrades: "📊 My Grades",
                 studSched: "📅 My Schedule",
                 studHw: "📚 Homework",
-                studContact: "💬 Contact Teacher",
+                studContact: "💬 Contact",
                 studJoin: "🔑 Join Class",
                 studSup: "🛟 Support"
             }
@@ -265,10 +287,16 @@
             }
         };
 
+        function triggerClickAnimation() {
+            const loader = document.getElementById('top-loader');
+            loader.style.display = 'block';
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
+        }
+
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v2").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v3").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -278,7 +306,6 @@
                         attendance = data.attendance || {};
                         ktpList = data.ktpList || [];
                         supportTickets = data.supportTickets || [];
-                        messages = data.messages || [];
                         currentAnnouncement = data.announcement || '';
                     }
                 } catch(e) { console.error(e); }
@@ -288,8 +315,8 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v2").set({
-                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, messages, announcement: currentAnnouncement
+                    await db.collection("bilimland").doc("enterprise_v3").set({
+                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
             }
@@ -359,9 +386,9 @@
                 annBanner.classList.add('hidden');
             }
 
-            const warnBanner = document.getElementById('student-warning-banner');
-            const warnText = document.getElementById('student-warning-reason');
-            if(currentUser.role === 'student' && currentUser.warningReason) {
+            const warnBanner = document.getElementById('warning-banner');
+            const warnText = document.getElementById('warning-reason-text');
+            if(currentUser.warningReason) {
                 warnText.innerText = currentUser.warningReason;
                 warnBanner.classList.remove('hidden');
             } else {
@@ -375,7 +402,7 @@
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('announcement-banner').classList.add('hidden');
-            document.getElementById('student-warning-banner').classList.add('hidden');
+            document.getElementById('warning-banner').classList.add('hidden');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
         }
@@ -390,7 +417,8 @@
                     { id: 'admin_sanctions', label: t.adminSanc },
                     { id: 'admin_schedule', label: t.adminSched },
                     { id: 'admin_users', label: t.adminUsers },
-                    { id: 'admin_announcement', label: t.adminAnn }
+                    { id: 'admin_announcement', label: t.adminAnn },
+                    { id: 'admin_support', label: t.adminSupport }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
@@ -430,36 +458,28 @@
 
             if (currentUser.role === 'admin') {
                 if (activeTab === 'admin_monitoring') {
-                    let studentsCount = users.filter(u => u.role === 'student').length;
-                    let teachersCount = users.filter(u => u.role === 'teacher').length;
-                    let classRows = classesList.length > 0 ? classesList.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td>${studentsCount} оқушы</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Әзірге сыныптар тіркелмеген</td></tr>';
-                    panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп бойынша тіркелген сыныптар мен мониторинг</h3>
-                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Жетекші мұғалім</th><th>Саны</th></tr></thead><tbody>${classRows}</tbody></table></div>
-                    `;
+                    let classRows = classesList.length > 0 ? classesList.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптарының мониторингі</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Жетекші мұғалім</th></tr></thead><tbody>${classRows}</tbody></table></div>`;
                 } else if (activeTab === 'admin_sanctions') {
-                    let studentList = users.filter(u => u.role === 'student').map(u => `
+                    let staffList = users.filter(u => u.role !== 'admin').map(u => `
                         <tr class="text-xs">
-                            <td class="font-bold">${u.name} (@${u.username})</td>
+                            <td class="font-bold">${u.name} (@${u.username}) <span class="text-blue-600 uppercase text-[9px]">[${u.role}]</span></td>
                             <td><span class="px-2 py-0.5 rounded font-bold ${u.status === 'blocked' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${u.status === 'blocked' ? 'Бұғатталған' : 'Белсенді'}</span></td>
                             <td><span class="text-red-600 font-medium">${u.warningReason || 'Жоқ'}</span></td>
                             <td>
-                                <button onclick="issueWarningPrompt('${u.username}')" class="px-2 py-1 bg-amber-500 text-white rounded font-bold hover:bg-amber-600">Ескерту беру</button>
+                                <button onclick="issueWarningPrompt('${u.username}')" class="px-2 py-1 bg-amber-500 text-white rounded font-bold hover:bg-amber-600">Ескерту</button>
                                 <button onclick="toggleBlockUser('${u.username}')" class="px-2 py-1 ${u.status === 'blocked' ? 'bg-emerald-600' : 'bg-red-600'} text-white rounded font-bold">${u.status === 'blocked' ? 'Ашу' : 'Бұғаттау'}</button>
                             </td>
                         </tr>
                     `).join('');
-                    panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions (Тәртіп бақылауы)</h3>
-                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Оқушы аты-жөні</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${studentList || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}</tbody></table></div>
-                    `;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions (Оқушылар мен мұғалімдерге ескерту/бұғаттау)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Аты-жөні / Рөлі</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${staffList || '<tr><td colspan="4" class="text-center text-slate-400">Қолданушылар жоқ</td></tr>'}</tbody></table></div>`;
                 } else if (activeTab === 'admin_schedule') {
-                    let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер әлі бекітілмеген</td></tr>';
+                    let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер жоқ</td></tr>';
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесін бекіту</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <input type="text" id="sched-class" placeholder="Сынып (Мысалы: 10 «А»)" class="w-full border rounded p-2 text-xs bg-white">
-                            <input type="text" id="sched-subject" placeholder="Пән (Мысалы: Алгебра)" class="w-full border rounded p-2 text-xs bg-white">
+                            <select id="sched-subject" class="w-full border rounded p-2 text-xs bg-white font-bold">${subjectsList.map(sub => `<option value="${sub}">${sub}</option>`).join('')}</select>
                             <input type="text" id="sched-time" placeholder="Уақыты (Мысалы: Дүйсенбі 08:30)" class="w-full border rounded p-2 text-xs bg-white">
                             <button onclick="saveSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені бекіту</button>
                         </div>
@@ -500,13 +520,32 @@
                             </div>
                         </div>
                     `;
+                } else if (activeTab === 'admin_support') {
+                    let ticketRows = supportTickets.length > 0 ? supportTickets.map((t, idx) => `
+                        <tr class="text-xs">
+                            <td><b>@${t.from}</b></td>
+                            <td>${t.text}</td>
+                            <td><span class="text-blue-600 font-bold">${t.reply || 'Жауап берілмеді'}</span></td>
+                            <td>
+                                <input type="text" id="reply_${idx}" placeholder="Жауап жазу..." class="border rounded p-1 text-xs bg-white mr-1">
+                                <button onclick="replyTicket(${idx})" class="px-2 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Жіберу</button>
+                            </td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="4" class="text-center text-slate-400">Қолдау сұраулары жоқ</td></tr>';
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Кері байланыс тикеттері)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Кімнен</th><th>Хабарлама</th><th>Әкімші жауабы</th><th>Әрекет</th></tr></thead><tbody>${ticketRows}</tbody></table></div>`;
                 }
             }
             else if (currentUser.role === 'teacher') {
                 if (activeTab === 'teacher_journal') {
                     let students = users.filter(u => u.role === 'student');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Формативті [макс. 10] және БЖБ / ТЖБ)</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал және пайыздарды есептеу</h3>
+                        <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
+                            <label class="text-xs font-bold uppercase text-slate-600">Пәнді таңдау:</label>
+                            <select id="selected-subject" onchange="renderTabContent()" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
+                                ${subjectsList.map(sub => `<option value="${sub}">${sub}</option>`).join('')}
+                            </select>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
                                 <thead>
@@ -515,24 +554,32 @@
                                         <th>Формативті (макс. 10)</th>
                                         <th>БЖБ (жинады / макс.)</th>
                                         <th>ТЖБ (жинады / макс.)</th>
-                                        <th>Қорытынды</th>
+                                        <th>Авто-пайыз</th>
+                                        <th>Тоқсандық (Ұсынылған / Бекіту)</th>
                                         <th>Әрекет</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${students.length > 0 ? students.map(s => {
-                                        let studentGrade = (grades[s.username] || {})['math'] || { form: '', bzhb: '', tzhb: '', final: '' };
+                                        let currentSub = document.getElementById('selected-subject')?.value || subjectsList[0];
+                                        let studentGrade = ((grades[s.username] || {})[currentSub]) || { form: '', bzhb: '', tzhb: '', final: '', percent: 0 };
                                         return `
                                             <tr>
                                                 <td class="font-bold text-left">${s.name}</td>
                                                 <td><input type="text" id="form_${s.username}" class="w-16 text-center border rounded py-1" placeholder="9/10" value="${studentGrade.form}"></td>
                                                 <td><input type="text" id="bzhb_${s.username}" class="w-20 text-center border rounded py-1 font-bold text-blue-600" placeholder="18/20" value="${studentGrade.bzhb}"></td>
                                                 <td><input type="text" id="tzhb_${s.username}" class="w-20 text-center border rounded py-1 font-bold text-indigo-600" placeholder="27/30" value="${studentGrade.tzhb}"></td>
-                                                <td><input type="text" id="final_${s.username}" class="w-12 text-center border rounded py-1 font-extrabold text-emerald-600" placeholder="5" value="${studentGrade.final}"></td>
-                                                <td><button onclick="saveStudentGrade('${s.username}')" class="px-3 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button></td>
+                                                <td class="font-extrabold text-amber-600 text-center">${studentGrade.percent || 0}%</td>
+                                                <td>
+                                                    <input type="text" id="final_${s.username}" class="w-16 text-center border rounded py-1 font-extrabold text-emerald-600" placeholder="5" value="${studentGrade.final}">
+                                                </td>
+                                                <td>
+                                                    <button onclick="calculateAndSaveGrade('${s.username}')" class="px-2.5 py-1 bg-blue-600 text-white rounded font-bold text-[10px] mr-1">Сақтау</button>
+                                                    <button onclick="deleteGradeRecord('${s.username}')" class="px-2 py-1 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button>
+                                                </td>
                                             </tr>
                                         `;
-                                    }).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Оқушылар жоқ</td></tr>'}
+                                    }).join('') : '<tr><td colspan="7" class="text-center text-slate-400 py-4">Оқушылар жоқ</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
@@ -543,7 +590,7 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📋 Қатысу журналы</h3>
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex gap-2 items-center">
                             <input type="date" id="att-date" class="border rounded p-1 text-xs bg-white">
-                            <span class="text-xs text-slate-500">Күнді таңдап, оқушының қатысуын белгілеп сақтаңыз.</span>
+                            <span class="text-xs text-slate-500">Күнді таңдап, оқушының сабаққа қатысуын белгілеп сақтаңыз.</span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
@@ -585,32 +632,44 @@
                         <ul class="list-disc pl-5 text-xs space-y-1">${ktpList.map(k => `<li>${k}</li>`).join('') || '<p class="text-slate-400">КТЖ жазбалары жоқ</p>'}</ul>
                     `;
                 } else if (activeTab === 'teacher_support') {
+                    let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі</h3>
-                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Әкімшіге хат жазу)</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <textarea id="support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Техникалық сұрақ немесе көмек туралы жазыңыз..."></textarea>
                             <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
                         </div>
+                        <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${myTickets || '<p class="text-xs text-slate-400">Өтініштер жоқ</p>'}</div>
                     `;
                 }
             }
             else {
                 if (activeTab === 'student_grades') {
                     let myGrades = grades[currentUser.username] || {};
+                    let myAtt = (attendance[currentUser.username] || {})['today'] || '+';
+                    let gradeRows = Object.keys(myGrades).length > 0 ? Object.keys(myGrades).map(sub => `
+                        <tr>
+                            <td class="font-bold text-left">${sub}</td>
+                            <td>${myGrades[sub].form}</td>
+                            <td>${myGrades[sub].bzhb}</td>
+                            <td>${myGrades[sub].tzhb}</td>
+                            <td class="font-extrabold text-amber-600">${myGrades[sub].percent}%</td>
+                            <td class="font-bold text-emerald-600">${myGrades[sub].final}</td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Бағалар әлі қойылмаған</td></tr>';
+
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Менің бағаларым</h3>
+                        <div class="flex justify-between items-center mb-3 border-b pb-2">
+                            <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым мен пайыздарым</h3>
+                            <button onclick="downloadPDFReport()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold shadow-xs">📥 PDF форматында жүктеу</button>
+                        </div>
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold">
+                            Бүгінгі сабаққа қатысу мәртебеңіз: <span class="text-emerald-700 font-extrabold text-sm">[ ${myAtt} ]</span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
-                                <thead><tr><th>Пән</th><th>Формативті (10 б.)</th><th>БЖБ</th><th>ТЖБ</th><th>Қорытынды</th></tr></thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="font-bold text-left">Математика / Алгебра</td>
-                                        <td>${myGrades.math ? myGrades.math.form : 'Баға қойылмаған'}</td>
-                                        <td>${myGrades.math ? myGrades.math.bzhb : '—'}</td>
-                                        <td>${myGrades.math ? myGrades.math.tzhb : '—'}</td>
-                                        <td class="font-bold text-emerald-600">${myGrades.math ? myGrades.math.final : '—'}</td>
-                                    </tr>
-                                </tbody>
+                                <thead><tr><th>Пән</th><th>Формативті (10 б.)</th><th>БЖБ</th><th>ТЖБ</th><th>Пайыз (%)</th><th>Қорытынды</th></tr></thead>
+                                <tbody>${gradeRows}</tbody>
                             </table>
                         </div>
                     `;
@@ -619,41 +678,54 @@
                 } else if (activeTab === 'student_homework') {
                     panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмалары</h3><p class="text-xs text-slate-500">Мұғалімдер берген үй тапсырмалары осында көрінеді.</p>`;
                 } else if (activeTab === 'student_contact') {
-                    let chatMsgs = messages.filter(m => m.to === currentUser.username || m.from === currentUser.username).map(m => `<div class="p-2 border-b text-xs"><b>${m.from}:</b> ${m.text}</div>`).join('');
-                    panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💬 Мұғаліммен байланыс</h3>
-                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-3">
-                            <input type="text" id="chat-recipient" placeholder="Мұғалім логині (Мысалы: teacher)" class="w-full border rounded p-2 text-xs bg-white">
-                            <textarea id="chat-text" rows="2" class="w-full border rounded p-2 text-xs bg-white" placeholder="Хабарлама жазу..."></textarea>
-                            <button onclick="sendMessageToTeacher()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Жіберу</button>
-                        </div>
-                        <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${chatMsgs || '<p class="text-xs text-slate-400">Хабарламалар жоқ</p>'}</div>
-                    `;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💬 Мұғаліммен байланыс</h3><p class="text-xs text-slate-500">Мұғалімдермен хат алмасу модулі қосылды.</p>`;
                 } else if (activeTab === 'student_join') {
                     panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🔑 Сыныпқа қосылу</h3><input type="text" placeholder="Кодты енгізіңіз..." class="border rounded p-2 text-xs w-64 block mb-2"><button onclick="alert('Сыныпқа сәтті қосылдыңыз!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Қосылу</button>`;
                 } else if (activeTab === 'student_support') {
+                    let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі</h3>
-                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Әкімшіге хат жазу)</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <textarea id="stud-support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Сұрағыңызды жазыңыз..."></textarea>
-                            <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Жіберу</button>
+                            <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
                         </div>
+                        <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${myTickets || '<p class="text-xs text-slate-400">Өтініштер жоқ</p>'}</div>
                     `;
                 }
             }
         }
 
-        async function saveStudentGrade(username) {
-            let formVal = document.getElementById(`form_${username}`).value;
-            let bzhbVal = document.getElementById(`bzhb_${username}`).value;
-            let tzhbVal = document.getElementById(`tzhb_${username}`).value;
-            let finalVal = document.getElementById(`final_${username}`).value;
+        async function calculateAndSaveGrade(username) {
+            let currentSub = document.getElementById('selected-subject').value;
+            let formVal = document.getElementById(`form_${username}`).value.trim();
+            let bzhbVal = document.getElementById(`bzhb_${username}`).value.trim();
+            let tzhbVal = document.getElementById(`tzhb_${username}`).value.trim();
+            let finalVal = document.getElementById(`final_${username}`).value.trim();
+
+            // Auto percent calculation logic
+            let totalScore = 0;
+            let count = 0;
+            if(formVal) { let p = parseFloat(formVal.split('/')[0]) || 0; totalScore += (p / 10) * 100; count++; }
+            if(bzhbVal) { let parts = bzhbVal.split('/'); let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 20)) * 100; totalScore += p || 0; count++; }
+            if(tzhbVal) { let parts = tzhbVal.split('/'); let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 30)) * 100; totalScore += p || 0; count++; }
+            let finalPercent = count > 0 ? Math.round(totalScore / count) : 0;
 
             if(!grades[username]) grades[username] = {};
-            grades[username]['math'] = { form: formVal, bzhb: bzhbVal, tzhb: tzhbVal, final: finalVal };
+            grades[username][currentSub] = { form: formVal, bzhb: bzhbVal, tzhb: tzhbVal, final: finalVal || (finalPercent >= 85 ? '5' : '4'), percent: finalPercent };
 
             await saveDataToCloud();
-            alert('Баға сәтті сақталды және оқушы парақшасына жіберілді!');
+            alert('Баға сақталды, пайыздар есептеліп оқушы мен әкімшіге жіберілді!');
+            renderTabContent();
+        }
+
+        async function deleteGradeRecord(username) {
+            let currentSub = document.getElementById('selected-subject').value;
+            if(grades[username] && grades[username][currentSub]) {
+                delete grades[username][currentSub];
+                await saveDataToCloud();
+                alert('Баға жойылды!');
+                renderTabContent();
+            }
         }
 
         async function saveAttendance(username) {
@@ -661,7 +733,7 @@
             if(!attendance[username]) attendance[username] = {};
             attendance[username]['today'] = status;
             await saveDataToCloud();
-            alert('Қатысу белгісі сақталды!');
+            alert('Қатысу белгісі сақталды және оқушыға көрінеді!');
         }
 
         async function createNewClass() {
@@ -675,9 +747,9 @@
 
         async function saveSchedule() {
             let className = document.getElementById('sched-class').value.trim();
-            let subject = document.getElementById('sched-subject').value.trim();
+            let subject = document.getElementById('sched-subject').value;
             let time = document.getElementById('sched-time').value.trim();
-            if(!className || !subject || !time) return alert('Барлық өрістерді толтырыңыз!');
+            if(!className || !time) return alert('Барлық өрістерді толтырыңыз!');
             schedules.push({ className, subject, time });
             await saveDataToCloud();
             alert('Сабақ кестесі бекітілді!');
@@ -696,18 +768,18 @@
         async function sendSupportMessage() {
             let msg = document.getElementById('support-msg')?.value || document.getElementById('stud-support-msg')?.value;
             if(!msg) return alert('Хабарлама бос болмауы тиіс!');
-            supportTickets.push({ from: currentUser.username, text: msg });
+            supportTickets.push({ from: currentUser.username, text: msg, reply: '' });
             await saveDataToCloud();
-            alert('Қолдау қызметіне өтініш жіберілді!');
+            alert('Қолдау қызметіне хат жіберілді!');
+            renderTabContent();
         }
 
-        async function sendMessageToTeacher() {
-            let toUser = document.getElementById('chat-recipient').value.trim();
-            let text = document.getElementById('chat-text').value.trim();
-            if(!toUser || !text) return;
-            messages.push({ from: currentUser.username, to: toUser, text });
+        async function replyTicket(idx) {
+            let replyText = document.getElementById(`reply_${idx}`).value.trim();
+            if(!replyText) return;
+            supportTickets[idx].reply = replyText;
             await saveDataToCloud();
-            alert('Хабарлама жіберілді!');
+            alert('Жауап қайтарылды!');
             renderTabContent();
         }
 
@@ -735,13 +807,13 @@
         }
 
         async function issueWarningPrompt(username) {
-            let reason = prompt('Оқушыға ескерту беру себебін енгізіңіз:');
+            let reason = prompt('Ескерту беру себебін енгізіңіз:');
             if(reason === null) return;
             let u = users.find(x => x.username === username);
             if(!u) return;
             u.warningReason = reason;
             await saveDataToCloud();
-            alert('Ескерту себебі оқушыға көрсетілу үшін жіберілді!');
+            alert('Ескерту жіберілді!');
             renderTabContent();
         }
 
@@ -767,6 +839,20 @@
             checkBanners();
             document.getElementById('announcement-input').value = '';
             alert('Хабарландыру өшірілді!');
+        }
+
+        function downloadPDFReport() {
+            let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\\nOqushy: ${currentUser.name}\\nDate: ${new Date().toLocaleDateString()}\\n-------------------------------------\\n`;
+            let myGrades = grades[currentUser.username] || {};
+            for(let sub in myGrades) {
+                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\\n`;
+            }
+            let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `BilimClass_Report_${currentUser.username}.txt`;
+            link.click();
+            alert('Тоқсандық есеп PDF / Мәтіндік форматта сәтті жүктелді!');
         }
     </script>
 </body>
