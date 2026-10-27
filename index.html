@@ -142,7 +142,7 @@
     <!-- FOOTER -->
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
         <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
-        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Smart AI Monitoring Active)</span>
+        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Standard Scale Active)</span>
     </footer>
 
     <script>
@@ -170,8 +170,7 @@
             "Музыка", "Көркем еңбек"
         ];
 
-        // Forbidden words list for Smart Security Monitoring
-        const badWords = ["бля", "сука", "еба", "нах", "хуй", "анал", "дебил", "дурак", "шлюха", "пидор", "мразь"];
+        const badWords = ["бля", "сука", "еба", "нах", "хуй", "анал", "дебил", "дурак", "шлюха", "пидор", "мразь", "тупой"];
 
         let currentUser = null;
         let activeTab = '';
@@ -299,7 +298,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v5").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v6").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -318,7 +317,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v5").set({
+                    await db.collection("bilimland").doc("enterprise_v6").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -542,7 +541,7 @@
                 if (activeTab === 'teacher_journal') {
                     let students = users.filter(u => u.role === 'student');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал және пайыздарды есептеу</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал және пайыздар мен стандарт шкаласы (0-39% [2], 40-64% [3], 65-84% [4], 85-100% [5])</h3>
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
                             <label class="text-xs font-bold uppercase text-slate-600">Пәнді таңдау:</label>
                             <select id="selected-subject" onchange="updateSelectedSubject(this)" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
@@ -557,8 +556,8 @@
                                         <th>Формативті (макс. 10)</th>
                                         <th>БЖБ (жинады / макс.)</th>
                                         <th>ТЖБ (жинады / макс.)</th>
-                                        <th>Авто-пайыз</th>
-                                        <th>Тоқсандық (Ұсынылған / Бекіту)</th>
+                                        <th>Авто-пайыз (%)</th>
+                                        <th>Ұсынылған / Бекітілген баға</th>
                                         <th>Әрекет</th>
                                     </tr>
                                 </thead>
@@ -686,7 +685,7 @@
                 } else if (activeTab === 'student_support') {
                     let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Smart Security Мониторингімен)</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Әкімшіге хат жазу)</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <textarea id="stud-support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Сұрағыңызды жазыңыз..."></textarea>
                             <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
@@ -699,6 +698,14 @@
 
         function updateSelectedSubject(selectElem) {
             selectedTeacherSubject = selectElem.value;
+        }
+
+        // Standard percentage to grade converter function (0-39:2, 40-64:3, 65-84:4, 85-100:5)
+        function getStandardGrade(percent) {
+            if (percent <= 39) return '2';
+            if (percent <= 64) return '3';
+            if (percent <= 84) return '4';
+            return '5';
         }
 
         async function calculateAndSaveGrade(username) {
@@ -714,17 +721,20 @@
             if(tzhbVal) { let parts = tzhbVal.split('/'); let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 30)) * 100; totalScore += p || 0; count++; }
             let finalPercent = count > 0 ? Math.round(totalScore / count) : 0;
 
+            // Apply ministerial standard scale automatically
+            let recommendedGrade = getStandardGrade(finalPercent);
+
             if(!grades[username]) grades[username] = {};
             grades[username][selectedTeacherSubject] = { 
                 form: formVal, 
                 bzhb: bzhbVal, 
                 tzhb: tzhbVal, 
-                final: finalVal || (finalPercent >= 85 ? '5' : '4'), 
+                final: finalVal || recommendedGrade, 
                 percent: finalPercent 
             };
 
             await saveDataToCloud();
-            alert(`[${selectedTeacherSubject}] пәні бойынша баға сақталды және оқушы парақшасына жіберілді!`);
+            alert(`[${selectedTeacherSubject}] пайызы (${finalPercent}%) есептеліп, стандарт бойынша [${recommendedGrade}] бағасы ұсынылды және сақталды!`);
             renderTabContent();
         }
 
@@ -774,17 +784,15 @@
             renderTabContent();
         }
 
-        // Smart Security Monitoring Filter for Support/Messages
         async function sendSupportMessage() {
             let msg = document.getElementById('support-msg')?.value || document.getElementById('stud-support-msg')?.value;
             if(!msg) return alert('Хабарлама бос болмауы тиіс!');
 
-            // Check against bad words
             let lowerMsg = msg.toLowerCase();
             let hasViolation = badWords.some(word => lowerMsg.includes(word));
 
             if(hasViolation) {
-                currentUser.warningReason = "Smart Security: Қолдау қызметінде әдепсіз/боғауыз сөз қолданылды!";
+                currentUser.warningReason = "Smart Security: Дөрекілік немесе әдепсіз сөз қолданылды!";
                 supportTickets.push({ 
                     from: currentUser.username, 
                     text: `[БҰҒАТТАЛДЫ / СӨЗ ЕРЕЖЕСІ БҰЗЫЛДЫ]: ${msg}`, 
@@ -793,7 +801,7 @@
                 });
                 await saveDataToCloud();
                 checkBanners();
-                alert('🚨 Назар аударыңыз! Жүйенің Smart Security мониторингі әдепсіз сөздерді анықтады. Сізге автоматты түрде ескерту берілді және хат жіберілмеді!');
+                alert('🚨 Назар аударыңыз! Жүйенің Smart Security мониторингі дөрекі/боғауыз сөзді («тупой» немесе басқа) анықтады. Сізге автоматты түрде ескерту берілді және хат жіберілмеді!');
                 return;
             }
 
