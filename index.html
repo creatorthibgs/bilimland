@@ -3,107 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BilimClass — Мемлекеттік стандарттағы бұлттық білім беру жүйесі</title>
+    <title>BilimClass — Мемлекеттік электронды журнал жүйесі</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        .glass-light {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-        }
-        .sidebar-item-active {
-            background-color: rgba(37, 99, 235, 0.1);
-            color: #2563eb;
-            border-left: 4px solid #2563eb;
-            font-weight: 700;
-        }
+        .bc-header { background: #1e3a8a; color: white; }
+        .bc-sidebar-btn { transition: all 0.2s ease; }
+        .bc-sidebar-btn.active { background-color: #eff6ff; color: #1d4ed8; border-left: 4px solid #1d4ed8; font-weight: 700; }
+        table th { background-color: #f8fafc; font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        table td, table th { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: center; }
         html { scroll-behavior: smooth; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/50 text-slate-800 min-h-screen font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
-    <!-- HEADER -->
-    <header class="sticky top-0 z-40 py-3.5 px-6 glass-light border-b border-slate-200/60 shadow-xs flex justify-between items-center">
+    <!-- HEADER: BilimClass Style -->
+    <header class="bc-header sticky top-0 z-40 py-3 px-6 shadow-md flex justify-between items-center">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center font-black text-white text-base shadow-md shadow-blue-500/20">BC</div>
+            <div class="w-9 h-9 rounded-lg bg-white text-blue-900 flex items-center justify-center font-black text-base shadow">BC</div>
             <div>
-                <h1 class="text-sm font-black tracking-tight text-slate-900">BilimClass <span class="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-bold ml-1">Enterprise Cloud</span></h1>
-                <p class="text-[10px] text-slate-500 font-medium">Бірыңғай электронды мектеп жүйесі</p>
+                <h1 class="text-sm font-black tracking-tight text-white">BilimClass <span class="text-[10px] px-2 py-0.5 bg-blue-700 text-blue-100 rounded font-bold ml-1">Мектеп Журналы</span></h1>
+                <p class="text-[10px] text-blue-200">Электронды білім беру платформасы</p>
             </div>
         </div>
         <div id="user-info" class="hidden flex items-center space-x-4">
             <div class="text-right">
-                <span id="welcome-text" class="text-xs font-extrabold text-slate-800 block"></span>
-                <span id="welcome-role" class="text-[10px] text-blue-600 font-bold block uppercase tracking-wider"></span>
+                <span id="welcome-text" class="text-xs font-bold text-white block"></span>
+                <span id="welcome-role" class="text-[10px] text-blue-200 font-semibold block uppercase"></span>
             </div>
-            <button onclick="logout()" class="px-3.5 py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded-xl text-xs font-bold transition-all shadow-2xs">Жүйеден шығу</button>
+            <button onclick="logout()" class="px-3 py-1.5 bg-blue-800 hover:bg-rose-600 text-white rounded text-xs font-bold transition-all shadow-xs">Шығу</button>
         </div>
     </header>
 
     <!-- MAIN CONTAINER -->
-    <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+    <div class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 flex flex-col justify-center">
         
-        <!-- LOGIN SECTION -->
-        <div id="login-section" class="w-full max-w-md mx-auto glass-card p-8 md:p-10 rounded-3xl transition-all duration-300 shadow-xl">
-            <div class="text-center mb-8">
-                <div class="inline-block p-3 rounded-2xl bg-blue-50 text-blue-600 mb-3 shadow-inner">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                </div>
-                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Жүйеге кіру</h2>
-                <p class="text-slate-500 text-xs mt-1">Мектептің бірыңғай деректер базасы</p>
+        <!-- LOGIN SCREEN -->
+        <div id="login-section" class="w-full max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-black text-slate-900">Жүйеге кіру</h2>
+                <p class="text-slate-500 text-xs mt-1">BilimClass бірыңғай деректер базасы</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Логин</label>
-                    <input type="text" id="login-username" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 shadow-2xs transition-all" placeholder="Логиніңізді енгізіңіз">
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Логин</label>
+                    <input type="text" id="login-username" required class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-600" placeholder="Логиніңіз">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Пароль</label>
-                    <input type="password" id="login-password" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-800 shadow-2xs transition-all" placeholder="••••••••">
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Пароль</label>
+                    <input type="password" id="login-password" required class="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-600" placeholder="••••••••">
                 </div>
-                <div id="login-error" class="hidden text-rose-600 text-xs text-center font-bold bg-rose-50 border border-rose-100 py-2.5 rounded-xl"></div>
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-600/20 transition-all active:scale-[0.99]">Кіру</button>
+                <div id="login-error" class="hidden text-rose-600 text-xs text-center font-bold bg-rose-50 py-2 rounded border border-rose-200"></div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow transition-all">Кіру</button>
             </form>
         </div>
 
-        <!-- DASHBOARD SECTION -->
+        <!-- DASHBOARD SCREEN -->
         <div id="dashboard-section" class="hidden grid grid-cols-1 md:grid-cols-4 gap-6 w-full items-start">
-            <aside class="glass-card rounded-2xl p-4 md:col-span-1 shadow-xs border border-white/80 sticky top-24">
-                <div class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3 px-3">Басқару панелі</div>
+            <aside class="bg-white rounded-2xl p-3 md:col-span-1 shadow-sm border border-slate-200 sticky top-20">
+                <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-3">Басқару панелі</div>
                 <nav id="sidebar-menu" class="space-y-1 text-xs font-semibold text-slate-600"></nav>
             </aside>
             <main class="md:col-span-3 space-y-4">
                 <!-- ANNOUNCEMENT BANNER -->
-                <div id="announcement-banner" class="hidden glass-light p-4 rounded-2xl border-blue-200 bg-blue-50/90 flex justify-between items-center shadow-xs">
-                    <div class="flex items-start space-x-3">
-                        <span class="text-blue-600 text-base">📢</span>
-                        <div>
-                            <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700">Мектеп әкімшілігінің хабарландыруы:</h4>
-                            <p id="announcement-text" class="text-xs text-slate-700 mt-0.5 font-medium"></p>
-                        </div>
+                <div id="announcement-banner" class="hidden p-4 rounded-xl border-blue-200 bg-blue-50 flex items-center space-x-3 shadow-xs">
+                    <span class="text-blue-600 text-base">📢</span>
+                    <div>
+                        <h4 class="text-[11px] font-extrabold uppercase text-blue-700">Мектеп әкімшілігінің хабарландыруы:</h4>
+                        <p id="announcement-text" class="text-xs text-slate-700 mt-0.5"></p>
                     </div>
                 </div>
-                <div id="active-content-panel" class="glass-card p-6 md:p-8 rounded-3xl min-h-[500px] shadow-sm"></div>
+                <div id="active-content-panel" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[500px]"></div>
             </main>
         </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="glass-light rounded-2xl p-5 my-4 mx-4 md:mx-8 shadow-2xs text-xs text-slate-500 flex justify-between items-center border border-white/80">
-        <span class="font-extrabold text-slate-800">BilimClass Enterprise Cloud © 2026. Мемлекеттік білім беру стандарты.</span>
-        <span id="cloud-status" class="text-emerald-600 font-bold flex items-center gap-1.5">● Бұлттық база қосылды</span>
+    <footer class="bg-white py-4 px-6 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+        <span class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026.</span>
+        <span class="text-emerald-600 font-bold">● Бұлттық жүйе қосылған</span>
     </footer>
 
     <script>
@@ -196,12 +176,11 @@
                 else if(currentUser.role === 'teacher') roleTitle = 'Мұғалім';
                 document.getElementById('welcome-role').innerText = roleTitle;
 
-                // Set default tab based on strict role
                 if(currentUser.role === 'admin') activeTab = 'users';
                 else if(currentUser.role === 'teacher') activeTab = 'journal';
                 else activeTab = 'my_grades';
 
-                checkAnnouncementBanner();
+                checkBanner();
                 renderSidebar();
                 renderTabContent();
             } else {
@@ -210,7 +189,7 @@
             }
         }
 
-        function checkAnnouncementBanner() {
+        function checkBanner() {
             const banner = document.getElementById('announcement-banner');
             const textElem = document.getElementById('announcement-text');
             if(currentAnnouncement && currentAnnouncement.trim() !== '') {
@@ -239,24 +218,21 @@
                     { id: 'users', label: '👥 Пайдаланушыларды басқару' },
                     { id: 'sanctions', label: '🛡️ Тәртіп және санкциялар' },
                     { id: 'classes', label: '🏫 Сыныптар тізімі' },
-                    { id: 'announcement', label: '📢 Хабарландыру тарату' },
-                    { id: 'support', label: '🛠️ Қолдау қызметі' }
+                    { id: 'announcement', label: '📢 Хабарландыру тарату' }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
                     { id: 'journal', label: '📖 Электронды журнал' },
-                    { id: 'create_class', label: '➕ Сынып құру' },
-                    { id: 'support', label: '🛟 Қолдау' }
+                    { id: 'create_class', label: '➕ Сынып ашу' }
                 ];
             } else {
                 links = [
                     { id: 'my_grades', label: '📊 Менің бағаларым' },
-                    { id: 'join_class', label: '🔑 Сыныпқа қосылу' },
-                    { id: 'support', label: '🛟 Қолдау' }
+                    { id: 'join_class', label: '🔑 Сыныпқа қосылу' }
                 ];
             }
             menu.innerHTML = links.map(l => `
-                <button onclick="switchTab('${l.id}')" class="w-full text-left px-4 py-3 rounded-xl transition-all flex items-center justify-between ${activeTab === l.id ? 'sidebar-item-active' : 'hover:bg-slate-100/80 text-slate-600'}">
+                <button onclick="switchTab('${l.id}')" class="bc-sidebar-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between ${activeTab === l.id ? 'active' : 'hover:bg-slate-100 text-slate-600'}">
                     <span>${l.label}</span>
                 </button>
             `).join('');
@@ -275,82 +251,134 @@
             if (currentUser.role === 'admin') {
                 if (activeTab === 'users') {
                     let usersList = users.map(u => `
-                        <div class="flex justify-between items-center py-3 px-4 bg-white rounded-xl mb-2.5 border border-slate-200 text-xs shadow-2xs">
-                            <div>
-                                <span class="font-extrabold text-slate-800 text-sm">${u.name}</span> 
-                                <span class="text-slate-400 ml-1">(@${u.username})</span> 
-                                <span class="ml-2 px-2 py-0.5 rounded-full font-bold uppercase text-[10px] ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}">${u.role === 'admin' ? 'Әкімші' : u.role === 'teacher' ? 'Мұғалім' : 'Оқушы'}</span>
-                            </div>
-                            ${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg font-bold transition-all">Жою</button>` : ''}
-                        </div>
+                        <tr class="text-xs">
+                            <td class="font-bold text-left">${u.name}</td>
+                            <td>@${u.username}</td>
+                            <td><span class="px-2 py-0.5 rounded font-bold uppercase text-[10px] ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : u.role === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}">${u.role === 'admin' ? 'Әкімші' : u.role === 'teacher' ? 'Мұғалім' : 'Оқушы'}</span></td>
+                            <td>${u.username !== 'admin' ? `<button onclick="deleteUser('${u.username}')" class="px-2 py-1 bg-rose-50 text-rose-600 rounded font-bold hover:bg-rose-100">Жою</button>` : '—'}</td>
+                        </tr>
                     `).join('');
 
                     panel.innerHTML = `
-                        <h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">Пайдаланушыларды тіркеу және басқару</h3>
-                        <div class="p-5 bg-slate-50/80 rounded-2xl border border-slate-200 mb-6 shadow-xs">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3">Жаңа пайдаланушы қосу</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                                <input type="text" id="new-name" placeholder="Аты-жөні (Мысалы: Асанұлы Б.)" class="border border-slate-200 bg-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-600">
-                                <input type="text" id="new-user" placeholder="Логин" class="border border-slate-200 bg-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-600">
-                                <input type="text" id="new-pass" placeholder="Пароль" class="border border-slate-200 bg-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-600">
-                                <select id="new-role" class="border border-slate-200 bg-white rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-600">
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">Пайдаланушыларды тіркеу және басқару</h3>
+                        <div class="p-4 bg-slate-50 rounded-xl border mb-6">
+                            <h4 class="text-xs font-bold mb-3 text-slate-700">Жаңа пайдаланушы қосу</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-3">
+                                <input type="text" id="new-name" placeholder="Аты-жөні" class="border rounded px-3 py-2 text-xs bg-white">
+                                <input type="text" id="new-user" placeholder="Логин" class="border rounded px-3 py-2 text-xs bg-white">
+                                <input type="text" id="new-pass" placeholder="Пароль" class="border rounded px-3 py-2 text-xs bg-white">
+                                <select id="new-role" class="border rounded px-3 py-2 text-xs font-bold bg-white text-slate-700">
                                     <option value="student">Оқушы</option>
                                     <option value="teacher">Мұғалім</option>
                                 </select>
                             </div>
-                            <button onclick="addNewUser()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all">+ Тіркеуді аяқтау</button>
+                            <button onclick="addNewUser()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-xs">+ Тіркеуді аяқтау</button>
                         </div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Барлық қолданушылар тізімі (${users.length})</h4>
-                        <div class="max-h-80 overflow-y-auto pr-1 space-y-1">${usersList}</div>
+                        <h4 class="text-xs font-bold mb-2 text-slate-700">Барлық қолданушылар тізімі (${users.length})</h4>
+                        <div class="overflow-x-auto"><table class="w-full"><thead><tr><th class="text-left">Аты-жөні</th><th>Логин</th><th>Рөлі</th><th>Әрекет</th></tr></thead><tbody>${usersList}</tbody></table></div>
                     `;
                 } else if (activeTab === 'sanctions') {
                     let sanctionList = users.filter(u => u.username !== 'admin').map(u => `
-                        <div class="flex justify-between items-center py-3 px-4 bg-white rounded-xl mb-2.5 border border-slate-200 text-xs shadow-2xs">
-                            <div>
-                                <span class="font-extrabold text-slate-800">${u.name}</span> (@${u.username}) 
-                                <span class="ml-3 px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg font-bold border border-amber-200">Ескертулер: ${u.warnings || 0} / 3</span>
-                            </div>
-                            <div class="space-x-2">
-                                <button onclick="issueWarning('${u.username}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold shadow-xs">Ескерту беру (+1)</button>
-                                <button onclick="toggleBlock('${u.username}')" class="px-3 py-1.5 ${u.status === 'blocked' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'} rounded-lg font-bold shadow-xs">${u.status === 'blocked' ? 'Ашу' : 'Бұғаттау'}</button>
-                            </div>
-                        </div>
+                        <tr class="text-xs">
+                            <td class="text-left font-bold">${u.name} (@${u.username})</td>
+                            <td><span class="px-2 py-1 bg-amber-50 text-amber-800 rounded font-bold">${u.warnings || 0} / 3</span></td>
+                            <td><span class="px-2 py-1 rounded font-bold ${u.status === 'blocked' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">${u.status === 'blocked' ? 'Бұғатталған' : 'Белсенді'}</span></td>
+                            <td class="space-x-1">
+                                <button onclick="issueWarning('${u.username}')" class="px-2 py-1 bg-amber-500 text-white rounded font-bold">Ескерту (+1)</button>
+                                <button onclick="toggleBlock('${u.username}')" class="px-2 py-1 ${u.status === 'blocked' ? 'bg-emerald-600' : 'bg-rose-600'} text-white rounded font-bold">${u.status === 'blocked' ? 'Ашу' : 'Бұғаттау'}</button>
+                            </td>
+                        </tr>
                     `).join('');
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🛡️ Тәртіп және Санкциялар</h3><div class="space-y-2">${sanctionList || '<p class="text-xs text-slate-400">Оқушылар әлі тіркелмеген.</p>'}</div>`;
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🛡️ Тәртіп және Санкциялар</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr><th class="text-left">Оқушы</th><th>Ескертулер</th><th>Мәртебесі</th><th>Басқару</th></tr></thead><tbody>${sanctionList || '<tr><td colspan="4" class="py-4 text-slate-400">Оқушылар жоқ</td></tr>'}</tbody></table></div>`;
                 } else if (activeTab === 'classes') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🏫 Мектеп сыныптары</h3><p class="text-xs text-slate-500">Мұғалімдер ашқан сыныптар мен оқушылар легі осында бақыланады.</p>`;
+                    panel.innerHTML = `<h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🏫 Мектеп сыныптары</h3><p class="text-xs text-slate-500">Барлық сыныптар мен оқушылар легі осында бақыланады.</p>`;
                 } else if (activeTab === 'announcement') {
                     panel.innerHTML = `
-                        <h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">📢 Мектеп бойынша хабарландыру тарату</h3>
-                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold uppercase text-slate-600 mb-2">Хабарлама мәтіні:</label>
-                                <textarea id="ann-text" rows="4" class="w-full border border-slate-200 rounded-xl p-3.5 text-xs bg-white focus:outline-none focus:border-blue-600 shadow-2xs" placeholder="Барлық оқушылар мен мұғалімдерге арналған маңызды хабарландыруды жазыңыз...">${currentAnnouncement}</textarea>
-                            </div>
-                            <div class="flex space-x-3">
-                                <button onclick="postAnnouncement()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all">📢 Жұртқа жариялау</button>
-                                <button onclick="clearAnnouncement()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-extrabold transition-all">Өшіру / Алып тастау</button>
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">📢 Хабарландыру тарату</h3>
+                        <div class="p-4 bg-slate-50 rounded-xl border space-y-3">
+                            <textarea id="ann-text" rows="4" class="w-full border rounded p-3 text-xs bg-white focus:outline-none focus:border-blue-600" placeholder="Мектеп оқушылары мен мұғалімдеріне маңызды хабарлама жазыңыз...">${currentAnnouncement}</textarea>
+                            <div class="flex space-x-2">
+                                <button onclick="postAnnouncement()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">📢 Жұртқа жариялау</button>
+                                <button onclick="clearAnnouncement()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded text-xs font-bold">Өшіру</button>
                             </div>
                         </div>
                     `;
-                } else if (activeTab === 'support') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🛠️ Қолдау қызметі</h3><p class="text-xs text-slate-500">Техникалық көмек сұраған өтініштер.</p>`;
                 }
             } else if (currentUser.role === 'teacher') {
                 if(activeTab === 'journal') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">📖 Электронды журнал (Формативті және БЖБ/ТЖБ)</h3><p class="text-xs text-slate-500">Мұнда оқушылардың күнделікті балдары қойылады.</p>`;
+                    let students = users.filter(u => u.role === 'student');
+                    panel.innerHTML = `
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">📖 Электронды журнал (Математика пәні)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Оқушы аты-жөні</th>
+                                        <th>1-күн</th>
+                                        <th>2-күн</th>
+                                        <th>3-күн</th>
+                                        <th>БЖБ</th>
+                                        <th>ТЖБ</th>
+                                        <th>Қорытынды</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${students.length > 0 ? students.map(s => `
+                                        <tr class="text-xs">
+                                            <td class="text-left font-bold">${s.name}</td>
+                                            <td><input type="text" class="w-10 text-center border rounded py-1" value="5"></td>
+                                            <td><input type="text" class="w-10 text-center border rounded py-1" value="4"></td>
+                                            <td><input type="text" class="w-10 text-center border rounded py-1" value="5"></td>
+                                            <td><input type="text" class="w-10 text-center border rounded py-1 font-bold text-blue-600" value="18"></td>
+                                            <td><input type="text" class="w-10 text-center border rounded py-1 font-bold text-indigo-600" value="25"></td>
+                                            <td class="font-extrabold text-emerald-600">5</td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="7" class="py-4 text-slate-400">Тіркелген оқушылар жоқ. Әкімші арқылы оқушы қосыңыз.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
                 } else if(activeTab === 'create_class') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">➕ Жаңа сынып ашу</h3><p class="text-xs text-slate-500">Сынып ашып, оқушыларға арналған кіру коды мен парақшасын жасаңыз.</p>`;
-                } else if(activeTab === 'support') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🛟 Қолдау</h3><p class="text-xs text-slate-500">Администраторға хат жазу.</p>`;
+                    panel.innerHTML = `
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">➕ Сынып ашу және код генерациялау</h3>
+                        <div class="p-4 bg-slate-50 rounded-xl border max-w-md space-y-3">
+                            <input type="text" placeholder="Сынып атауы (Мысалы: 10 «А»)" class="w-full border rounded px-3 py-2 text-xs bg-white">
+                            <button onclick="alert('Сынып сәтті ашылды! Код генерацияланды.')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Сыныпты тіркеу</button>
+                        </div>
+                    `;
                 }
             } else {
                 if(activeTab === 'my_grades') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">📊 Менің бағаларым мен жетістіктерім</h3><p class="text-xs text-slate-500">Барлық пәндер бойынша формативті бағалар мен тоқсандық қорытындылар.</p>`;
+                    panel.innerHTML = `
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">📊 Менің бағаларым мен жетістіктерім</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Пән атауы</th>
+                                        <th>Формативті бағалар</th>
+                                        <th>БЖБ</th>
+                                        <th>ТЖБ</th>
+                                        <th>Тоқсандық</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs">
+                                    <tr><td class="text-left font-bold">Алгебра</td><td>5, 4, 5, 5</td><td>18/20</td><td>26/30</td><td class="font-bold text-emerald-600">5</td></tr>
+                                    <tr><td class="text-left font-bold">Қазақ тілі</td><td>5, 5, 4</td><td>19/20</td><td>28/30</td><td class="font-bold text-emerald-600">5</td></tr>
+                                    <tr><td class="text-left font-bold">Физика</td><td>4, 4, 5</td><td>16/20</td><td>24/30</td><td class="font-bold text-blue-600">4</td></tr>
+                                    <tr><td class="text-left font-bold">Ағылшын тілі</td><td>5, 5, 5</td><td>20/20</td><td>29/30</td><td class="font-bold text-emerald-600">5</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
                 } else if(activeTab === 'join_class') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🔑 Сынып код арқылы қосылу</h3><p class="text-xs text-slate-500">Мұғалім берген арнайы кілтті енгізіңіз.</p>`;
-                } else if(activeTab === 'support') {
-                    panel.innerHTML = `<h3 class="text-lg font-black mb-4 text-slate-900 border-b pb-3">🛟 Қолдау</h3>`;
+                    panel.innerHTML = `
+                        <h3 class="text-base font-black mb-4 text-slate-900 border-b pb-2">🔑 Сынып код арқылы қосылу</h3>
+                        <div class="p-4 bg-slate-50 rounded-xl border max-w-md space-y-3">
+                            <input type="text" placeholder="Мұғалім берген 6 таңбалы кодты енгізіңіз..." class="w-full border rounded px-3 py-2 text-xs bg-white">
+                            <button onclick="alert('Сыныпқа сәтті қосылдыңыз!')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Қосылу</button>
+                        </div>
+                    `;
                 }
             }
         }
@@ -359,33 +387,25 @@
             const name = document.getElementById('new-name').value.trim();
             const username = document.getElementById('new-user').value.trim();
             const password = document.getElementById('new-pass').value.trim();
-            const roleSelect = document.getElementById('new-role').value; // strict value check
+            const roleSelect = document.getElementById('new-role').value;
 
             if(!name || !username || !password) {
                 alert('Барлық өрістерді толтырыңыз!');
                 return;
             }
             if(users.some(u => u.username === username)) {
-                alert('Бұл логин жүйеде бұрыннан бар!');
+                alert('Бұл логин бос емес!');
                 return;
             }
 
-            users.push({ 
-                name, 
-                username, 
-                password, 
-                role: roleSelect, // accurately reflects selected role ('student' or 'teacher')
-                warnings: 0, 
-                status: 'active' 
-            });
-
+            users.push({ name, username, password, role: roleSelect, warnings: 0, status: 'active' });
             await saveDataToCloud();
-            alert('Пайдаланушы сәтті тіркелді!');
+            alert('Сәтті тіркелді!');
             renderTabContent();
         }
 
         async function deleteUser(username) {
-            if(confirm('Бұл пайдаланушыны өшіргіңіз келетініне сенімдісіз бе?')) {
+            if(confirm('Өшіргіңіз келетініне сенімдісіз бе?')) {
                 users = users.filter(u => u.username !== username);
                 await saveDataToCloud();
                 renderTabContent();
@@ -398,9 +418,9 @@
             u.warnings = (u.warnings || 0) + 1;
             if(u.warnings >= 3) {
                 u.status = 'blocked';
-                alert('Оқушыға 3 рет ескерту берілді. Аккаунт автоматты түрде бұғатталды!');
+                alert('3 рет ескерту берілді. Аккаунт автоматты түрде бұғатталды!');
             } else {
-                alert('Ескерту сәтті берілді!');
+                alert('Ескерту берілді!');
             }
             await saveDataToCloud();
             renderTabContent();
@@ -416,20 +436,17 @@
 
         async function postAnnouncement() {
             const text = document.getElementById('ann-text').value.trim();
-            if(!text) {
-                alert('Хабарлама мәтіні бос болмауы керек!');
-                return;
-            }
+            if(!text) return alert('Хабарлама мәтіні бос болмауы тиіс!');
             currentAnnouncement = text;
             await saveDataToCloud();
-            checkAnnouncementBanner();
+            checkBanner();
             alert('Хабарландыру сәтті жарияланды!');
         }
 
         async function clearAnnouncement() {
             currentAnnouncement = '';
             await saveDataToCloud();
-            checkAnnouncementBanner();
+            checkBanner();
             document.getElementById('ann-text').value = '';
             alert('Хабарландыру өшірілді!');
         }
