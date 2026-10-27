@@ -34,7 +34,6 @@
             position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.6s ease;
         }
 
-        /* Top bar loading dots on click */
         #top-loader {
             position: fixed; top: 0; left: 0; right: 0; height: 3px; background: transparent; z-index: 99999; overflow: hidden; display: none;
         }
@@ -49,7 +48,7 @@
 
     <div id="top-loader"><div class="loader-bar"></div></div>
 
-    <!-- WIN10 BOOT SCREEN (No OS text) -->
+    <!-- WIN10 BOOT SCREEN -->
     <div id="win10-boot">
         <div class="text-center space-y-6 animate-fade">
             <div class="w-16 h-16 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/50 text-2xl font-black text-white">BC</div>
@@ -121,7 +120,7 @@
                 <div id="warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">⚠️</span>
                     <div>
-                        <b class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
+                        <b class="font-bold">Әкімшілік / Smart Monitoring тарапынан ескерту берілді:</b>
                         <span id="warning-reason-text"></span>
                     </div>
                 </div>
@@ -143,7 +142,7 @@
     <!-- FOOTER -->
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
         <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
-        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған</span>
+        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Smart AI Monitoring Active)</span>
     </footer>
 
     <script>
@@ -171,17 +170,21 @@
             "Музыка", "Көркем еңбек"
         ];
 
+        // Forbidden words list for Smart Security Monitoring
+        const badWords = ["бля", "сука", "еба", "нах", "хуй", "анал", "дебил", "дурак", "шлюха", "пидор", "мразь"];
+
         let currentUser = null;
         let activeTab = '';
         let currentLang = 'kk';
         let users = [];
         let classesList = [];
         let schedules = [];
-        let grades = {}; // { username: { subjectName: { form: '', bzhb: '', tzhb: '', final: '', percent: 0 } } }
-        let attendance = {}; // { username: { date: status } }
+        let grades = {}; 
+        let attendance = {}; 
         let ktpList = [];
         let supportTickets = [];
         let currentAnnouncement = '';
+        let selectedTeacherSubject = subjectsList[0];
 
         const translations = {
             kk: {
@@ -296,7 +299,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v3").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v5").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -315,7 +318,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v3").set({
+                    await db.collection("bilimland").doc("enterprise_v5").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -472,7 +475,7 @@
                             </td>
                         </tr>
                     `).join('');
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions (Оқушылар мен мұғалімдерге ескерту/бұғаттау)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Аты-жөні / Рөлі</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${staffList || '<tr><td colspan="4" class="text-center text-slate-400">Қолданушылар жоқ</td></tr>'}</tbody></table></div>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Аты-жөні / Рөлі</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${staffList || '<tr><td colspan="4" class="text-center text-slate-400">Қолданушылар жоқ</td></tr>'}</tbody></table></div>`;
                 } else if (activeTab === 'admin_schedule') {
                     let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер жоқ</td></tr>';
                     panel.innerHTML = `
@@ -523,8 +526,8 @@
                 } else if (activeTab === 'admin_support') {
                     let ticketRows = supportTickets.length > 0 ? supportTickets.map((t, idx) => `
                         <tr class="text-xs">
-                            <td><b>@${t.from}</b></td>
-                            <td>${t.text}</td>
+                            <td><b>@${t.from}</b> ${t.flagged ? '<span class="text-red-600 font-bold">[🚨 AI Security Violation]</span>' : ''}</td>
+                            <td class="${t.flagged ? 'text-red-700 font-semibold bg-red-50' : ''}">${t.text}</td>
                             <td><span class="text-blue-600 font-bold">${t.reply || 'Жауап берілмеді'}</span></td>
                             <td>
                                 <input type="text" id="reply_${idx}" placeholder="Жауап жазу..." class="border rounded p-1 text-xs bg-white mr-1">
@@ -532,7 +535,7 @@
                             </td>
                         </tr>
                     `).join('') : '<tr><td colspan="4" class="text-center text-slate-400">Қолдау сұраулары жоқ</td></tr>';
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Кері байланыс тикеттері)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Кімнен</th><th>Хабарлама</th><th>Әкімші жауабы</th><th>Әрекет</th></tr></thead><tbody>${ticketRows}</tbody></table></div>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Smart Security Мониторингімен)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Кімнен</th><th>Хабарлама</th><th>Әкімші жауабы</th><th>Әрекет</th></tr></thead><tbody>${ticketRows}</tbody></table></div>`;
                 }
             }
             else if (currentUser.role === 'teacher') {
@@ -542,8 +545,8 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал және пайыздарды есептеу</h3>
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
                             <label class="text-xs font-bold uppercase text-slate-600">Пәнді таңдау:</label>
-                            <select id="selected-subject" onchange="renderTabContent()" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
-                                ${subjectsList.map(sub => `<option value="${sub}">${sub}</option>`).join('')}
+                            <select id="selected-subject" onchange="updateSelectedSubject(this)" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
+                                ${subjectsList.map(sub => `<option value="${sub}" ${sub === selectedTeacherSubject ? 'selected' : ''}>${sub}</option>`).join('')}
                             </select>
                         </div>
                         <div class="overflow-x-auto">
@@ -561,8 +564,7 @@
                                 </thead>
                                 <tbody>
                                     ${students.length > 0 ? students.map(s => {
-                                        let currentSub = document.getElementById('selected-subject')?.value || subjectsList[0];
-                                        let studentGrade = ((grades[s.username] || {})[currentSub]) || { form: '', bzhb: '', tzhb: '', final: '', percent: 0 };
+                                        let studentGrade = ((grades[s.username] || {})[selectedTeacherSubject]) || { form: '', bzhb: '', tzhb: '', final: '', percent: 0 };
                                         return `
                                             <tr>
                                                 <td class="font-bold text-left">${s.name}</td>
@@ -634,7 +636,7 @@
                 } else if (activeTab === 'teacher_support') {
                     let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Әкімшіге хат жазу)</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Smart Security Мониторингімен)</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <textarea id="support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Техникалық сұрақ немесе көмек туралы жазыңыз..."></textarea>
                             <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
@@ -684,7 +686,7 @@
                 } else if (activeTab === 'student_support') {
                     let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Әкімшіге хат жазу)</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Smart Security Мониторингімен)</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
                             <textarea id="stud-support-msg" rows="3" class="w-full border rounded p-2 text-xs bg-white" placeholder="Сұрағыңызды жазыңыз..."></textarea>
                             <button onclick="sendSupportMessage()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Өтініш жіберу</button>
@@ -695,14 +697,16 @@
             }
         }
 
+        function updateSelectedSubject(selectElem) {
+            selectedTeacherSubject = selectElem.value;
+        }
+
         async function calculateAndSaveGrade(username) {
-            let currentSub = document.getElementById('selected-subject').value;
             let formVal = document.getElementById(`form_${username}`).value.trim();
             let bzhbVal = document.getElementById(`bzhb_${username}`).value.trim();
             let tzhbVal = document.getElementById(`tzhb_${username}`).value.trim();
             let finalVal = document.getElementById(`final_${username}`).value.trim();
 
-            // Auto percent calculation logic
             let totalScore = 0;
             let count = 0;
             if(formVal) { let p = parseFloat(formVal.split('/')[0]) || 0; totalScore += (p / 10) * 100; count++; }
@@ -711,19 +715,24 @@
             let finalPercent = count > 0 ? Math.round(totalScore / count) : 0;
 
             if(!grades[username]) grades[username] = {};
-            grades[username][currentSub] = { form: formVal, bzhb: bzhbVal, tzhb: tzhbVal, final: finalVal || (finalPercent >= 85 ? '5' : '4'), percent: finalPercent };
+            grades[username][selectedTeacherSubject] = { 
+                form: formVal, 
+                bzhb: bzhbVal, 
+                tzhb: tzhbVal, 
+                final: finalVal || (finalPercent >= 85 ? '5' : '4'), 
+                percent: finalPercent 
+            };
 
             await saveDataToCloud();
-            alert('Баға сақталды, пайыздар есептеліп оқушы мен әкімшіге жіберілді!');
+            alert(`[${selectedTeacherSubject}] пәні бойынша баға сақталды және оқушы парақшасына жіберілді!`);
             renderTabContent();
         }
 
         async function deleteGradeRecord(username) {
-            let currentSub = document.getElementById('selected-subject').value;
-            if(grades[username] && grades[username][currentSub]) {
-                delete grades[username][currentSub];
+            if(grades[username] && grades[username][selectedTeacherSubject]) {
+                delete grades[username][selectedTeacherSubject];
                 await saveDataToCloud();
-                alert('Баға жойылды!');
+                alert(`[${selectedTeacherSubject}] пәні бойынша баға жойылды!`);
                 renderTabContent();
             }
         }
@@ -765,12 +774,32 @@
             renderTabContent();
         }
 
+        // Smart Security Monitoring Filter for Support/Messages
         async function sendSupportMessage() {
             let msg = document.getElementById('support-msg')?.value || document.getElementById('stud-support-msg')?.value;
             if(!msg) return alert('Хабарлама бос болмауы тиіс!');
-            supportTickets.push({ from: currentUser.username, text: msg, reply: '' });
+
+            // Check against bad words
+            let lowerMsg = msg.toLowerCase();
+            let hasViolation = badWords.some(word => lowerMsg.includes(word));
+
+            if(hasViolation) {
+                currentUser.warningReason = "Smart Security: Қолдау қызметінде әдепсіз/боғауыз сөз қолданылды!";
+                supportTickets.push({ 
+                    from: currentUser.username, 
+                    text: `[БҰҒАТТАЛДЫ / СӨЗ ЕРЕЖЕСІ БҰЗЫЛДЫ]: ${msg}`, 
+                    reply: 'Автоматты түрде ескерту берілді.',
+                    flagged: true 
+                });
+                await saveDataToCloud();
+                checkBanners();
+                alert('🚨 Назар аударыңыз! Жүйенің Smart Security мониторингі әдепсіз сөздерді анықтады. Сізге автоматты түрде ескерту берілді және хат жіберілмеді!');
+                return;
+            }
+
+            supportTickets.push({ from: currentUser.username, text: msg, reply: '', flagged: false });
             await saveDataToCloud();
-            alert('Қолдау қызметіне хат жіберілді!');
+            alert('Қолдау қызметіне хат сәтті жіберілді!');
             renderTabContent();
         }
 
@@ -842,10 +871,10 @@
         }
 
         function downloadPDFReport() {
-            let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\\nOqushy: ${currentUser.name}\\nDate: ${new Date().toLocaleDateString()}\\n-------------------------------------\\n`;
+            let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
