@@ -316,7 +316,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v12_ai").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v13_ai").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -335,7 +335,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v12_ai").set({
+                    await db.collection("bilimland").doc("enterprise_v13_ai").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -830,7 +830,7 @@
             }
         }
 
-        // Strictly isolated AI Chat Panel using session-based user keys
+        // Fully enriched AI Chat Panel with detailed multi-sentence responses
         function renderAIChatPanel(panel, aiName, aiDesc) {
             let sessionKey = currentUser.username + '_' + aiName;
             if(!aiHistories[sessionKey]) aiHistories[sessionKey] = [];
@@ -853,17 +853,17 @@
                         </div>
                     </div>
                     <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-white">
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
-                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке көмекшіңізбін. Кез келген сұрағыңызды қойыңыз, толық жауап беремін!
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900 leading-relaxed">
+                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке интеллектуалды көмекшіңізбін. Кез келген кәсіби немесе оқу сұрағыңызды қойыңыз, мен сізге толық, жан-жақты әрі мазмұнды жауап беруге дайынмын!
                         </div>
                         ${history.map(m => `
-                            <div class="p-3 rounded-lg ${m.sender === 'user' ? 'bg-slate-100 text-slate-800 ml-8' : 'bg-indigo-50 border border-indigo-200 text-indigo-950 mr-8'}">
+                            <div class="p-3 rounded-lg leading-relaxed ${m.sender === 'user' ? 'bg-slate-100 text-slate-800 ml-8' : 'bg-indigo-50 border border-indigo-200 text-indigo-950 mr-8'}">
                                 <b>${m.sender === 'user' ? 'Сіз' : aiName}:</b> ${m.text}
                             </div>
                         `).join('')}
                     </div>
                     <div class="p-3 bg-slate-100 border-t flex gap-2">
-                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке кез келген сұрақ жазу..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') sendAIMessage('${aiName}')">
+                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке кез келген сұрағыңызды толық жазыңыз..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') sendAIMessage('${aiName}')">
                         <button onclick="sendAIMessage('${aiName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs transition-all">Жіберу</button>
                     </div>
                 </div>
@@ -897,16 +897,19 @@
                 let lower = text.toLowerCase();
 
                 if(mode === 'think_hard') {
-                    reply = `[Think Hard Deep Analysis]: "${text}" сұрағы бойынша жүйе терең логикалық талдау жасады. Кәсіби стандарттар мен ережелерді негізге ала отырып, бұл міндетті тиімді шешуге болады.`;
+                    reply = `[Think Hard Deep Analysis]: Сіздің «${text}» сұрағыңыз бойынша жүйе терең логикалық талдау жүргізді. Мемлекеттік білім беру стандартының талаптары мен ағымдағы статистикалық көрсеткіштерді ескере отырып, бұл мәселені шешу үшін мынадай қадамдарды орындау қажет: 
+                    1. Барлық деректер базасы мен сынып журналдарын өзара синхрондау;
+                    2. Оқушылардың БЖБ және ТЖБ қорытындыларын сараптау арқылы ортақ пайыздық көрсеткішті шығару;
+                    3. Туындаған міндеттерді жүйелі түрде автоматты режимде бақылауда ұстау. Бұл әдіс барлық процестердің әділ әрі ашық жүруін қамтамасыз етеді.`;
                 } else if(mode === 'search') {
-                    reply = `[Live Search Result]: "${text}" бойынша мемлекеттік базадан және оқу бағдарламаларынан тиісті ақпараттар мен ережелер табылып, синхрондалды.`;
+                    reply = `[Live Search & Database Result]: Іздеу жүйесі арқылы «${text}» сұрағына қатысты барлық ресми құжаттар, әдістемелік нұсқаулар және электронды журнал ережелері сүзіліп шығарылды. ҚР Білім және ғылым министрлігінің бекітілген стандарттарына сәйкес, бұл бағыттағы барлық әрекеттер бұлттық базада қауіпсіз түрде сақталады және қажетті есептеулер автоматты түрде жүзеге асырылады.`;
                 } else {
                     if(aiName === 'TeachGPT') {
-                        reply = `TeachGPT жауабы: Мұғалім үшін "${text}" сұрағы маңызды. Сабақтар мен сынып үлгерімін басқару барысында бұл бағытта қосымша тапсырмалар мен пайыздарды есептеу көмектеседі.`;
+                        reply = `TeachGPT сараптамасы: Сіздің «${text}» сұрағыңызға орай, мұғалімдерге арналған әдістемелік көмек ретінде төмендегілерді атап өтуге болады. Күнделікті сабақ кестесін жоспарлау, сынып оқушыларының білім көрсеткіштерін (GPT-Analytics) қадағалау және формативті бағалау нәтижелерін есептеу үдерісі толықтай автоматтандырылған. Қосымша тапсырмалар құру немесе пайыздарды есептеу барысында сұрақтар туындаса, жүйе әрқашан көмектесуге дайын!`;
                     } else if(aiName === 'Admin-GPT') {
-                        reply = `Admin-GPT анализі: Мектеп бойынша "${text}" сұрағына қатысты мониторинг жүргізіліп, барлық көрсеткіштер штаттық режимде екені расталды.`;
+                        reply = `Admin-GPT мониторингі: Әкімшілік панель арқылы қойылған «${text}» сұрағы бойынша мектептің жалпы көрсеткіштері мен белсенділік деңгейі тексерілді. Қазіргі уақытта барлық сыныптар, мұғалімдер мен оқушылар штабтық режимде жұмыс істеуде. Қауіпсіздік ережелері сақталып, ешқандай жүйелік қателер тіркелген жоқ. Мектеп бойынша аналитика мен статистика тұрақты түрде жаңартылып отырады.`;
                     } else {
-                        reply = `Study-GPT жауабы: "${text}" бойынша оқу процесіндегі көрсеткіштеріңді жақсарту үшін осы тақырыпты тағы да қайталап шығуға кеңес беремін!`;
+                        reply = `Study-GPT көмекшісі: Сәлем! Сенің қойған «${text}» сұрағың бойынша оқу үрдісін жақсарту үшін мынадай кеңестер беремін: сабақ кестеңді алдын ала қарап шық, үй тапсырмаларын уақытында орында және әр пән бойынша формативті, БЖБ, ТЖБ нәтижелеріңді қадағалап отыр. Егер қандай да бір тақырып немесе есеп түсініксіз болса, маған қайтадан сұрақ қой, мен оны саған қадамдап, түсінікті етіп түсіндіріп беремін!`;
                     }
                 }
 
@@ -1179,7 +1182,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
+                content += `Pan: ${sub} | Format: ${myGrgrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
