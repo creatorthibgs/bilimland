@@ -52,7 +52,7 @@
             <div class="w-14 h-14 mx-auto bg-blue-900 rounded-xl flex items-center justify-center shadow-md text-xl font-black text-white">BL</div>
             <div>
                 <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">BilimLand</div>
-                <div class="text-base font-extrabold text-blue-900 tracking-tight mt-0.5">BilimClass Enterprise</div>
+                <div class="text-base font-extrabold text-blue-900 tracking-tight mt-0.5">BilimClass</div>
             </div>
             <div class="gov-loader-bar mx-auto">
                 <div class="gov-loader-progress"></div>
@@ -178,6 +178,10 @@
         let currentAnnouncement = '';
         let selectedTeacherSubject = subjectsList[0];
 
+        // AI Modes & Chat states
+        let aiMode = 'auto'; // auto, think_hard, search
+        let aiChatMessages = [];
+
         const translations = {
             kk: {
                 subtitle: "Мемлекеттік бірыңғай мектеп журналы",
@@ -195,21 +199,24 @@
                 adminUsers: "👥 Логин/парольдер & Ата-ана",
                 adminAnn: "📢 Хабарландыру",
                 adminSupport: "🛟 Қолдау кірістері",
+                adminAI: "🤖 Admin-GPT",
                 teachJorn: "📖 Бағалар журналы",
                 teachAtt: "📋 Қатысу журналы",
                 teachClass: "➕ Сынып ашу (DCA)",
                 teachSched: "📅 Сабақ кестесі",
                 teachKtp: "📑 КТЖ (Күнтізбелік жоспар)",
                 teachSup: "🛟 Қолдау қызметі",
+                teachAI: "🤖 TeachGPT",
                 studGrades: "📊 Менің бағаларым",
                 studSched: "📅 Менің кестем",
                 studHw: "📚 Үй тапсырмасы",
                 studContact: "💬 Мұғаліммен байланыс",
                 studJoin: "🔑 DCA кодпен қосылу",
                 studSup: "🛟 Қолдау",
+                studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Баланың бағалары",
                 parentSched: "📅 Баланың кестесі",
-                parentSup: "🛟 Қолдау қызметі"
+                parentSupport: "🛟 Қолдау қызметі"
             },
             ru: {
                 subtitle: "Государственная единая школьная система",
@@ -227,21 +234,24 @@
                 adminUsers: "👥 Пользователи и Родители",
                 adminAnn: "📢 Объявления",
                 adminSupport: "🛟 Входящие тикеты",
+                adminAI: "🤖 Admin-GPT",
                 teachJorn: "📖 Журнал оценок",
                 teachAtt: "📋 Посещаемость",
                 teachClass: "➕ Создать класс (DCA)",
                 teachSched: "📅 Расписание",
                 teachKtp: "📑 КТП",
                 teachSup: "🛟 Поддержка",
+                teachAI: "🤖 TeachGPT",
                 studGrades: "📊 Мои оценки",
                 studSched: "📅 Мое расписание",
                 studHw: "📚 Домашка",
                 studContact: "💬 Связь с учителем",
                 studJoin: "🔑 Вступить по DCA коду",
                 studSup: "🛟 Поддержка",
+                studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Оценки ребенка",
                 parentSched: "📅 Расписание ребенка",
-                parentSup: "🛟 Поддержка"
+                parentSupport: "🛟 Поддержка"
             },
             en: {
                 subtitle: "State Unified School System",
@@ -259,21 +269,24 @@
                 adminUsers: "👥 Users & Parents",
                 adminAnn: "📢 Announcements",
                 adminSupport: "🛟 Support Tickets",
+                adminAI: "🤖 Admin-GPT",
                 teachJorn: "📖 Gradebook",
                 teachAtt: "📋 Attendance",
                 teachClass: "➕ Create Class (DCA)",
                 teachSched: "📅 Schedule",
                 teachKtp: "📑 KTP",
                 teachSup: "🛟 Support",
+                teachAI: "🤖 TeachGPT",
                 studGrades: "📊 My Grades",
                 studSched: "📅 My Schedule",
                 studHw: "📚 Homework",
                 studContact: "💬 Contact",
                 studJoin: "🔑 Join via DCA Code",
                 studSup: "🛟 Support",
+                studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Child Grades",
                 parentSched: "📅 Child Schedule",
-                parentSup: "🛟 Support"
+                parentSupport: "🛟 Support"
             }
         };
 
@@ -303,7 +316,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v9_dca").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v10_ai").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -322,7 +335,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v9_dca").set({
+                    await db.collection("bilimland").doc("enterprise_v10_ai").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -431,7 +444,8 @@
                     { id: 'admin_schedule', label: t.adminSched },
                     { id: 'admin_users', label: t.adminUsers },
                     { id: 'admin_announcement', label: t.adminAnn },
-                    { id: 'admin_support', label: t.adminSupport }
+                    { id: 'admin_support', label: t.adminSupport },
+                    { id: 'admin_ai', label: t.adminAI }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
@@ -440,13 +454,14 @@
                     { id: 'teacher_classes', label: t.teachClass },
                     { id: 'teacher_schedule', label: t.teachSched },
                     { id: 'teacher_ktp', label: t.teachKtp },
-                    { id: 'teacher_support', label: t.teachSup }
+                    { id: 'teacher_support', label: t.teachSup },
+                    { id: 'teacher_ai', label: t.teachAI }
                 ];
             } else if (currentUser.role === 'parent') {
                 links = [
                     { id: 'parent_grades', label: t.parentGrades },
                     { id: 'parent_schedule', label: t.parentSched },
-                    { id: 'parent_support', label: t.parentSup }
+                    { id: 'parent_support', label: t.parentSupport }
                 ];
             } else {
                 links = [
@@ -455,7 +470,8 @@
                     { id: 'student_homework', label: t.studHw },
                     { id: 'student_contact', label: t.studContact },
                     { id: 'student_join', label: t.studJoin },
-                    { id: 'student_support', label: t.studSup }
+                    { id: 'student_support', label: t.studSup },
+                    { id: 'student_ai', label: t.studAI }
                 ];
             }
             menu.innerHTML = links.map(l => `
@@ -562,11 +578,12 @@
                         </tr>
                     `).join('') : '<tr><td colspan="4" class="text-center text-slate-400">Қолдау сұраулары жоқ</td></tr>';
                     panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛟 Қолдау қызметі (Smart Security Мониторингімен)</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Кімнен</th><th>Хабарлама</th><th>Әкімші жауабы</th><th>Әрекет</th></tr></thead><tbody>${ticketRows}</tbody></table></div>`;
+                } else if (activeTab === 'admin_ai') {
+                    renderAIChatPanel(panel, 'Admin-GPT', 'Мектептің жалпы адамдар саны, сыныптар мониторингі, мұғалімдер белсенділігі және GPT-6 Analytics терең талдауы.');
                 }
             }
             else if (currentUser.role === 'teacher') {
                 if (activeTab === 'teacher_journal') {
-                    // Мұғалім тек өзінің ашқан сыныбына қосылған оқушыларды ғана көреді
                     let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
                     let students = myClass ? users.filter(u => u.role === 'student' && (myClass.students || []).includes(u.username)) : [];
 
@@ -627,23 +644,23 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📋 Қатысу журналы</h3>
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex gap-2 items-center">
                             <input type="date" id="att-date" class="border rounded p-1 text-xs bg-white">
-                            <span class="text-xs text-slate-500">Күнді таңдап, қатысуды белгілеңіз.</span>
+                            <span class="text-xs text-slate-500">Күнді таңдап, тек сыныптағы оқушылардың қатысуын белгілеңіз.</span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
                                 <thead><tr><th>Оқушы</th><th>Мәртебесі</th><th>Қатысуды таңдау</th><th>Әрекет</th></tr></thead>
                                 <tbody>
                                     ${students.map(s => {
-                                        let attRecord = (attendance[s.username] || {})['today'] || '+';
+                                        let attRecord = (attendance[s.username] || {})['today'] || '-';
                                         return `
                                             <tr>
                                                 <td class="font-bold text-left">${s.name}</td>
                                                 <td><span class="font-bold">${attRecord}</span></td>
-                                                <td><select id="att_status_${s.username}" class="border rounded p-1 text-xs bg-white"><option value="+">Қатысты (+)</option><option value="С">Себепті (С)</option><option value="А">Ауырып жатыр (А)</option></select></td>
+                                                <td><select id="att_status_${s.username}" class="border rounded p-1 text-xs bg-white"><option value="-">Белгіленбеді (-)</option><option value="+">Қатысты (+)</option><option value="С">Себепті (С)</option><option value="А">Ауырып жатыр (А)</option></select></td>
                                                 <td><button onclick="saveAttendance('${s.username}')" class="px-3 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button></td>
                                             </tr>
                                         `;
-                                    }).join('') || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}
+                                    }).join('') || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ (Алдымен сынып ашып, оқушыларды қосыңыз)</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
@@ -687,6 +704,8 @@
                         </div>
                         <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${myTickets || '<p class="text-xs text-slate-400">Өтініштер жоқ</p>'}</div>
                     `;
+                } else if (activeTab === 'teacher_ai') {
+                    renderAIChatPanel(panel, 'TeachGPT', 'Бүгінгі сабақ кестесі, сыныптың және оқушылардың білім көрсеткіші (GPT-Analytics), жаңа тапсырмалар генерациялау және пайыздарды есептеу.');
                 }
             }
             else if (currentUser.role === 'parent') {
@@ -694,9 +713,13 @@
                 let childObj = users.find(u => u.username === childUsername);
                 let childName = childObj ? childObj.name : 'Бекітілген бала табылмады';
 
+                // Баланың қай сыныпта екенін анықтау
+                let assignedClass = classesList.find(c => (c.students || []).includes(childUsername));
+                let classNameStr = assignedClass ? assignedClass.name : 'Әлі ешқандай сыныпқа қосылмаған';
+
                 if (activeTab === 'parent_grades') {
                     let childGrades = grades[childUsername] || {};
-                    let childAtt = (attendance[childUsername] || {})['today'] || '+';
+                    let childAtt = (attendance[childUsername] || {})['today'] || '-';
                     let gradeRows = Object.keys(childGrades).length > 0 ? Object.keys(childGrades).map(sub => `
                         <tr>
                             <td class="font-bold text-left">${sub}</td>
@@ -710,7 +733,7 @@
 
                     panel.innerHTML = `
                         <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3 text-xs text-amber-900 font-bold flex justify-between items-center">
-                            <span>👨‍👩‍👧 Ата-ана порталы. Бақылаудағы бала: <b class="text-indigo-900 text-sm">${childName}</b></span>
+                            <span>👨‍👩‍👧 Ата-ана порталы. Бақылаудағы бала: <b class="text-indigo-900 text-sm">${childName}</b> [ Сыныбы: <span class="text-blue-700">${classNameStr}</span> ]</span>
                             <span class="bg-white px-2 py-1 rounded border text-emerald-700 font-extrabold">Қатысуы: [ ${childAtt} ]</span>
                         </div>
                         <div class="overflow-x-auto">
@@ -721,7 +744,7 @@
                         </div>
                     `;
                 } else if (activeTab === 'parent_schedule') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Баланың сабақ кестесі</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Баланың сабақ кестесі (${classNameStr})</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
                 } else if (activeTab === 'parent_support') {
                     let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
@@ -735,9 +758,23 @@
                 }
             }
             else {
+                // Оқушы үшін тексеру: сыныпқа қосылған ба, жоқ па?
+                let studentClass = classesList.find(c => (c.students || []).includes(currentUser.username));
+
                 if (activeTab === 'student_grades') {
+                    if(!studentClass) {
+                        panel.innerHTML = `
+                            <div class="p-6 text-center space-y-3">
+                                <div class="text-amber-600 font-bold text-sm">⚠️ Сіз әлі ешқандай сыныпқа қосылмадыңыз!</div>
+                                <p class="text-xs text-slate-500">Бағаларыңызды көру үшін «🔑 DCA кодпен қосылу» бөліміне өтіп, мұғалім берген кодты енгізіңіз.</p>
+                                <button onclick="switchTab('student_join')" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Сыныпқа қосылуға өту</button>
+                            </div>
+                        `;
+                        return;
+                    }
+
                     let myGrades = grades[currentUser.username] || {};
-                    let myAtt = (attendance[currentUser.username] || {})['today'] || '+';
+                    let myAtt = (attendance[currentUser.username] || {})['today'] || '-';
                     let gradeRows = Object.keys(myGrades).length > 0 ? Object.keys(myGrades).map(sub => `
                         <tr>
                             <td class="font-bold text-left">${sub}</td>
@@ -747,11 +784,11 @@
                             <td class="font-extrabold text-amber-600">${myGrades[sub].percent}%</td>
                             <td class="font-bold text-emerald-600">${myGrades[sub].final}</td>
                         </tr>
-                    `).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Бағалар әлі қойылмаған (Немесе сіз әлі сыныпқа қосылмадыңыз)</td></tr>';
+                    `).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Бағалар әлі қойылмаған</td></tr>';
 
                     panel.innerHTML = `
                         <div class="flex justify-between items-center mb-3 border-b pb-2">
-                            <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым мен пайыздарым</h3>
+                            <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым (Сыныбы: <span class="text-blue-700">${studentClass.name}</span>)</h3>
                             <button onclick="downloadPDFReport()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold shadow-xs">📥 PDF форматында жүктеу</button>
                         </div>
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold">
@@ -789,8 +826,84 @@
                         </div>
                         <div class="bg-white border rounded p-3 max-h-40 overflow-y-auto">${myTickets || '<p class="text-xs text-slate-400">Өтініштер жоқ</p>'}</div>
                     `;
+                } else if (activeTab === 'student_ai') {
+                    renderAIChatPanel(panel, 'Study-GPT', 'Бүгінгі сабақ кестесі, үй тапсырмасының бар-жоғы, пәндер бойынша көрсеткіштерің, қай пәннен алғыр екенің және күрделі тақырыптарды түсіндіру.');
                 }
             }
+        }
+
+        // AI Chat Panel Builder (3 modes: Auto, Think Hard, Search)
+        function renderAIChatPanel(panel, aiName, aiDesc) {
+            panel.innerHTML = `
+                <div class="flex flex-col h-[520px] bg-slate-50 border rounded-xl overflow-hidden">
+                    <div class="bg-slate-900 text-white p-3 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-extrabold">${aiName} (Autonomous Neural Core)</h3>
+                            <p class="text-[10px] text-slate-300">${aiDesc}</p>
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px]">
+                            <button onclick="setAIMode('auto')" id="mode-auto" class="px-2 py-1 rounded font-bold ${aiMode === 'auto' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300'}">Auto</button>
+                            <button onclick="setAIMode('think_hard')" id="mode-think" class="px-2 py-1 rounded font-bold ${aiMode === 'think_hard' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}">Think Hard</button>
+                            <button onclick="setAIMode('search')" id="mode-search" class="px-2 py-1 rounded font-bold ${aiMode === 'search' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'}">Search</button>
+                        </div>
+                    </div>
+                    <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-white">
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
+                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке интеллект көмекшіңізбін. Қандай сұрағыңыз бар немесе не талдап берейін?
+                        </div>
+                        ${aiChatMessages.map(m => `
+                            <div class="p-3 rounded-lg ${m.sender === 'user' ? 'bg-slate-100 text-slate-800 ml-8' : 'bg-indigo-50 border border-indigo-200 text-indigo-950 mr-8'}">
+                                <b>${m.sender === 'user' ? 'Сіз' : aiName}:</b> ${m.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="p-3 bg-slate-100 border-t flex gap-2">
+                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке хат жазу..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='KeyEnter') sendAIMessage('${aiName}')">
+                        <button onclick="sendAIMessage('${aiName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs transition-all">Жіберу</button>
+                    </div>
+                </div>
+            `;
+            let msgBox = document.getElementById('ai-chat-messages');
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }
+
+        function setAIMode(mode) {
+            aiMode = mode;
+            if(activeTab === 'admin_ai' || activeTab === 'teacher_ai' || activeTab === 'student_ai') {
+                renderTabContent();
+            }
+        }
+
+        async function sendAIMessage(aiName) {
+            let input = document.getElementById('ai-input-msg');
+            let text = input.value.trim();
+            if(!text) return;
+
+            aiChatMessages.push({ sender: 'user', text: text });
+            input.value = '';
+            renderTabContent();
+
+            showSpinner(`${aiName} (${aiMode.toUpperCase()}) талдау жасауда...`);
+            setTimeout(() => {
+                let responseText = "";
+                if(aiName === 'TeachGPT') {
+                    responseText = aiMode === 'think_hard' ? '[Think Hard Analysis]: Бүгінгі кесте бойынша 3 сабағыңыз бар. Сыныптың орташа үлгерімі 82% тәуір деңгейде. БЖБ нәтижелеріне қарағанда математикадан қосымша тапсырма беру ұсынылады.' : 
+                                   aiMode === 'search' ? '[Live Search Result]: ҚР Білім министрлігінің жаңа стандарты бойынша тоқсандық есептеулер БЖБ/ТЖБ негізінде жүруде. Деректер базасы синхрондалды.' : 
+                                   'TeachGPT автоматты жауабы: Сіздің сабақтарыңыз сәтті өтіп жатыр. Оқушылардың белсенділігі жақсы.';
+                } else if(aiName === 'Admin-GPT') {
+                    responseText = aiMode === 'think_hard' ? '[GPT-6-Analytics Deep Think]: Мектеп бойынша жалпы қолданушылар белсенділігі 94%. Ешқандай қауіпсіздік бұзушылықтары тіркелген жоқ. Барлық сыныптар штаттық режимде жұмыс істеуде.' : 
+                                   aiMode === 'search' ? '[Global Database Search]: Барлық мемлекеттік стандарттар сақталған. Бұлттық Firebase Firestore қосылымы тұрақты.' : 
+                                   'Admin-GPT мониторингі: Барлық мұғалімдер мен оқушылар жүйеде белсенді.';
+                } else {
+                    responseText = aiMode === 'think_hard' ? '[Study-GPT Think Hard]: Сіздің бағаларыңызды талдай келе, математика мен физикадан көрсеткішіңіз жоғары екенін көрдім. Егер тақырып түсініксіз болса, маған сұрақ қойыңыз, мен оны қадамдап түсіндіріп беремін!' : 
+                                   aiMode === 'search' ? '[Knowledge Base Search]: Іздеу нәтижесі бойынша сіздің сұрағыңызға сай оқу материалдары мен КТЖ жоспарлары табылды.' : 
+                                   'Study-GPT: Бүгінгі сабақтар кестесі орындалды. Үй тапсырмасын орындауды ұмытпаңыз!';
+                }
+
+                aiChatMessages.push({ sender: 'ai', text: responseText });
+                hideSpinner();
+                renderTabContent();
+            }, 1000);
         }
 
         function toggleParentStudentSelect(role) {
@@ -875,7 +988,6 @@
             let className = document.getElementById('new-class-name').value.trim();
             if(!className) return alert('Сынып атын енгізіңіз!');
             
-            // Мұғалімнің өзінің сыныбы бар-жоғын тексеру
             let existing = classesList.find(c => c.teacherUsername === currentUser.username);
             if(existing) return alert('Сізде бұрыннан ашылған сынып бар: ' + existing.name);
 
@@ -1049,7 +1161,7 @@
             await saveDataToCloud();
             hideSpinner();
             checkBanners();
-            document.getElementById('announcement-input').value.trim();
+            document.getElementById('announcement-input').value = '';
             alert('Хабарландыру өшірілді!');
         }
 
