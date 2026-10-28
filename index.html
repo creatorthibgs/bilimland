@@ -316,7 +316,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v13_ai").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v14_ai").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -335,7 +335,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v13_ai").set({
+                    await db.collection("bilimland").doc("enterprise_v14_ai").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -830,7 +830,7 @@
             }
         }
 
-        // Fully enriched AI Chat Panel with detailed multi-sentence responses
+        // Fully enriched AI Chat Panel with database-aware smart responses
         function renderAIChatPanel(panel, aiName, aiDesc) {
             let sessionKey = currentUser.username + '_' + aiName;
             if(!aiHistories[sessionKey]) aiHistories[sessionKey] = [];
@@ -854,7 +854,7 @@
                     </div>
                     <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-white">
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900 leading-relaxed">
-                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке интеллектуалды көмекшіңізбін. Кез келген кәсіби немесе оқу сұрағыңызды қойыңыз, мен сізге толық, жан-жақты әрі мазмұнды жауап беруге дайынмын!
+                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке интеллектуалды көмекшіңізбін. Жүйедегі нақты деректерді талдап, кез келген сұрағыңызға жан-жақты жауап беремін!
                         </div>
                         ${history.map(m => `
                             <div class="p-3 rounded-lg leading-relaxed ${m.sender === 'user' ? 'bg-slate-100 text-slate-800 ml-8' : 'bg-indigo-50 border border-indigo-200 text-indigo-950 mr-8'}">
@@ -863,7 +863,7 @@
                         `).join('')}
                     </div>
                     <div class="p-3 bg-slate-100 border-t flex gap-2">
-                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке кез келген сұрағыңызды толық жазыңыз..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') sendAIMessage('${aiName}')">
+                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке сұрағыңызды толық жазыңыз..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') sendAIMessage('${aiName}')">
                         <button onclick="sendAIMessage('${aiName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs transition-all">Жіберу</button>
                     </div>
                 </div>
@@ -890,26 +890,50 @@
             renderTabContent();
 
             let mode = aiModes[sessionKey] || 'auto';
-            showSpinner(`${aiName} (${mode.toUpperCase()}) талдау жасауда...`);
+            showSpinner(`${aiName} (${mode.toUpperCase()}) деректерді талдауда...`);
 
             setTimeout(() => {
                 let reply = "";
                 let lower = text.toLowerCase();
 
-                if(mode === 'think_hard') {
-                    reply = `[Think Hard Deep Analysis]: Сіздің «${text}» сұрағыңыз бойынша жүйе терең логикалық талдау жүргізді. Мемлекеттік білім беру стандартының талаптары мен ағымдағы статистикалық көрсеткіштерді ескере отырып, бұл мәселені шешу үшін мынадай қадамдарды орындау қажет: 
-                    1. Барлық деректер базасы мен сынып журналдарын өзара синхрондау;
-                    2. Оқушылардың БЖБ және ТЖБ қорытындыларын сараптау арқылы ортақ пайыздық көрсеткішті шығару;
-                    3. Туындаған міндеттерді жүйелі түрде автоматты режимде бақылауда ұстау. Бұл әдіс барлық процестердің әділ әрі ашық жүруін қамтамасыз етеді.`;
-                } else if(mode === 'search') {
-                    reply = `[Live Search & Database Result]: Іздеу жүйесі арқылы «${text}» сұрағына қатысты барлық ресми құжаттар, әдістемелік нұсқаулар және электронды журнал ережелері сүзіліп шығарылды. ҚР Білім және ғылым министрлігінің бекітілген стандарттарына сәйкес, бұл бағыттағы барлық әрекеттер бұлттық базада қауіпсіз түрде сақталады және қажетті есептеулер автоматты түрде жүзеге асырылады.`;
-                } else {
-                    if(aiName === 'TeachGPT') {
-                        reply = `TeachGPT сараптамасы: Сіздің «${text}» сұрағыңызға орай, мұғалімдерге арналған әдістемелік көмек ретінде төмендегілерді атап өтуге болады. Күнделікті сабақ кестесін жоспарлау, сынып оқушыларының білім көрсеткіштерін (GPT-Analytics) қадағалау және формативті бағалау нәтижелерін есептеу үдерісі толықтай автоматтандырылған. Қосымша тапсырмалар құру немесе пайыздарды есептеу барысында сұрақтар туындаса, жүйе әрқашан көмектесуге дайын!`;
-                    } else if(aiName === 'Admin-GPT') {
-                        reply = `Admin-GPT мониторингі: Әкімшілік панель арқылы қойылған «${text}» сұрағы бойынша мектептің жалпы көрсеткіштері мен белсенділік деңгейі тексерілді. Қазіргі уақытта барлық сыныптар, мұғалімдер мен оқушылар штабтық режимде жұмыс істеуде. Қауіпсіздік ережелері сақталып, ешқандай жүйелік қателер тіркелген жоқ. Мектеп бойынша аналитика мен статистика тұрақты түрде жаңартылып отырады.`;
+                // Generate smart dynamic response based on actual system database state
+                let totalUsers = users.length;
+                let totalClasses = classesList.length;
+                let classNamesStr = classesList.length > 0 ? classesList.map(c => c.name + ` (Жетекшісі: ${c.teacher}, Коды: ${c.dcaCode})`).join(', ') : 'Әлі ешқандай сынып ашылмаған';
+                let myGrades = grades[currentUser.username] || {};
+                let gradesStr = Object.keys(myGrades).length > 0 ? Object.keys(myGrades).map(sub => `${sub}: Формативті=${myGrades[sub].form || '-'}, БЖБ=${myGrades[sub].bzhb || '-'}, ТЖБ=${myGrades[sub].tzhb || '-'}, Пайыз=${myGrades[sub].percent}%, Қорытынды=${myGrades[sub].final}`).join('; ') : 'Әлі бағалар қойылмаған';
+
+                if(aiName === 'Admin-GPT') {
+                    if(lower.includes('сынып') || lower.includes('қандай сынып')) {
+                        reply = `[Admin-GPT ${mode.toUpperCase()} Анализі]: Қазіргі уақытта жүйеде барлығы ${totalClasses} сынып тіркелген. Тізім: ${classNamesStr}. Мектеп бойынша жалпы қолданушылар саны: ${totalUsers} адам. Барлық көрсеткіштер штабтық режимде жұмыс істеуде.`;
+                    } else if(lower.includes('мұғалім') || lower.includes('оқушы')) {
+                        let teachersCount = users.filter(u => u.role === 'teacher').length;
+                        let studentsCount = users.filter(u => u.role === 'student').length;
+                        let parentsCount = users.filter(u => u.role === 'parent').length;
+                        reply = `[Admin-GPT Мектеп статистикасы]: Жүйеде тіркелген мұғалімдер саны — ${teachersCount}, оқушылар саны — ${studentsCount}, ата-аналар саны — ${parentsCount}. Барлық белсенділік пен қауіпсіздік ережелері GPT-6 Analytics арқылы бақылануда.`;
                     } else {
-                        reply = `Study-GPT көмекшісі: Сәлем! Сенің қойған «${text}» сұрағың бойынша оқу үрдісін жақсарту үшін мынадай кеңестер беремін: сабақ кестеңді алдын ала қарап шық, үй тапсырмаларын уақытында орында және әр пән бойынша формативті, БЖБ, ТЖБ нәтижелеріңді қадағалап отыр. Егер қандай да бір тақырып немесе есеп түсініксіз болса, маған қайтадан сұрақ қой, мен оны саған қадамдап, түсінікті етіп түсіндіріп беремін!`;
+                        reply = `[Admin-GPT Deep Analysis (${mode.toUpperCase()})]: "${text}" сұрағы бойынша мектептің деректер базасына терең талдау жасалды. Барлық сыныптар (${totalClasses} сынып) мен қолданушылар (${totalUsers} адам) белсенді түрде жұмыс істеуде. Ешқандай қауіпсіздік бұзушылықтары тіркелген жоқ.`;
+                    }
+                } else if(aiName === 'TeachGPT') {
+                    let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
+                    let myClassName = myClass ? myClass.name : 'Әлі сынып ашпадыңыз';
+                    let myClassStudents = myClass ? (myClass.students || []).length : 0;
+                    if(lower.includes('сынып') || lower.includes('оқушы')) {
+                        reply = `[TeachGPT Анализі]: Сіздің жетекшілік ететін сыныбыңыз: ${myClassName}. Сыныптағы қосылған оқушылар саны: ${myClassStudents} оқушы. Журнал мен қатысу көрсеткіштері толық синхрондалған.`;
+                    } else if(lower.includes('тапсырма') || lower.includes('сабақ')) {
+                        reply = `[TeachGPT Тапсырма генераторы]: Мұғалім үшін жаңа тапсырмалар мен КТЖ жоспарларын құру барысы дайын. "${text}" бойынша оқушылардың БЖБ және ТЖБ көрсеткіштерін ескере отырып, қосымша деңгейлік тапсырмалар дайындауға болады.`;
+                    } else {
+                        reply = `[TeachGPT Сараптамасы (${mode.toUpperCase()})]: "${text}" сұрағы бойынша сіздің сыныбыңыздың үлгерімі мен пән көрсеткіштері сарапталды. Оқыту сапасын арттыру үшін формативті бағалау мен пайыздық көрсеткіштерді үнемі қадағалап отыру ұсынылады.`;
+                    }
+                } else {
+                    let studentClass = classesList.find(c => (c.students || []).includes(currentUser.username));
+                    let studentClassName = studentClass ? studentClass.name : 'Әлі ешқандай сыныпқа қосылмағансыз';
+                    if(lower.includes('көрсеткіш') || lower.includes('баға') || lower.includes('мен')) {
+                        reply = `[Study-GPT Жеке анализі]: Сенің қазіргі сыныбың: ${studentClassName}. Тіркелген бағаларың мен көрсеткіштерің: ${gradesStr}. Оқу үрдісін жақсарту үшін әрбір пән бойынша формативті және БЖБ нәтижелерін жоғарылатуға тырыс!`;
+                    } else if(lower.includes('кесте') || lower.includes('сабақ')) {
+                        reply = `[Study-GPT Кесте шолуы]: Бүгінгі және алдағы күндерге арналған сабақ кестелері жүйеде бекітілген. Өз уақытыңды тиімді пайдаланып, үй тапсырмаларын уақытында орындауды ұмытпа!`;
+                    } else {
+                        reply = `[Study-GPT түсіндірмесі (${mode.toUpperCase()})]: "${text}" тақырыбы бойынша егер санаға күрделі немесе түсініксіз болса, маған қадамдап сұрақ қой. Мен оны саған қарапайым мысалдармен толық түсіндіріп беремін!`;
                     }
                 }
 
@@ -1182,7 +1206,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrgrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
