@@ -178,9 +178,9 @@
         let currentAnnouncement = '';
         let selectedTeacherSubject = subjectsList[0];
 
-        // AI Modes & Chat states
-        let aiMode = 'auto'; // auto, think_hard, search
-        let aiChatMessages = [];
+        // Strictly isolated AI states per user session
+        let aiModes = {}; 
+        let aiHistories = {}; 
 
         const translations = {
             kk: {
@@ -316,7 +316,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v10_ai").get();
+                    const snap = await db.collection("bilimland").doc("enterprise_v12_ai").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -335,7 +335,7 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v10_ai").set({
+                    await db.collection("bilimland").doc("enterprise_v12_ai").set({
                         users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
@@ -713,7 +713,6 @@
                 let childObj = users.find(u => u.username === childUsername);
                 let childName = childObj ? childObj.name : 'Бекітілген бала табылмады';
 
-                // Баланың қай сыныпта екенін анықтау
                 let assignedClass = classesList.find(c => (c.students || []).includes(childUsername));
                 let classNameStr = assignedClass ? assignedClass.name : 'Әлі ешқандай сыныпқа қосылмаған';
 
@@ -758,7 +757,6 @@
                 }
             }
             else {
-                // Оқушы үшін тексеру: сыныпқа қосылған ба, жоқ па?
                 let studentClass = classesList.find(c => (c.students || []).includes(currentUser.username));
 
                 if (activeTab === 'student_grades') {
@@ -832,8 +830,15 @@
             }
         }
 
-        // AI Chat Panel Builder (3 modes: Auto, Think Hard, Search)
+        // Strictly isolated AI Chat Panel using session-based user keys
         function renderAIChatPanel(panel, aiName, aiDesc) {
+            let sessionKey = currentUser.username + '_' + aiName;
+            if(!aiHistories[sessionKey]) aiHistories[sessionKey] = [];
+            if(!aiModes[sessionKey]) aiModes[sessionKey] = 'auto';
+
+            let history = aiHistories[sessionKey];
+            let currentMode = aiModes[sessionKey];
+
             panel.innerHTML = `
                 <div class="flex flex-col h-[520px] bg-slate-50 border rounded-xl overflow-hidden">
                     <div class="bg-slate-900 text-white p-3 flex justify-between items-center">
@@ -842,23 +847,23 @@
                             <p class="text-[10px] text-slate-300">${aiDesc}</p>
                         </div>
                         <div class="flex items-center gap-1 text-[10px]">
-                            <button onclick="setAIMode('auto')" id="mode-auto" class="px-2 py-1 rounded font-bold ${aiMode === 'auto' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300'}">Auto</button>
-                            <button onclick="setAIMode('think_hard')" id="mode-think" class="px-2 py-1 rounded font-bold ${aiMode === 'think_hard' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}">Think Hard</button>
-                            <button onclick="setAIMode('search')" id="mode-search" class="px-2 py-1 rounded font-bold ${aiMode === 'search' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'}">Search</button>
+                            <button onclick="setAIMode('${aiName}', 'auto')" class="px-2 py-1 rounded font-bold ${currentMode === 'auto' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300'}">Auto</button>
+                            <button onclick="setAIMode('${aiName}', 'think_hard')" class="px-2 py-1 rounded font-bold ${currentMode === 'think_hard' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}">Think Hard</button>
+                            <button onclick="setAIMode('${aiName}', 'search')" class="px-2 py-1 rounded font-bold ${currentMode === 'search' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'}">Search</button>
                         </div>
                     </div>
                     <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-white">
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
-                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке интеллект көмекшіңізбін. Қандай сұрағыңыз бар немесе не талдап берейін?
+                            <b>🤖 ${aiName}:</b> Сәлеметсіз бе, ${currentUser.name}! Мен сіздің жеке көмекшіңізбін. Кез келген сұрағыңызды қойыңыз, толық жауап беремін!
                         </div>
-                        ${aiChatMessages.map(m => `
+                        ${history.map(m => `
                             <div class="p-3 rounded-lg ${m.sender === 'user' ? 'bg-slate-100 text-slate-800 ml-8' : 'bg-indigo-50 border border-indigo-200 text-indigo-950 mr-8'}">
                                 <b>${m.sender === 'user' ? 'Сіз' : aiName}:</b> ${m.text}
                             </div>
                         `).join('')}
                     </div>
                     <div class="p-3 bg-slate-100 border-t flex gap-2">
-                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке хат жазу..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='KeyEnter') sendAIMessage('${aiName}')">
+                        <input type="text" id="ai-input-msg" placeholder="${aiName}-ке кез келген сұрақ жазу..." class="flex-1 border rounded px-3 py-2 text-xs bg-white focus:outline-none focus:border-blue-600" onkeydown="if(event.key==='Enter') sendAIMessage('${aiName}')">
                         <button onclick="sendAIMessage('${aiName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs transition-all">Жіберу</button>
                     </div>
                 </div>
@@ -867,11 +872,10 @@
             msgBox.scrollTop = msgBox.scrollHeight;
         }
 
-        function setAIMode(mode) {
-            aiMode = mode;
-            if(activeTab === 'admin_ai' || activeTab === 'teacher_ai' || activeTab === 'student_ai') {
-                renderTabContent();
-            }
+        function setAIMode(aiName, mode) {
+            let sessionKey = currentUser.username + '_' + aiName;
+            aiModes[sessionKey] = mode;
+            renderTabContent();
         }
 
         async function sendAIMessage(aiName) {
@@ -879,28 +883,34 @@
             let text = input.value.trim();
             if(!text) return;
 
-            aiChatMessages.push({ sender: 'user', text: text });
+            let sessionKey = currentUser.username + '_' + aiName;
+            if(!aiHistories[sessionKey]) aiHistories[sessionKey] = [];
+            aiHistories[sessionKey].push({ sender: 'user', text: text });
             input.value = '';
             renderTabContent();
 
-            showSpinner(`${aiName} (${aiMode.toUpperCase()}) талдау жасауда...`);
+            let mode = aiModes[sessionKey] || 'auto';
+            showSpinner(`${aiName} (${mode.toUpperCase()}) талдау жасауда...`);
+
             setTimeout(() => {
-                let responseText = "";
-                if(aiName === 'TeachGPT') {
-                    responseText = aiMode === 'think_hard' ? '[Think Hard Analysis]: Бүгінгі кесте бойынша 3 сабағыңыз бар. Сыныптың орташа үлгерімі 82% тәуір деңгейде. БЖБ нәтижелеріне қарағанда математикадан қосымша тапсырма беру ұсынылады.' : 
-                                   aiMode === 'search' ? '[Live Search Result]: ҚР Білім министрлігінің жаңа стандарты бойынша тоқсандық есептеулер БЖБ/ТЖБ негізінде жүруде. Деректер базасы синхрондалды.' : 
-                                   'TeachGPT автоматты жауабы: Сіздің сабақтарыңыз сәтті өтіп жатыр. Оқушылардың белсенділігі жақсы.';
-                } else if(aiName === 'Admin-GPT') {
-                    responseText = aiMode === 'think_hard' ? '[GPT-6-Analytics Deep Think]: Мектеп бойынша жалпы қолданушылар белсенділігі 94%. Ешқандай қауіпсіздік бұзушылықтары тіркелген жоқ. Барлық сыныптар штаттық режимде жұмыс істеуде.' : 
-                                   aiMode === 'search' ? '[Global Database Search]: Барлық мемлекеттік стандарттар сақталған. Бұлттық Firebase Firestore қосылымы тұрақты.' : 
-                                   'Admin-GPT мониторингі: Барлық мұғалімдер мен оқушылар жүйеде белсенді.';
+                let reply = "";
+                let lower = text.toLowerCase();
+
+                if(mode === 'think_hard') {
+                    reply = `[Think Hard Deep Analysis]: "${text}" сұрағы бойынша жүйе терең логикалық талдау жасады. Кәсіби стандарттар мен ережелерді негізге ала отырып, бұл міндетті тиімді шешуге болады.`;
+                } else if(mode === 'search') {
+                    reply = `[Live Search Result]: "${text}" бойынша мемлекеттік базадан және оқу бағдарламаларынан тиісті ақпараттар мен ережелер табылып, синхрондалды.`;
                 } else {
-                    responseText = aiMode === 'think_hard' ? '[Study-GPT Think Hard]: Сіздің бағаларыңызды талдай келе, математика мен физикадан көрсеткішіңіз жоғары екенін көрдім. Егер тақырып түсініксіз болса, маған сұрақ қойыңыз, мен оны қадамдап түсіндіріп беремін!' : 
-                                   aiMode === 'search' ? '[Knowledge Base Search]: Іздеу нәтижесі бойынша сіздің сұрағыңызға сай оқу материалдары мен КТЖ жоспарлары табылды.' : 
-                                   'Study-GPT: Бүгінгі сабақтар кестесі орындалды. Үй тапсырмасын орындауды ұмытпаңыз!';
+                    if(aiName === 'TeachGPT') {
+                        reply = `TeachGPT жауабы: Мұғалім үшін "${text}" сұрағы маңызды. Сабақтар мен сынып үлгерімін басқару барысында бұл бағытта қосымша тапсырмалар мен пайыздарды есептеу көмектеседі.`;
+                    } else if(aiName === 'Admin-GPT') {
+                        reply = `Admin-GPT анализі: Мектеп бойынша "${text}" сұрағына қатысты мониторинг жүргізіліп, барлық көрсеткіштер штаттық режимде екені расталды.`;
+                    } else {
+                        reply = `Study-GPT жауабы: "${text}" бойынша оқу процесіндегі көрсеткіштеріңді жақсарту үшін осы тақырыпты тағы да қайталап шығуға кеңес беремін!`;
+                    }
                 }
 
-                aiChatMessages.push({ sender: 'ai', text: responseText });
+                aiHistories[sessionKey].push({ sender: 'ai', text: reply });
                 hideSpinner();
                 renderTabContent();
             }, 1000);
