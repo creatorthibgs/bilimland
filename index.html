@@ -20,7 +20,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Серьезный классический загрузчик (Госстандарт) */
         #gov-boot {
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #0f172a; transition: opacity 0.5s ease;
         }
@@ -577,7 +576,7 @@
                 if (activeTab === 'teacher_journal') {
                     let students = users.filter(u => u.role === 'student');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал және пайыздар (0-39% [2], 40-64% [3], 65-84% [4], 85-100% [5])</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Тоқсандық тек БЖБ мен ТЖБ енгізілгенде есептеледі)</h3>
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
                             <label class="text-xs font-bold uppercase text-slate-600">Пәнді таңдау:</label>
                             <select id="selected-subject" onchange="updateSelectedSubject(this)" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
@@ -593,7 +592,7 @@
                                         <th>БЖБ</th>
                                         <th>ТЖБ</th>
                                         <th>Пайыз (%)</th>
-                                        <th>Ұсынылған / Бекітілген баға</th>
+                                        <th>Қорытынды баға</th>
                                         <th>Әрекет</th>
                                     </tr>
                                 </thead>
@@ -801,13 +800,24 @@
             let tzhbVal = document.getElementById(`tzhb_${username}`).value.trim();
             let finalVal = document.getElementById(`final_${username}`).value.trim();
 
+            // Тек БЖБ немесе ТЖБ толтырылған жағдайда ғана пайыз бен тоқсандық есептеледі (формативті жалғыз өзі тоқсанды өзгертпейді)
             let totalScore = 0;
             let count = 0;
-            if(formVal) { let p = parseFloat(formVal.split('/')[0]) || 0; totalScore += (p / 10) * 100; count++; }
-            if(bzhbVal) { let parts = bzhbVal.split('/'); let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 20)) * 100; totalScore += p || 0; count++; }
-            if(tzhbVal) { let parts = tzhbVal.split('/'); let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 30)) * 100; totalScore += p || 0; count++; }
+            if(bzhbVal) { 
+                let parts = bzhbVal.split('/'); 
+                let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 20)) * 100; 
+                totalScore += p || 0; 
+                count++; 
+            }
+            if(tzhbVal) { 
+                let parts = tzhbVal.split('/'); 
+                let p = (parseFloat(parts[0]) / parseFloat(parts[1] || 30)) * 100; 
+                totalScore += p || 0; 
+                count++; 
+            }
+
             let finalPercent = count > 0 ? Math.round(totalScore / count) : 0;
-            let recommendedGrade = getStandardGrade(finalPercent);
+            let recommendedGrade = count > 0 ? getStandardGrade(finalPercent) : (finalVal || '-');
 
             if(!grades[username]) grades[username] = {};
             grades[username][selectedTeacherSubject] = { 
@@ -820,7 +830,7 @@
 
             await saveDataToCloud();
             hideSpinner();
-            alert(`[${selectedTeacherSubject}] пайызы (${finalPercent}%) есептеліп, стандарт бойынша [${recommendedGrade}] бағасы сақталды!`);
+            alert(`[${selectedTeacherSubject}] бағалары сақталды! ${count > 0 ? 'БЖБ/ТЖБ негізінде есептелген пайыз: ' + finalPercent + '%' : '(Ескерту: Тоқсандық қорытынды шығу үшін БЖБ немесе ТЖБ міндетті түрде толтырылуы тиіс)'}`);
             renderTabContent();
         }
 
@@ -976,7 +986,7 @@
         async function saveAnnouncement() {
             const text = document.getElementById('announcement-input').value.trim();
             showSpinner("Хабарландыру жариялануда...");
-    currentAnnouncement = text;
+            currentAnnouncement = text;
             await saveDataToCloud();
             hideSpinner();
             checkBanners();
@@ -997,7 +1007,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrised[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
