@@ -180,7 +180,6 @@
         let selectedTeacherSubject = subjectsList[0];
         let activeScheduleDay = 'Дүйсенбі';
 
-        // Strictly isolated AI states per user session
         let aiModes = {}; 
         let aiHistories = {}; 
 
@@ -509,8 +508,9 @@
                                 </div>
                             </td>
                             <td><code class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">${c.dcaCode}</code></td>
+                            <td><button onclick="deleteClassRecord(${idx})" class="px-2 py-1 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button></td>
                         </tr>
-                    `).join('') : '<tr><td colspan="4" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
+                    `).join('') : '<tr><td colspan="5" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
                     
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптары мен жетекшілерді басқару</h3>
@@ -522,6 +522,7 @@
                                         <th>Құрушы мұғалім</th>
                                         <th>Қазіргі сынып жетекшісі (Уақытша/Ауыстыру)</th>
                                         <th>DCA Коды</th>
+                                        <th>Әрекет</th>
                                     </tr>
                                 </thead>
                                 <tbody>${classRows}</tbody>
@@ -634,7 +635,7 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Тек сіздің сыныптағы оқушылар)</h3>
                         ${!myClass ? '<div class="p-4 bg-amber-50 text-amber-800 rounded text-xs mb-3 font-bold">⚠️ Назар аударыңыз: Сіз әлі сынып ашпадыңыз немесе әкімші сынып бекітпеді! «Сынып ашу» бөліміне өтіп сынып ашыңыз және DCA кодын оқушыларға беріңіз.</div>' : `
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3 text-xs text-blue-900 font-bold flex justify-between items-center">
-                            <span>Сыныбыңыз: <b class="text-indigo-900">${myClass.name}</b></span>
+                            <span>Сыныбыңыз: <b class="text-indigo-900">${myClass.name}</b> (Жетекшісі: ${myClass.teacher})</span>
                             <span>DCA Коды: <code class="bg-white px-2 py-1 rounded text-blue-700 font-extrabold border">${myClass.dcaCode}</code></span>
                         </div>`}
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
@@ -714,13 +715,12 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">➕ Сынып ашу және DCA кодын алу</h3>
                         ${myClass ? `
                             <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg max-w-md space-y-2 mb-4">
-                                <div class="text-xs font-bold text-emerald-900">Сіздің ашқан сыныбыңыз: <span class="text-indigo-900 text-sm">${myClass.name}</span></div>
+                                <div class="text-xs font-bold text-emerald-900">Сіздің сыныбыңыз: <span class="text-indigo-900 text-sm">${myClass.name}</span> (Жетекшісі: ${myClass.teacher})</div>
                                 <div class="text-xs font-bold text-emerald-900">Сыныптың DCA Коды: <code class="bg-white px-2 py-1 rounded border text-blue-700 font-extrabold text-sm">${myClass.dcaCode}</code></div>
-                                <div class="text-[10px] text-slate-500">Бұл кодты оқушыларға беріңіз, олар осы код арқылы өз аккаунттарынан сыныбыңызға қосылады.</div>
                             </div>
                         ` : `
                             <div class="p-4 bg-slate-50 rounded-lg border max-w-md space-y-3">
-                                <input type="text" id="new-class-name" placeholder="Сынып аты (Мысалы: 10 «В»)" class="w-full border rounded p-2 text-xs bg-white">
+                                <input type="text" id="new-class-name" placeholder="Сынып аты (Мысалы: 7 «Е»)" class="w-full border rounded p-2 text-xs bg-white">
                                 <button onclick="createNewClass()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Сыныпты тіркеу және DCA код генерациялау</button>
                             </div>
                         `}
@@ -759,6 +759,7 @@
 
                 let assignedClass = classesList.find(c => (c.students || []).includes(childUsername));
                 let classNameStr = assignedClass ? assignedClass.name : 'Әлі ешқандай сыныпқа қосылмаған';
+                let classTeacherStr = assignedClass ? assignedClass.teacher : 'Бекітілмеген';
 
                 if (activeTab === 'parent_grades') {
                     let childGrades = grades[childUsername] || {};
@@ -776,7 +777,7 @@
 
                     panel.innerHTML = `
                         <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3 text-xs text-amber-900 font-bold flex justify-between items-center">
-                            <span>👨‍👩‍👧 Ата-ана порталы. Бақылаудағы бала: <b class="text-indigo-900 text-sm">${childName}</b> [ Сыныбы: <span class="text-blue-700">${classNameStr}</span> ]</span>
+                            <span>👨‍👩‍👧 Ата-ана порталы. Бала: <b class="text-indigo-900 text-sm">${childName}</b> [ Сыныбы: <span class="text-blue-700">${classNameStr}</span> | Жетекшісі: <span class="text-purple-700">${classTeacherStr}</span> ]</span>
                             <span class="bg-white px-2 py-1 rounded border text-emerald-700 font-extrabold">Қатысуы: [ ${childAtt} ]</span>
                         </div>
                         <div class="overflow-x-auto">
@@ -830,11 +831,12 @@
 
                     panel.innerHTML = `
                         <div class="flex justify-between items-center mb-3 border-b pb-2">
-                            <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым (Сыныбы: <span class="text-blue-700">${studentClass.name}</span>)</h3>
+                            <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым</h3>
                             <button onclick="downloadPDFReport()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold shadow-xs">📥 PDF форматында жүктеу</button>
                         </div>
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold">
-                            Бүгінгі сабаққа қатысу мәртебеңіз: <span class="text-emerald-700 font-extrabold text-sm">[ ${myAtt} ]</span>
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold flex justify-between items-center">
+                            <span>Сыныбыңыз: <b class="text-indigo-900">${studentClass.name}</b> | Сынып жетекшісі: <b class="text-blue-700">${studentClass.teacher}</b></span>
+                            <span>Бүгінгі қатысу: <span class="text-emerald-700 font-extrabold text-sm">[ ${myAtt} ]</span></span>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full gov-table">
@@ -903,7 +905,6 @@
             renderTabContent();
         }
 
-        // Fully enriched AI Chat Panel with database-aware smart responses
         function renderAIChatPanel(panel, aiName, aiDesc) {
             let sessionKey = currentUser.username + '_' + aiName;
             if(!aiHistories[sessionKey]) aiHistories[sessionKey] = [];
@@ -1113,6 +1114,12 @@
                 return alert('Қате DCA коды! Мұғалімнен дұрыс кодты сұраңыз.');
             }
 
+            classesList.forEach(c => {
+                if(c.students) {
+                    c.students = c.students.filter(s => s !== currentUser.username);
+                }
+            });
+
             if(!targetClass.students) targetClass.students = [];
             if(!targetClass.students.includes(currentUser.username)) {
                 targetClass.students.push(currentUser.username);
@@ -1287,11 +1294,23 @@
             renderTabContent();
         }
 
+        async function deleteClassRecord(classIdx) {
+            let className = classesList[classIdx].name;
+            if(confirm(`"${className}" сыныбын толығымен жойғыңыз келе ме?`)) {
+                showSpinner("Сынып жойылуда...");
+                classesList.splice(classIdx, 1);
+                await saveDataToCloud();
+                hideSpinner();
+                alert('Сынып жүйеден өшірілді!');
+                renderTabContent();
+            }
+        }
+
         function downloadPDFReport() {
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub].form} | BZHB: ${myGrades[sub].bzhb} | TZHB: ${myGrades[sub].tzhb} | Payiz: ${myGrades[sub].percent}% | Qorytyndy: ${myGrades[sub].final}\n`;
+                content += `Pan: ${sub} | Format: ${myGrgrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
