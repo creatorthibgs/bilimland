@@ -11,8 +11,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
         .gov-header { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); }
-        .gov-table th { background-color: #e2e8f0; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; border: 1px solid #cbd5e1; padding: 8px; }
-        .gov-table td { border: 1px solid #cbd5e1; padding: 6px 8px; background-color: #ffffff; font-size: 11px; }
+        .gov-table th { background-color: #e2e8f0; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; border: 1px solid #cbd5e1; padding: 6px; }
+        .gov-table td { border: 1px solid #cbd5e1; padding: 6px; background-color: #ffffff; font-size: 11px; }
         .sidebar-btn { transition: all 0.25s ease; }
         .sidebar-btn:hover { background-color: #f8fafc; color: #2563eb; transform: translateX(2px); }
         .sidebar-btn.active { background-color: #eff6ff; color: #1d4ed8; border-left: 4px solid #1d4ed8; font-weight: 700; }
@@ -61,22 +61,22 @@
         </div>
     </div>
 
-    <header class="gov-header sticky top-0 z-50 py-3 px-6 shadow-md flex justify-between items-center text-white">
+    <header class="gov-header sticky top-0 z-50 py-3 px-4 md:px-6 shadow-md flex justify-between items-center text-white">
         <div class="flex items-center space-x-3">
             <div class="w-9 h-9 rounded bg-white text-blue-900 flex items-center justify-center font-black text-sm shadow">BL</div>
             <div>
-                <h1 class="text-xs font-extrabold tracking-wider">BilimClass <span class="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white rounded font-bold ml-1">Enterprise Cloud</span></h1>
+                <h1 class="text-xs font-extrabold tracking-wider">BilimClass <span class="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white rounded font-bold ml-1">Enterprise</span></h1>
                 <p id="header-subtitle" class="text-[9px] text-slate-300">Мемлекеттік бірыңғай мектеп журналы</p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
             <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-blue-900/80 text-white border border-blue-700 rounded px-2 py-1 text-[11px] font-bold focus:outline-none">
                 <option value="kk">Қаз</option>
                 <option value="ru">Рус</option>
                 <option value="en">Eng</option>
             </select>
-            <div id="user-info" class="hidden flex items-center space-x-4">
-                <div class="text-right">
+            <div id="user-info" class="hidden flex items-center space-x-3">
+                <div class="text-right hidden sm:block">
                     <span id="welcome-text" class="text-xs font-bold block text-white"></span>
                     <span id="welcome-role" class="text-[9px] text-blue-300 font-semibold block uppercase tracking-wider"></span>
                 </div>
@@ -85,7 +85,7 @@
         </div>
     </header>
 
-    <div class="flex-1 max-w-[1400px] w-full mx-auto p-4 flex flex-col">
+    <div class="flex-1 max-w-[1400px] w-full mx-auto p-3 md:p-4 flex flex-col">
         
         <div id="login-section" class="w-full max-w-md mx-auto my-auto bg-white p-8 rounded-xl shadow-xl border border-slate-200 animate-fade">
             <div class="text-center mb-6">
@@ -128,14 +128,14 @@
                     </div>
                 </div>
 
-                <div id="active-content-panel" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 min-h-[550px] animate-fade"></div>
+                <div id="active-content-panel" class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-200 min-h-[550px] animate-fade"></div>
             </main>
         </div>
     </div>
 
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
         <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
-        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Gov Standard Active)</span>
+        <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған</span>
     </footer>
 
     <script>
@@ -498,31 +498,33 @@
                     let classRows = classesList.length > 0 ? classesList.map((c, idx) => `
                         <tr class="text-xs">
                             <td class="font-bold">${c.name}</td>
-                            <td>${c.creator || c.teacher} <span class="text-[9px] text-slate-400">(Құрушы)</span></td>
+                            <td>${c.creator || c.teacher}</td>
                             <td>
-                                <div class="flex items-center gap-2">
-                                    <select id="admin_teacher_select_${idx}" class="border rounded p-1 text-xs bg-white font-bold text-blue-700">
+                                <div class="flex items-center gap-1.5">
+                                    <select id="admin_teacher_select_${idx}" class="border rounded p-1 text-[11px] bg-white font-bold text-blue-700">
                                         ${teachersList.map(t => `<option value="${t.username}" ${t.username === c.teacherUsername ? 'selected' : ''}>${t.name}</option>`).join('')}
                                     </select>
                                     <button onclick="adminUpdateClassTeacher(${idx})" class="px-2 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button>
                                 </div>
                             </td>
                             <td><code class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">${c.dcaCode}</code></td>
-                            <td><button onclick="deleteClassRecord(${idx})" class="px-2 py-1 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button></td>
+                            <td>
+                                <button onclick="deleteClassRecord(${idx})" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[10px] shadow-xs">🗑️ Сыныпты жою</button>
+                            </td>
                         </tr>
-                    `).join('') : '<tr><td colspan="5" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
+                    `).join('') : '<tr><td colspan="5" class="text-center text-slate-400 py-4">Сыныптар тіркелмеген</td></tr>';
                     
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптары мен жетекшілерді басқару</h3>
                         <div class="overflow-x-auto">
-                            <table class="w-full gov-table">
+                            <table class="w-full gov-table min-w-[700px]">
                                 <thead>
                                     <tr>
                                         <th>Сынып</th>
-                                        <th>Құрушы мұғалім</th>
-                                        <th>Қазіргі сынып жетекшісі (Уақытша/Ауыстыру)</th>
+                                        <th>Құрушы</th>
+                                        <th>Сынып жетекшісі (Ауыстыру / Басқару)</th>
                                         <th>DCA Коды</th>
-                                        <th>Әрекет</th>
+                                        <th>Әрекет (Жою)</th>
                                     </tr>
                                 </thead>
                                 <tbody>${classRows}</tbody>
@@ -635,7 +637,7 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Тек сіздің сыныптағы оқушылар)</h3>
                         ${!myClass ? '<div class="p-4 bg-amber-50 text-amber-800 rounded text-xs mb-3 font-bold">⚠️ Назар аударыңыз: Сіз әлі сынып ашпадыңыз немесе әкімші сынып бекітпеді! «Сынып ашу» бөліміне өтіп сынып ашыңыз және DCA кодын оқушыларға беріңіз.</div>' : `
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3 text-xs text-blue-900 font-bold flex justify-between items-center">
-                            <span>Сыныбыңыз: <b class="text-indigo-900">${myClass.name}</b> (Жетекшісі: ${myClass.teacher})</span>
+                            <span>Сыныбыңыз: <b class="text-indigo-900">${myClass.name}</b> (Сынып жетекшісі: <span class="text-blue-700">${myClass.teacher}</span>)</span>
                             <span>DCA Коды: <code class="bg-white px-2 py-1 rounded text-blue-700 font-extrabold border">${myClass.dcaCode}</code></span>
                         </div>`}
                         <div class="p-3 bg-slate-50 rounded border mb-3 flex items-center gap-3">
@@ -715,7 +717,7 @@
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">➕ Сынып ашу және DCA кодын алу</h3>
                         ${myClass ? `
                             <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg max-w-md space-y-2 mb-4">
-                                <div class="text-xs font-bold text-emerald-900">Сіздің сыныбыңыз: <span class="text-indigo-900 text-sm">${myClass.name}</span> (Жетекшісі: ${myClass.teacher})</div>
+                                <div class="text-xs font-bold text-emerald-900">Сіздің сыныбыңыз: <span class="text-indigo-900 text-sm">${myClass.name}</span> (Сынып жетекшісі: <span class="text-blue-700">${myClass.teacher}</span>)</div>
                                 <div class="text-xs font-bold text-emerald-900">Сыныптың DCA Коды: <code class="bg-white px-2 py-1 rounded border text-blue-700 font-extrabold text-sm">${myClass.dcaCode}</code></div>
                             </div>
                         ` : `
@@ -776,8 +778,8 @@
                     `).join('') : '<tr><td colspan="6" class="text-center text-slate-400 py-4">Баланың бағалары әлі қойылмаған</td></tr>';
 
                     panel.innerHTML = `
-                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3 text-xs text-amber-900 font-bold flex justify-between items-center">
-                            <span>👨‍👩‍👧 Ата-ана порталы. Бала: <b class="text-indigo-900 text-sm">${childName}</b> [ Сыныбы: <span class="text-blue-700">${classNameStr}</span> | Жетекшісі: <span class="text-purple-700">${classTeacherStr}</span> ]</span>
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg mb-3 text-xs text-amber-900 font-bold flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <span>👨‍👩‍👧 Бала: <b class="text-indigo-900 text-sm">${childName}</b> | Сыныбы: <span class="text-blue-700">${classNameStr}</span> | Сынып жетекшісі: <span class="text-purple-800 underline">${classTeacherStr} (Бекітілген тұрақты/уақытша)</span></span>
                             <span class="bg-white px-2 py-1 rounded border text-emerald-700 font-extrabold">Қатысуы: [ ${childAtt} ]</span>
                         </div>
                         <div class="overflow-x-auto">
@@ -832,10 +834,10 @@
                     panel.innerHTML = `
                         <div class="flex justify-between items-center mb-3 border-b pb-2">
                             <h3 class="text-sm font-extrabold text-slate-900">📊 Менің бағаларым</h3>
-                            <button onclick="downloadPDFReport()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold shadow-xs">📥 PDF форматында жүктеу</button>
+                            <button onclick="downloadPDFReport()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold shadow-xs">📥 PDF жүктеу</button>
                         </div>
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold flex justify-between items-center">
-                            <span>Сыныбыңыз: <b class="text-indigo-900">${studentClass.name}</b> | Сынып жетекшісі: <b class="text-blue-700">${studentClass.teacher}</b></span>
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-3 text-xs text-blue-900 font-bold flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <span>Сыныбыңыз: <b class="text-indigo-900 text-sm">${studentClass.name}</b> | Сынып жетекшісі: <b class="text-blue-700 underline">${studentClass.teacher} (Бекітілген жетекші)</b></span>
                             <span>Бүгінгі қатысу: <span class="text-emerald-700 font-extrabold text-sm">[ ${myAtt} ]</span></span>
                         </div>
                         <div class="overflow-x-auto">
@@ -973,8 +975,6 @@
                 let totalUsers = users.length;
                 let totalClasses = classesList.length;
                 let classNamesStr = classesList.length > 0 ? classesList.map(c => c.name + ` (Жетекшісі: ${c.teacher}, Коды: ${c.dcaCode})`).join(', ') : 'Әлі ешқандай сынып ашылмаған';
-                let myGrades = grades[currentUser.username] || {};
-                let gradesStr = Object.keys(myGrades).length > 0 ? Object.keys(myGrades).map(sub => `${sub}: Формативті=${myGrades[sub].form || '-'}, БЖБ=${myGrades[sub].bzhb || '-'}, ТЖБ=${myGrades[sub].tzhb || '-'}, Пайыз=${myGrades[sub].percent}%, Қорытынды=${myGrades[sub].final}`).join('; ') : 'Әлі бағалар қойылмаған';
 
                 if(aiName === 'Admin-GPT') {
                     if(lower.includes('сынып') || lower.includes('қандай сынып')) {
@@ -1114,6 +1114,7 @@
                 return alert('Қате DCA коды! Мұғалімнен дұрыс кодты сұраңыз.');
             }
 
+            // Remove student from any previous classes
             classesList.forEach(c => {
                 if(c.students) {
                     c.students = c.students.filter(s => s !== currentUser.username);
@@ -1295,13 +1296,34 @@
         }
 
         async function deleteClassRecord(classIdx) {
-            let className = classesList[classIdx].name;
-            if(confirm(`"${className}" сыныбын толығымен жойғыңыз келе ме?`)) {
-                showSpinner("Сынып жойылуда...");
+            let targetClass = classesList[classIdx];
+            if(confirm(`"${targetClass.name}" сыныбын және оған қатысты БҮКІЛ деректерді (оқушылар, ата-аналар, барлық бағалар мен қатысу) толығымен жойғыңыз келе ме?`)) {
+                showSpinner("Сынып пен барлық байланысты деректер тазартылуда...");
+                
+                let studentUsernames = targetClass.students || [];
+                
+                // 1. Remove grades & attendance for all students in this class
+                studentUsernames.forEach(sUser => {
+                    delete grades[sUser];
+                    delete attendance[sUser];
+                });
+
+                // 2. Remove students and their corresponding parents from users list
+                users = users.filter(u => {
+                    if (studentUsernames.includes(u.username)) return false;
+                    if (u.role === 'parent' && studentUsernames.includes(u.parentOf)) return false;
+                    return true;
+                });
+
+                // 3. Remove schedules associated with this class
+                schedules = schedules.filter(s => s.className !== targetClass.name);
+
+                // 4. Finally delete class itself
                 classesList.splice(classIdx, 1);
+
                 await saveDataToCloud();
                 hideSpinner();
-                alert('Сынып жүйеден өшірілді!');
+                alert('Сынып және оған қатысты барлық оқушы, ата-ана мен баға деректері сәтті жойылды!');
                 renderTabContent();
             }
         }
@@ -1310,14 +1332,14 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrgrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `BilimClass_Report_${currentUser.username}.txt`;
             link.click();
-            alert('Тоқсандық есеп PDF / Мәтіндік форматта сәтті жүктелді!');
+            alert('Тоқсандық есеп жүктелді!');
         }
     </script>
 </body>
