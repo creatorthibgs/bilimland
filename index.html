@@ -164,6 +164,7 @@
         ];
 
         const badWords = ["бля", "сука", "еба", "нах", "хуй", "анал", "дебил", "дурак", "шлюха", "пидор", "мразь", "тупой"];
+        const daysList = ["Дүйсенбі", "Сейсенбі", "Сәрсенбі", "Бейсенбі", "Жұма"];
 
         let currentUser = null;
         let activeTab = '';
@@ -177,6 +178,7 @@
         let supportTickets = [];
         let currentAnnouncement = '';
         let selectedTeacherSubject = subjectsList[0];
+        let activeScheduleDay = 'Дүйсенбі';
 
         // Strictly isolated AI states per user session
         let aiModes = {}; 
@@ -493,8 +495,39 @@
 
             if (currentUser.role === 'admin') {
                 if (activeTab === 'admin_monitoring') {
-                    let classRows = classesList.length > 0 ? classesList.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td><code class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">${c.dcaCode}</code></td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптары мен DCA кодтары</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Жетекші мұғалім</th><th>DCA Коды</th></tr></thead><tbody>${classRows}</tbody></table></div>`;
+                    let teachersList = users.filter(u => u.role === 'teacher');
+                    let classRows = classesList.length > 0 ? classesList.map((c, idx) => `
+                        <tr class="text-xs">
+                            <td class="font-bold">${c.name}</td>
+                            <td>${c.creator || c.teacher} <span class="text-[9px] text-slate-400">(Құрушы)</span></td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <select id="admin_teacher_select_${idx}" class="border rounded p-1 text-xs bg-white font-bold text-blue-700">
+                                        ${teachersList.map(t => `<option value="${t.username}" ${t.username === c.teacherUsername ? 'selected' : ''}>${t.name}</option>`).join('')}
+                                    </select>
+                                    <button onclick="adminUpdateClassTeacher(${idx})" class="px-2 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button>
+                                </div>
+                            </td>
+                            <td><code class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">${c.dcaCode}</code></td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="4" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
+                    
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптары мен жетекшілерді басқару</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full gov-table">
+                                <thead>
+                                    <tr>
+                                        <th>Сынып</th>
+                                        <th>Құрушы мұғалім</th>
+                                        <th>Қазіргі сынып жетекшісі (Уақытша/Ауыстыру)</th>
+                                        <th>DCA Коды</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${classRows}</tbody>
+                            </table>
+                        </div>
+                    `;
                 } else if (activeTab === 'admin_sanctions') {
                     let staffList = users.filter(u => u.role !== 'admin').map(u => `
                         <tr class="text-xs">
@@ -509,16 +542,26 @@
                     `).join('');
                     panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Moderations & Sanctions</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Аты-жөні / Рөлі</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${staffList || '<tr><td colspan="4" class="text-center text-slate-400">Қолданушылар жоқ</td></tr>'}</tbody></table></div>`;
                 } else if (activeTab === 'admin_schedule') {
-                    let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер жоқ</td></tr>';
+                    let classSelectOptions = classesList.length > 0 ? classesList.map(c => `<option value="${c.name}">${c.name} (Жетекшісі: ${c.teacher})</option>`).join('') : '<option value="">Сыныптар тіркелмеген</option>';
+                    let schedRows = schedules.length > 0 ? schedules.map((s, sIdx) => `<tr><td><b>${s.className}</b></td><td><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-bold">${s.day || 'Дүйсенбі'}</span></td><td>${s.subject}</td><td>${s.time}</td><td><button onclick="deleteSchedule(${sIdx})" class="px-2 py-0.5 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button></td></tr>`).join('') : '<tr><td colspan="5" class="text-center text-slate-400">Кестелер жоқ</td></tr>';
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесін бекіту</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сыныптарға сабақ кестесін бекіту</h3>
                         <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
-                            <input type="text" id="sched-class" placeholder="Сынып (Мысалы: 10 «А»)" class="w-full border rounded p-2 text-xs bg-white">
+                            <label class="block text-[11px] font-bold uppercase text-slate-600">Сыныпты таңдаңыз:</label>
+                            <select id="sched-class" class="w-full border rounded p-2 text-xs bg-white font-bold text-blue-700">
+                                ${classSelectOptions}
+                            </select>
+                            <label class="block text-[11px] font-bold uppercase text-slate-600">Апта күні:</label>
+                            <select id="sched-day" class="w-full border rounded p-2 text-xs bg-white font-bold">
+                                ${daysList.map(d => `<option value="${d}">${d}</option>`).join('')}
+                            </select>
+                            <label class="block text-[11px] font-bold uppercase text-slate-600">Пән:</label>
                             <select id="sched-subject" class="w-full border rounded p-2 text-xs bg-white font-bold">${subjectsList.map(sub => `<option value="${sub}">${sub}</option>`).join('')}</select>
-                            <input type="text" id="sched-time" placeholder="Уақыты (Мысалы: Дүйсенбі 08:30)" class="w-full border rounded p-2 text-xs bg-white">
-                            <button onclick="saveSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені бекіту</button>
+                            <label class="block text-[11px] font-bold uppercase text-slate-600">Уақыты / Сабақ реті:</label>
+                            <input type="text" id="sched-time" placeholder="Мысалы: 08:30 - 09:15 (1-ші сабақ)" class="w-full border rounded p-2 text-xs bg-white">
+                            <button onclick="saveSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені бекіту және сақтау</button>
                         </div>
-                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedRows}</tbody></table></div>
+                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Күні</th><th>Пән</th><th>Уақыты</th><th>Әрекет</th></tr></thead><tbody>${schedRows}</tbody></table></div>
                     `;
                 } else if (activeTab === 'admin_users') {
                     let studentsListOptions = users.filter(u => u.role === 'student').map(s => `<option value="${s.username}">${s.name} (@${s.username})</option>`).join('');
@@ -589,7 +632,7 @@
 
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📖 Электронды журнал (Тек сіздің сыныптағы оқушылар)</h3>
-                        ${!myClass ? '<div class="p-4 bg-amber-50 text-amber-800 rounded text-xs mb-3 font-bold">⚠️ Назар аударыңыз: Сіз әлі сынып ашпадыңыз! «Сынып ашу» бөліміне өтіп сынып ашыңыз және DCA кодын оқушыларға беріңіз.</div>' : `
+                        ${!myClass ? '<div class="p-4 bg-amber-50 text-amber-800 rounded text-xs mb-3 font-bold">⚠️ Назар аударыңыз: Сіз әлі сынып ашпадыңыз немесе әкімші сынып бекітпеді! «Сынып ашу» бөліміне өтіп сынып ашыңыз және DCA кодын оқушыларға беріңіз.</div>' : `
                         <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3 text-xs text-blue-900 font-bold flex justify-between items-center">
                             <span>Сыныбыңыз: <b class="text-indigo-900">${myClass.name}</b></span>
                             <span>DCA Коды: <code class="bg-white px-2 py-1 rounded text-blue-700 font-extrabold border">${myClass.dcaCode}</code></span>
@@ -683,8 +726,9 @@
                         `}
                     `;
                 } else if (activeTab === 'teacher_schedule') {
-                    let mySched = schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('');
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${mySched || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
+                    let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
+                    let targetClassName = myClass ? myClass.name : '';
+                    panel.innerHTML = renderScheduleView("📅 Менің сынып кестем", targetClassName);
                 } else if (activeTab === 'teacher_ktp') {
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📑 КТЖ (Күнтізбелік-тематикалық жоспарлау)</h3>
@@ -743,7 +787,7 @@
                         </div>
                     `;
                 } else if (activeTab === 'parent_schedule') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Баланың сабақ кестесі (${classNameStr})</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
+                    panel.innerHTML = renderScheduleView("📅 Баланың сабақ кестесі", classNameStr);
                 } else if (activeTab === 'parent_support') {
                     let myTickets = supportTickets.filter(t => t.from === currentUser.username).map(t => `<div class="p-2 border-b text-xs"><b>Сіз:</b> ${t.text} <br><span class="text-blue-600"><b>Әкімші жауабы:</b> ${t.reply || 'Күтуде...'}</span></div>`).join('');
                     panel.innerHTML = `
@@ -800,7 +844,8 @@
                         </div>
                     `;
                 } else if (activeTab === 'student_schedule') {
-                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Менің сабақ кестем</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
+                    let targetClassName = studentClass ? studentClass.name : '';
+                    panel.innerHTML = renderScheduleView("📅 Менің сабақ кестем", targetClassName);
                 } else if (activeTab === 'student_homework') {
                     panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмалары</h3><p class="text-xs text-slate-500">Мұғалімдер берген үй тапсырмалары осында көрінеді.</p>`;
                 } else if (activeTab === 'student_contact') {
@@ -828,6 +873,34 @@
                     renderAIChatPanel(panel, 'Study-GPT', 'Бүгінгі сабақ кестесі, үй тапсырмасының бар-жоғы, пәндер бойынша көрсеткіштерің, қай пәннен алғыр екенің және күрделі тақырыптарды түсіндіру.');
                 }
             }
+        }
+
+        function renderScheduleView(panelTitle, targetClassName) {
+            let dayButtonsHTML = daysList.map(d => `
+                <button onclick="switchScheduleDay('${d}')" class="px-3 py-1.5 rounded text-xs font-bold transition-all ${activeScheduleDay === d ? 'bg-blue-600 text-white shadow' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">${d}</button>
+            `).join('');
+
+            let filteredSchedules = targetClassName ? schedules.filter(s => s.className === targetClassName && (s.day || 'Дүйсенбі') === activeScheduleDay) : [];
+
+            let rows = filteredSchedules.length > 0 ? filteredSchedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400 py-4">Бұл сыныпқа бұл күнге сабақ кестесі бекітілмеген</td></tr>';
+
+            return `
+                <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">${panelTitle} ${targetClassName ? `(Сыныбы: <span class="text-blue-700">${targetClassName}</span>)` : ''}</h3>
+                <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+                    ${dayButtonsHTML}
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full gov-table">
+                        <thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты / Сабақ реті</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function switchScheduleDay(day) {
+            activeScheduleDay = day;
+            renderTabContent();
         }
 
         // Fully enriched AI Chat Panel with database-aware smart responses
@@ -896,7 +969,6 @@
                 let reply = "";
                 let lower = text.toLowerCase();
 
-                // Generate smart dynamic response based on actual system database state
                 let totalUsers = users.length;
                 let totalClasses = classesList.length;
                 let classNamesStr = classesList.length > 0 ? classesList.map(c => c.name + ` (Жетекшісі: ${c.teacher}, Коды: ${c.dcaCode})`).join(', ') : 'Әлі ешқандай сынып ашылмаған';
@@ -905,36 +977,22 @@
 
                 if(aiName === 'Admin-GPT') {
                     if(lower.includes('сынып') || lower.includes('қандай сынып')) {
-                        reply = `[Admin-GPT ${mode.toUpperCase()} Анализі]: Қазіргі уақытта жүйеде барлығы ${totalClasses} сынып тіркелген. Тізім: ${classNamesStr}. Мектеп бойынша жалпы қолданушылар саны: ${totalUsers} адам. Барлық көрсеткіштер штабтық режимде жұмыс істеуде.`;
+                        reply = `[Admin-GPT ${mode.toUpperCase()} Анализі]: Қазіргі уақытта жүйеде барлығы ${totalClasses} сынып тіркелген. Тізім: ${classNamesStr}. Мектеп бойынша жалпы қолданушылар саны: ${totalUsers} адам.`;
                     } else if(lower.includes('мұғалім') || lower.includes('оқушы')) {
                         let teachersCount = users.filter(u => u.role === 'teacher').length;
                         let studentsCount = users.filter(u => u.role === 'student').length;
-                        let parentsCount = users.filter(u => u.role === 'parent').length;
-                        reply = `[Admin-GPT Мектеп статистикасы]: Жүйеде тіркелген мұғалімдер саны — ${teachersCount}, оқушылар саны — ${studentsCount}, ата-аналар саны — ${parentsCount}. Барлық белсенділік пен қауіпсіздік ережелері GPT-6 Analytics арқылы бақылануда.`;
+                        reply = `[Admin-GPT Мектеп статистикасы]: Мұғалімдер саны — ${teachersCount}, оқушылар саны — ${studentsCount}.`;
                     } else {
-                        reply = `[Admin-GPT Deep Analysis (${mode.toUpperCase()})]: "${text}" сұрағы бойынша мектептің деректер базасына терең талдау жасалды. Барлық сыныптар (${totalClasses} сынып) мен қолданушылар (${totalUsers} адам) белсенді түрде жұмыс істеуде. Ешқандай қауіпсіздік бұзушылықтары тіркелген жоқ.`;
+                        reply = `[Admin-GPT Deep Analysis (${mode.toUpperCase()})]: "${text}" сұрағы бойынша мектептің деректер базасына талдау жасалды.`;
                     }
                 } else if(aiName === 'TeachGPT') {
                     let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
                     let myClassName = myClass ? myClass.name : 'Әлі сынып ашпадыңыз';
-                    let myClassStudents = myClass ? (myClass.students || []).length : 0;
-                    if(lower.includes('сынып') || lower.includes('оқушы')) {
-                        reply = `[TeachGPT Анализі]: Сіздің жетекшілік ететін сыныбыңыз: ${myClassName}. Сыныптағы қосылған оқушылар саны: ${myClassStudents} оқушы. Журнал мен қатысу көрсеткіштері толық синхрондалған.`;
-                    } else if(lower.includes('тапсырма') || lower.includes('сабақ')) {
-                        reply = `[TeachGPT Тапсырма генераторы]: Мұғалім үшін жаңа тапсырмалар мен КТЖ жоспарларын құру барысы дайын. "${text}" бойынша оқушылардың БЖБ және ТЖБ көрсеткіштерін ескере отырып, қосымша деңгейлік тапсырмалар дайындауға болады.`;
-                    } else {
-                        reply = `[TeachGPT Сараптамасы (${mode.toUpperCase()})]: "${text}" сұрағы бойынша сіздің сыныбыңыздың үлгерімі мен пән көрсеткіштері сарапталды. Оқыту сапасын арттыру үшін формативті бағалау мен пайыздық көрсеткіштерді үнемі қадағалап отыру ұсынылады.`;
-                    }
+                    reply = `[TeachGPT Анализі]: Жетекшілік ететін сыныбыңыз: ${myClassName}.`;
                 } else {
                     let studentClass = classesList.find(c => (c.students || []).includes(currentUser.username));
                     let studentClassName = studentClass ? studentClass.name : 'Әлі ешқандай сыныпқа қосылмағансыз';
-                    if(lower.includes('көрсеткіш') || lower.includes('баға') || lower.includes('мен')) {
-                        reply = `[Study-GPT Жеке анализі]: Сенің қазіргі сыныбың: ${studentClassName}. Тіркелген бағаларың мен көрсеткіштерің: ${gradesStr}. Оқу үрдісін жақсарту үшін әрбір пән бойынша формативті және БЖБ нәтижелерін жоғарылатуға тырыс!`;
-                    } else if(lower.includes('кесте') || lower.includes('сабақ')) {
-                        reply = `[Study-GPT Кесте шолуы]: Бүгінгі және алдағы күндерге арналған сабақ кестелері жүйеде бекітілген. Өз уақытыңды тиімді пайдаланып, үй тапсырмаларын уақытында орындауды ұмытпа!`;
-                    } else {
-                        reply = `[Study-GPT түсіндірмесі (${mode.toUpperCase()})]: "${text}" тақырыбы бойынша егер санаға күрделі немесе түсініксіз болса, маған қадамдап сұрақ қой. Мен оны саған қарапайым мысалдармен толық түсіндіріп беремін!`;
-                    }
+                    reply = `[Study-GPT Жеке анализі]: Сыныбың: ${studentClassName}.`;
                 }
 
                 aiHistories[sessionKey].push({ sender: 'ai', text: reply });
@@ -1032,6 +1090,7 @@
             let randomDca = 'DCA-' + Math.floor(1000 + Math.random() * 9000);
             classesList.push({ 
                 name: className, 
+                creator: currentUser.name,
                 teacher: currentUser.name, 
                 teacherUsername: currentUser.username,
                 dcaCode: randomDca,
@@ -1066,16 +1125,27 @@
         }
 
         async function saveSchedule() {
-            let className = document.getElementById('sched-class').value.trim();
+            let className = document.getElementById('sched-class').value;
+            let day = document.getElementById('sched-day').value;
             let subject = document.getElementById('sched-subject').value;
             let time = document.getElementById('sched-time').value.trim();
             if(!className || !time) return alert('Барлық өрістерді толтырыңыз!');
             showSpinner("Кесте бекітілуде...");
-            schedules.push({ className, subject, time });
+            schedules.push({ className, day, subject, time });
             await saveDataToCloud();
             hideSpinner();
-            alert('Сабақ кестесі бекітілді!');
+            alert('Сабақ кестесі сыныпқа бекітілді!');
             renderTabContent();
+        }
+
+        async function deleteSchedule(sIdx) {
+            if(confirm('Кесте жазбасын өшіргіңіз келе ме?')) {
+                showSpinner("Өшірілуде...");
+                schedules.splice(sIdx, 1);
+                await saveDataToCloud();
+                hideSpinner();
+                renderTabContent();
+            }
         }
 
         async function saveKtp() {
@@ -1202,6 +1272,21 @@
             alert('Хабарландыру өшірілді!');
         }
 
+        async function adminUpdateClassTeacher(classIdx) {
+            let selectElem = document.getElementById(`admin_teacher_select_${classIdx}`);
+            let newTeacherUsername = selectElem.value;
+            let teacherObj = users.find(u => u.username === newTeacherUsername);
+            if(!teacherObj) return alert('Мұғалім табылмады!');
+
+            showSpinner("Сынып жетекшісі өзгертілуде...");
+            classesList[classIdx].teacher = teacherObj.name;
+            classesList[classIdx].teacherUsername = teacherObj.username;
+            await saveDataToCloud();
+            hideSpinner();
+            alert(`Сынып жетекшісі сәтті өзгертілді: ${teacherObj.name}`);
+            renderTabContent();
+        }
+
         function downloadPDFReport() {
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
@@ -1218,4 +1303,3 @@
     </script>
 </body>
 </html>
-
