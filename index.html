@@ -39,29 +39,33 @@
             z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
         }
 
-        /* Apple FaceID / TouchID Modal Styling */
         .apple-modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(25px);
             z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
         }
-        @keyframes scanPulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 1; border-color: #22c55e; }
-            100% { transform: scale(1); opacity: 0.8; }
+        .face-scanner-circle {
+            width: 220px; height: 220px; border: 3px dashed #334155; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-        .face-scanner-ring {
-            width: 180px; height: 180px; border: 3px dashed #94a3b8; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; position: relative;
-            animation: scanPulse 2s infinite ease-in-out;
-        }
+        .face-scanner-circle.active { border-color: #22c55e; }
         .scanner-beam {
             position: absolute; width: 100%; height: 2px; background: #22c55e;
-            box-shadow: 0 0 12px #22c55e; animation: beamMove 1.5s infinite alternate ease-in-out;
+            box-shadow: 0 0 15px #22c55e; animation: beamMove 1.8s infinite alternate ease-in-out;
         }
-        @keyframes beamMove {
-            0% { top: 10%; }
-            100% { top: 90%; }
+        @keyframes beamMove { 0% { top: 10%; } 100% { top: 90%; } }
+
+        .apple-check-icon {
+            width: 70px; height: 70px; border-radius: 50%; background: #16a34a; color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: bold;
+            box-shadow: 0 0 20px rgba(22, 163, 74, 0.6); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        .apple-cross-icon {
+            width: 70px; height: 70px; border-radius: 50%; background: #dc2626; color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: bold;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.6); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-green-600 selection:text-white">
@@ -74,37 +78,47 @@
 
     <!-- FaceID Modal Screen -->
     <div id="faceid-modal" class="apple-modal-overlay hidden animate-fade">
-        <div class="text-center space-y-6 max-w-sm mx-auto p-6">
-            <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">Face ID растау</div>
-            <div class="relative mx-auto face-scanner-ring">
-                <div class="scanner-beam"></div>
-                <div id="faceid-icon-container" class="text-5xl">👤</div>
+        <div class="text-center space-y-5 max-w-sm mx-auto p-6">
+            <div class="text-[11px] font-extrabold tracking-widest text-slate-400 uppercase">Face ID Авторизация</div>
+            
+            <div id="faceid-scanner-ring" class="face-scanner-circle mx-auto">
+                <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-cover rounded-full hidden"></video>
+                <div id="faceid-status-icon" class="text-5xl text-slate-500">👤</div>
+                <div id="scanner-line" class="scanner-beam hidden"></div>
             </div>
-            <div id="faceid-instruction" class="text-sm font-semibold text-slate-200 h-8 flex items-center justify-center">
-                Бетіңізді домалаққа сыйдырыңыз...
+
+            <div id="faceid-instruction" class="text-xs font-bold text-slate-200 h-10 flex items-center justify-center px-4">
+                Камераға рұқсат беріңіз...
             </div>
-            <button onclick="closeFaceIDModal()" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full text-xs font-bold transition-all border border-slate-700">Болдырмау</button>
+
+            <div class="flex gap-2 justify-center">
+                <button id="btn-verify-face" onclick="processFaceScan()" class="hidden px-5 py-2 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-bold transition-all shadow-md">Сканерлеуді бастау</button>
+                <button onclick="closeFaceIDModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full text-xs font-bold transition-all border border-slate-700">Болдырмау</button>
+            </div>
         </div>
     </div>
 
     <!-- TouchID Modal Screen -->
     <div id="touchid-modal" class="apple-modal-overlay hidden animate-fade">
-        <div class="text-center space-y-6 max-w-sm mx-auto p-6">
-            <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">Touch ID / Саусақ ізі</div>
-            <div class="w-24 h-24 mx-auto rounded-full border-2 border-slate-600 flex items-center justify-center text-5xl bg-slate-900/50 shadow-inner" id="touchid-icon-box">
+        <div class="text-center space-y-5 max-w-sm mx-auto p-6">
+            <div class="text-[11px] font-extrabold tracking-widest text-slate-400 uppercase">Touch ID / Саусақ ізі</div>
+            <div class="w-24 h-24 mx-auto rounded-full border-2 border-slate-700 flex items-center justify-center text-5xl bg-slate-900/60 shadow-inner" id="touchid-box">
                 👆
             </div>
-            <div id="touchid-instruction" class="text-sm font-semibold text-slate-200 h-8 flex items-center justify-center">
-                Датчикке саусағыңызды қойыңыз...
+            <div id="touchid-instruction" class="text-xs font-bold text-slate-200 h-8 flex items-center justify-center">
+                Логиніңізді енгізіп, саусағыңызды басыңыз...
             </div>
-            <button onclick="closeTouchIDModal()" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full text-xs font-bold transition-all border border-slate-700">Болдырмау</button>
+            <div class="flex gap-2 justify-center">
+                <button onclick="processTouchScan()" class="px-5 py-2 bg-green-600 hover:bg-green-500 text-white rounded-full text-xs font-bold transition-all shadow-md">Сканерлеу</button>
+                <button onclick="closeTouchIDModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full text-xs font-bold transition-all border border-slate-700">Болдырмау</button>
+            </div>
         </div>
     </div>
 
     <!-- Initial Boot Animation -->
     <div id="gov-boot">
         <div class="text-center space-y-3 animate-fade">
-            <img src="1000196089.png" alt="Logo" class="w-16 h-16 mx-auto rounded-xl object-contain shadow-md">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center text-2xl font-black text-green-500 border-2 border-green-500/30 shadow-lg">BL</div>
             <div>
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">BilimLand</div>
                 <div class="text-base font-extrabold text-slate-900 tracking-tight mt-0.5">BilimClass</div>
@@ -119,7 +133,7 @@
     <!-- Header -->
     <header class="gov-header sticky top-0 z-40 py-3 px-6 shadow-md flex justify-between items-center text-white">
         <div class="flex items-center space-x-3">
-            <img src="1000196089.png" alt="Logo" class="w-9 h-9 rounded-lg object-contain bg-white p-0.5 shadow">
+            <div class="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center font-black text-green-400 border border-slate-700 text-sm shadow">BL</div>
             <div>
                 <h1 class="text-xs font-extrabold tracking-wider">BilimClass <span class="text-[9px] px-1.5 py-0.5 bg-green-600 text-white rounded font-bold ml-1">Электрондық журнал</span></h1>
                 <p id="header-subtitle" class="text-[9px] text-slate-300">Мемлекеттік бірыңғай мектеп жүйесі</p>
@@ -131,7 +145,7 @@
                     <span id="welcome-text" class="text-xs font-bold block text-white"></span>
                     <span id="welcome-role" class="text-[9px] text-green-400 font-semibold block uppercase tracking-wider"></span>
                 </div>
-                <button onclick="logout()" id="btn-logout" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-bold transition-all shadow-xs">Шығу</button>
+                <button onclick="logout()" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-bold transition-all">Шығу</button>
             </div>
         </div>
     </header>
@@ -142,31 +156,31 @@
         <!-- Login Section -->
         <div id="login-section" class="w-full max-w-md mx-auto my-auto bg-white p-8 rounded-2xl shadow-xl border border-slate-100 animate-fade">
             <div class="text-center mb-6">
-                <img src="1000196089.png" alt="Logo" class="w-14 h-14 mx-auto rounded-xl object-contain mb-3 shadow-sm">
-                <h2 id="login-title" class="text-lg font-extrabold text-slate-900">Жүйеге кіру</h2>
-                <p id="login-subtitle" class="text-slate-500 text-xs mt-1">BilimClass ресми электронды журналы</p>
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-900 flex items-center justify-center text-xl font-black text-green-500 mb-3 border-2 border-green-500/20 shadow-md">BL</div>
+                <h2 class="text-lg font-extrabold text-slate-900">Жүйеге кіру</h2>
+                <p class="text-slate-500 text-xs mt-1">BilimClass ресми электронды журналы</p>
             </div>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label id="lbl-user" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
+                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
                     <input type="text" id="login-username" required class="w-full border border-slate-200 bg-slate-50 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-green-600 focus:bg-white transition-all" placeholder="Логиніңіз">
                 </div>
                 <div>
-                    <label id="lbl-pass" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
+                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
                     <input type="password" id="login-password" required class="w-full border border-slate-200 bg-slate-50 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-green-600 focus:bg-white transition-all" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded-xl border border-red-200"></div>
-                <button type="submit" id="btn-login" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition-all">Кіру</button>
+                <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow-md transition-all">Кіру</button>
             </form>
 
             <div class="mt-6 pt-6 border-t border-slate-100 text-center space-y-3">
-                <div class="text-[11px] text-slate-400 font-medium">Немесе биометриялық жылдам кіру</div>
+                <div class="text-[11px] text-slate-400 font-medium">Биометриялық жылдам кіру</div>
                 <div class="flex gap-3 justify-center">
-                    <button onclick="startFaceIDLogin()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200">
+                    <button onclick="openFaceIDModal()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200">
                         <span>👤</span> Face ID
                     </button>
-                    <button onclick="startTouchIDLogin()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200">
+                    <button onclick="openTouchIDModal()" class="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200">
                         <span>👆</span> Touch ID
                     </button>
                 </div>
@@ -176,7 +190,7 @@
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden grid grid-cols-1 md:grid-cols-5 gap-4 w-full items-start animate-fade py-4">
             <aside class="bg-white rounded-2xl p-3 md:col-span-1 shadow-sm border border-slate-100 sticky top-20">
-                <div id="menu-title" class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
+                <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
                 <nav id="sidebar-menu" class="space-y-1 text-xs font-semibold text-slate-600"></nav>
             </aside>
             <main class="md:col-span-4 space-y-3">
@@ -196,7 +210,7 @@
     <!-- Footer -->
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
         <span class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
-        <span class="text-green-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Gov Standard Active)</span>
+        <span class="text-green-600 font-bold flex items-center gap-1">● Бұлттық база белсенді (Moderation Active)</span>
     </footer>
 
     <script>
@@ -219,11 +233,12 @@
         let currentUser = null;
         let activeTab = '';
         let users = [];
-        let schedules = [];
         let homeworks = [];
         let meetings = [];
         let newsFeed = [];
+        let sanctions = [];
         let currentAnnouncement = '';
+        let mediaStream = null;
 
         window.onload = async function() {
             setTimeout(() => {
@@ -234,10 +249,7 @@
 
             await loadDataFromCloud();
             if(!users.some(u => u.username === 'admin')) {
-                users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас Әкімші', biometricRegistered: true });
-                users.push({ username: 'teacher1', password: '123', role: 'teacher', name: 'Айгүл Мұғалім', biometricRegistered: true });
-                users.push({ username: 'student1', password: '123', role: 'student', name: 'Аружан Есет', biometricRegistered: true });
-                users.push({ username: 'parent1', password: '123', role: 'parent', name: 'Есет Әке', biometricRegistered: true });
+                users = [{ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас Әкімші' }];
                 await saveDataToCloud();
             }
         };
@@ -254,14 +266,14 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("enterprise_v15_biometric").get();
+                    const snap = await db.collection("bilimland").doc("clean_v17_sanctions").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
-                        schedules = data.schedules || [];
                         homeworks = data.homeworks || [];
                         meetings = data.meetings || [];
                         newsFeed = data.newsFeed || [];
+                        sanctions = data.sanctions || [];
                         currentAnnouncement = data.announcement || '';
                     }
                 } catch(e) { console.error(e); }
@@ -271,8 +283,8 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("enterprise_v15_biometric").set({
-                        users, schedules, homeworks, meetings, newsFeed, announcement: currentAnnouncement
+                    await db.collection("bilimland").doc("clean_v17_sanctions").set({
+                        users, homeworks, meetings, newsFeed, sanctions, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
             }
@@ -280,7 +292,7 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            showSpinner("Жүйеге кіру тексерілуде...");
+            showSpinner("Тексерілуде...");
             const usernameInput = document.getElementById('login-username').value.trim();
             const passwordInput = document.getElementById('login-password').value.trim();
             const errorDiv = document.getElementById('login-error');
@@ -290,6 +302,7 @@
 
             const foundUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
             if (foundUser) {
+                errorDiv.classList.add('hidden');
                 loginSuccess(foundUser);
             } else {
                 errorDiv.innerText = 'Қате логин немесе пароль!';
@@ -307,7 +320,7 @@
             let roleTitle = 'Оқушы';
             if(currentUser.role === 'admin') roleTitle = 'Бас әкімші';
             else if(currentUser.role === 'teacher') roleTitle = 'Мұғалім';
-            else if(currentUser.role === 'parent') roleTitle = 'Ата-ана көмекшісі';
+            else if(currentUser.role === 'parent') roleTitle = 'Ата-ана';
 
             document.getElementById('welcome-role').innerText = roleTitle;
 
@@ -321,91 +334,124 @@
             renderTabContent();
         }
 
-        // Apple FaceID Simulation Process with Full Steps
-        let faceIdStep = 0;
-        function startFaceIDLogin() {
-            document.getElementById('faceid-modal').classList.remove('hidden');
-            document.getElementById('faceid-icon-container').innerText = '👤';
-            document.getElementById('faceid-instruction').innerText = "Бетіңізді домалаққа сыйдырыңыз...";
-            faceIdStep = 1;
+        async function openFaceIDModal() {
+            const inputUser = document.getElementById('login-username').value.trim();
+            if(!inputUser) {
+                alert("Алдымен логиніңізді жазыңыз!");
+                return;
+            }
             
-            setTimeout(() => {
-                if(faceIdStep === 1) {
-                    document.getElementById('faceid-instruction').innerText = "Басыңызды тік ұстаңыз...";
-                    faceIdStep = 2;
-                }
-            }, 1500);
+            await loadDataFromCloud();
+            const targetUser = users.find(u => u.username === inputUser);
+            if(!targetUser) {
+                alert("Бұл логин жүйеде тіркелмеген!");
+                return;
+            }
 
-            setTimeout(() => {
-                if(faceIdStep === 2) {
-                    document.getElementById('faceid-instruction').innerText = "Басыңызды оңға бұрыңыз...";
-                    faceIdStep = 3;
-                }
-            }, 3000);
+            document.getElementById('faceid-modal').classList.remove('hidden');
+            document.getElementById('faceid-status-icon').classList.remove('hidden');
+            document.getElementById('webcam-video').classList.add('hidden');
+            document.getElementById('scanner-line').classList.add('hidden');
+            document.getElementById('btn-verify-face').classList.add('hidden');
+            document.getElementById('faceid-instruction').innerText = "Камера іске қосылуда...";
 
-            setTimeout(() => {
-                if(faceIdStep === 3) {
-                    document.getElementById('faceid-instruction').innerText = "Басыңызды солға бұрыңыз...";
-                    faceIdStep = 4;
-                }
-            }, 4500);
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoEl = document.getElementById('webcam-video');
+                videoEl.srcObject = mediaStream;
+                videoEl.classList.remove('hidden');
+                document.getElementById('faceid-status-icon').classList.add('hidden');
+                document.getElementById('scanner-line').classList.remove('hidden');
+                document.getElementById('faceid-scanner-ring').classList.add('active');
+                document.getElementById('btn-verify-face').classList.remove('hidden');
+                document.getElementById('faceid-instruction').innerText = "Бетіңізді домалаққа сыйдырыңыз";
+            } catch(err) {
+                document.getElementById('faceid-instruction').innerHTML = "<span class='text-red-400 font-bold'>Камераға рұқсат берілмеді!</span>";
+            }
+        }
 
-            setTimeout(() => {
-                if(faceIdStep === 4) {
-                    document.getElementById('faceid-instruction').innerText = "Төбеге және астыға бұрыңыз...";
-                    faceIdStep = 5;
+        function processFaceScan() {
+            document.getElementById('btn-verify-face').classList.add('hidden');
+            let steps = [
+                "Басыңызды тік ұстаңыз...",
+                "Басыңызды оңға бұрыңыз...",
+                "Басыңызды солға бұрыңыз...",
+                "Төбеге және астыға қараңыз..."
+            ];
+            let idx = 0;
+            let interval = setInterval(() => {
+                if(idx < steps.length) {
+                    document.getElementById('faceid-instruction').innerText = steps[idx];
+                    idx++;
+                } else {
+                    clearInterval(interval);
+                    finishFaceScan();
                 }
-            }, 6000);
+            }, 1200);
+        }
 
-            setTimeout(async () => {
-                if(faceIdStep === 5) {
-                    await loadDataFromCloud();
-                    let defaultUser = users.find(u => u.role === 'student') || users[0];
-                    if(defaultUser) {
-                        document.getElementById('faceid-icon-container').innerText = '✓';
-                        document.getElementById('faceid-instruction').innerHTML = "<span class='text-green-400 font-bold'>Face ID сәтті расталды!</span>";
-                        setTimeout(() => {
-                            closeFaceIDModal();
-                            loginSuccess(defaultUser);
-                        }, 1000);
-                    } else {
-                        document.getElementById('faceid-icon-container').innerText = '×';
-                        document.getElementById('faceid-instruction').innerHTML = "<span class='text-red-400 font-bold'>Аккаунттар табылмады (Әкімші тіркеуі тиіс)</span>";
-                    }
-                }
-            }, 7500);
+        async function finishFaceScan() {
+            const inputUser = document.getElementById('login-username').value.trim();
+            const targetUser = users.find(u => u.username === inputUser);
+
+            document.getElementById('webcam-video').classList.add('hidden');
+            document.getElementById('scanner-line').classList.add('hidden');
+
+            if(targetUser) {
+                document.getElementById('faceid-status-icon').outerHTML = `<div id="faceid-status-icon" class="apple-check-icon">✓</div>`;
+                document.getElementById('faceid-instruction').innerHTML = "<span class='text-green-400 font-bold'>Face ID сәтті расталды!</span>";
+                setTimeout(() => {
+                    closeFaceIDModal();
+                    loginSuccess(targetUser);
+                }, 1200);
+            } else {
+                document.getElementById('faceid-status-icon').outerHTML = `<div id="faceid-status-icon" class="apple-cross-icon">×</div>`;
+                document.getElementById('faceid-instruction').innerHTML = "<span class='text-red-400 font-bold'>Бет-әлпет сәйкес келмеді!</span>";
+            }
         }
 
         function closeFaceIDModal() {
+            if(mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
             document.getElementById('faceid-modal').classList.add('hidden');
-            faceIdStep = 0;
+            document.getElementById('faceid-scanner-ring').innerHTML = `
+                <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-cover rounded-full hidden"></video>
+                <div id="faceid-status-icon" class="text-5xl text-slate-500">👤</div>
+                <div id="scanner-line" class="scanner-beam hidden"></div>
+            `;
         }
 
-        // Apple TouchID Simulation Process
-        function startTouchIDLogin() {
+        async function openTouchIDModal() {
+            const inputUser = document.getElementById('login-username').value.trim();
+            if(!inputUser) {
+                alert("Алдымен логиніңізді жазыңыз!");
+                return;
+            }
             document.getElementById('touchid-modal').classList.remove('hidden');
-            document.getElementById('touchid-instruction').innerText = "Датчикке саусағыңызды қойыңыз...";
-            document.getElementById('touchid-icon-box').innerText = "👆";
+            document.getElementById('touchid-box').innerHTML = "👆";
+            document.getElementById('touchid-instruction').innerText = "Саусағыңызды сканерге басыңыз...";
+        }
 
-            setTimeout(async () => {
-                document.getElementById('touchid-instruction').innerText = "Саусақ ізі сканерленуде...";
-            }, 1500);
+        async function processTouchScan() {
+            const inputUser = document.getElementById('login-username').value.trim();
+            await loadDataFromCloud();
+            const targetUser = users.find(u => u.username === inputUser);
 
-            setTimeout(async () => {
-                await loadDataFromCloud();
-                let defaultUser = users.find(u => u.role === 'teacher') || users[0];
-                if(defaultUser) {
-                    document.getElementById('touchid-icon-box').innerText = "✓";
+            document.getElementById('touchid-instruction').innerText = "Сканерленуде...";
+            setTimeout(() => {
+                if(targetUser) {
+                    document.getElementById('touchid-box').innerHTML = `<div class="apple-check-icon">✓</div>`;
                     document.getElementById('touchid-instruction').innerHTML = "<span class='text-green-400 font-bold'>Touch ID сәтті расталды!</span>";
                     setTimeout(() => {
                         closeTouchIDModal();
-                        loginSuccess(defaultUser);
-                    }, 1000);
+                        loginSuccess(targetUser);
+                    }, 1200);
                 } else {
-                    document.getElementById('touchid-icon-box').innerText = "×";
-                    document.getElementById('touchid-instruction').innerHTML = "<span class='text-red-400 font-bold'>Қате орын алды</span>";
+                    document.getElementById('touchid-box').innerHTML = `<div class="apple-cross-icon">×</div>`;
+                    document.getElementById('touchid-instruction').innerHTML = "<span class='text-red-400 font-bold'>Саусақ ізі расталмады!</span>";
                 }
-            }, 3500);
+            }, 1500);
         }
 
         function closeTouchIDModal() {
@@ -438,8 +484,9 @@
             let links = [];
             if (currentUser.role === 'admin') {
                 links = [
-                    { id: 'admin_users', label: '👥 Аккаунттарды басқару' },
-                    { id: 'admin_announcement', label: '📢 Хабарландыру жариялау' }
+                    { id: 'admin_users', label: '👥 Аккаунттарды тіркеу' },
+                    { id: 'admin_sanctions', label: '🛡️ Модерация және Санкциялар' },
+                    { id: 'admin_announcement', label: '📢 Мектеп хабарландыруы' }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
@@ -487,9 +534,9 @@
                         </tr>
                     `).join('');
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">👥 Қауіпсіздік және Аккаунттарды басқару</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">👥 Әкімші Панелі — Пайдаланушыларды Басқару</h3>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-                            <h4 class="text-xs font-bold mb-3 text-slate-700">Жаңа қолданушы тіркеу (Face ID / Touch ID бұлттық профилі)</h4>
+                            <h4 class="text-xs font-bold mb-3 text-slate-700">Жаңа пайдаланушыны тіркеу</h4>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
                                 <input type="text" id="reg-name" placeholder="Аты-жөні" class="border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
                                 <input type="text" id="reg-user" placeholder="Логин" class="border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
@@ -500,17 +547,35 @@
                                     <option value="parent">Ата-ана</option>
                                 </select>
                             </div>
-                            <button onclick="registerNewUser()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs transition-all shadow-sm">+ Аккаунт тіркеу</button>
+                            <button onclick="registerNewUser()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">+ Тіркеу</button>
                         </div>
                         <div class="overflow-x-auto rounded-xl border border-slate-100"><table class="w-full gov-table"><thead><tr><th>Аты-жөні</th><th>Логин</th><th>Пароль</th><th>Рөлі</th><th>Әрекет</th></tr></thead><tbody>${allUsersList}</tbody></table></div>
                     `;
+                } else if (activeTab === 'admin_sanctions') {
+                    let sanctionsList = sanctions.map((s, idx) => `
+                        <tr class="text-xs">
+                            <td class="font-bold">${s.studentName}</td>
+                            <td><span class="px-2 py-0.5 bg-red-100 text-red-700 rounded font-bold">${s.reason}</span></td>
+                            <td>${s.date}</td>
+                            <td><button onclick="removeSanction(${idx})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold">Алып тастау</button></td>
+                        </tr>
+                    `).join('');
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">🛡️ Модерация және Санкциялар (Moderation & Sanctions)</h3>
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 max-w-xl space-y-3 mb-6">
+                            <input type="text" id="sanc-student" placeholder="Оқушының аты-жөні" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
+                            <input type="text" id="sanc-reason" placeholder="Санкция себебі (Мысалы: Тәртіп бұзу / Кешігу)" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
+                            <button onclick="addSanction()" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-sm">Санкция қолдану</button>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-100"><table class="w-full gov-table"><thead><tr><th>Оқушы</th><th>Себебі</th><th>Күні</th><th>Әрекет</th></tr></thead><tbody>${sanctionsList}</tbody></table></div>
+                    `;
                 } else if (activeTab === 'admin_announcement') {
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📢 Мектеп хабарландыруын жариялау</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📢 Мектептік жедел хабарландыру</h3>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 max-w-xl">
-                            <textarea id="announcement-input" rows="4" class="w-full border border-slate-200 bg-white rounded-xl p-3 text-xs" placeholder="Барлық оқушылар мен мұғалімдерге хабарлама жазыңыз...">${currentAnnouncement}</textarea>
+                            <textarea id="announcement-input" rows="4" class="w-full border border-slate-200 bg-white rounded-xl p-3 text-xs" placeholder="Барлық мектепке хабарлама жазыңыз...">${currentAnnouncement}</textarea>
                             <div class="flex space-x-2">
-                                <button onclick="saveAnnouncement()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">📢 Жариялау</button>
+                                <button onclick="saveAnnouncement()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Жариялау</button>
                                 <button onclick="clearAnnouncement()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-xs">Өшіру</button>
                             </div>
                         </div>
@@ -520,22 +585,22 @@
             else if (currentUser.role === 'teacher') {
                 if (activeTab === 'teacher_homework') {
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📚 Цифрлық үй тапсырмасын беру</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📚 Үй тапсырмасын жүктеу</h3>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 max-w-xl space-y-3 mb-6">
-                            <input type="text" id="hw-subject" placeholder="Пән (Мысалы: Алгебра)" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
-                            <textarea id="hw-desc" rows="3" class="w-full border border-slate-200 bg-white rounded-xl p-3 text-xs" placeholder="Тапсырма шарты..."></textarea>
-                            <button onclick="postHomework()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Тапсырманы жүктеу</button>
+                            <input type="text" id="hw-subject" placeholder="Пән атауы" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
+                            <textarea id="hw-desc" rows="3" class="w-full border border-slate-200 bg-white rounded-xl p-3 text-xs" placeholder="Тапсырма мазмұны..."></textarea>
+                            <button onclick="postHomework()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Жүктеу</button>
                         </div>
-                        <div class="space-y-2">${homeworks.map(h => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs"><b class="text-green-700">[${h.subject}]</b> ${h.desc} <div class="text-[10px] text-slate-400 mt-1">Жүктеген мұғалім: ${h.teacher}</div></div>`).join('') || '<p class="text-xs text-slate-400">Үй тапсырмалары әлі жоқ</p>'}</div>
+                        <div class="space-y-2">${homeworks.map(h => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs"><b class="text-green-700">[${h.subject}]</b> ${h.desc} <div class="text-[10px] text-slate-400 mt-1">Мұғалім: ${h.teacher}</div></div>`).join('') || '<p class="text-xs text-slate-400">Тапсырмалар жоқ</p>'}</div>
                     `;
                 } else if (activeTab === 'teacher_meetings') {
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📅 Ата-аналармен кездесу уақытын белгілеу</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📅 Ата-аналарға арналған бос уақыт слоттары</h3>
                         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 max-w-xl space-y-3 mb-6">
-                            <input type="text" id="meet-time" placeholder="Күні мен уақыты (Мысалы: Сейсенбі, 15:00)" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
-                            <button onclick="createMeetingSlot()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Кездесу уақытын қосу</button>
+                            <input type="text" id="meet-time" placeholder="Күні мен уақыты (Мысалы: Бейсенбі, 16:00)" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
+                            <button onclick="createMeetingSlot()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Слот қосу</button>
                         </div>
-                        <div class="space-y-2">${meetings.map(m => `<div class="p-3 bg-white border border-slate-100 rounded-xl shadow-sm text-xs flex justify-between items-center"><span><b>🕒 ${m.time}</b> (${m.teacher})</span> <span class="px-2.5 py-1 rounded-full font-bold ${m.booked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${m.booked ? 'Броньдалды: ' + m.parentName : 'Бос'}</span></div>`).join('') || '<p class="text-xs text-slate-400">Кездесу слоттары жоқ</p>'}</div>
+                        <div class="space-y-2">${meetings.map(m => `<div class="p-3 bg-white border border-slate-100 rounded-xl shadow-sm text-xs flex justify-between items-center"><span><b>🕒 ${m.time}</b> (${m.teacher})</span> <span class="px-2.5 py-1 rounded-full font-bold ${m.booked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${m.booked ? 'Броньдалды: ' + m.parentName : 'Бос'}</span></div>`).join('') || '<p class="text-xs text-slate-400">Слоттар жоқ</p>'}</div>
                     `;
                 } else if (activeTab === 'school_news') {
                     renderNewsFeed(panel);
@@ -544,36 +609,42 @@
             else if (currentUser.role === 'parent') {
                 if (activeTab === 'parent_meetings') {
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">🤝 Мұғаліммен кездесуге броньдау (Parent-Teacher Meeting)</h3>
-                        <div class="space-y-2">${meetings.map((m, idx) => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs flex justify-between items-center"><div><b>${m.time}</b><div class="text-slate-500 text-[11px]">Мұғалім: ${m.teacher}</div></div>${m.booked ? `<span class="text-red-600 font-bold">Броньдалған (${m.parentName})</span>` : `<button onclick="bookMeeting(${idx})" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Броньдау</button>`}</div>`).join('') || '<p class="text-xs text-slate-400">Броньдайтын слоттар жоқ</p>'}</div>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">🤝 Мұғалімдермен кездесуге жазылу</h3>
+                        <div class="space-y-2">${meetings.map((m, idx) => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs flex justify-between items-center"><div><b>${m.time}</b><div class="text-slate-500 text-[11px]">Мұғалім: ${m.teacher}</div></div>${m.booked ? `<span class="text-red-600 font-bold">Броньдалған (${m.parentName})</span>` : `<button onclick="bookMeeting(${idx})" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Броньдау</button>`}</div>`).join('') || '<p class="text-xs text-slate-400">Бос уақыттар жоқ</p>'}</div>
                     `;
                 } else if (activeTab === 'school_news') {
                     renderNewsFeed(panel);
                 }
             }
             else {
-                if (activeTab === 'student_homework') {
-                    panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📚 Үй тапсырмалары</h3>
-                        <div class="space-y-3">${homeworks.map(h => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs space-y-1"><div class="font-bold text-green-700 text-sm">[${h.subject}]</div><p class="text-slate-700">${h.desc}</p><div class="text-[10px] text-slate-400 pt-1">Мұғалім: ${h.teacher}</div></div>`).join('') || '<p class="text-xs text-slate-400">Үй тапсырмалары әлі жоқ</p>'}</div>
-                    `;
-                } else if (activeTab === 'school_news') {
-                    renderNewsFeed(panel);
-                }
+                let mySanctions = sanctions.filter(s => s.studentName.toLowerCase().includes(currentUser.name.toLowerCase()));
+                panel.innerHTML = `
+                    <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📚 Цифрлық үй тапсырмалары және Тәртіп журналы</h3>
+                    <div class="mb-6">
+                        <h4 class="text-xs font-bold uppercase text-slate-500 mb-2">Менің ескертулерім мен санкцияларым:</h4>
+                        <div class="space-y-2">
+                            ${mySanctions.length ? mySanctions.map(s => `<div class="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800">⚠️ <b>Санкция:</b> ${s.reason} (${s.date})</div>`).join('') : '<p class="text-xs text-green-600 font-semibold">✅ Сізде ешқандай ескертулер мен санкциялар жоқ!</p>'}
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase text-slate-500 mb-2">Үй тапсырмалары:</h4>
+                        ${homeworks.map(h => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs space-y-1"><div class="font-bold text-green-700 text-sm">[${h.subject}]</div><p class="text-slate-700">${h.desc}</p><div class="text-[10px] text-slate-400 pt-1">Мұғалім: ${h.teacher}</div></div>`).join('') || '<p class="text-xs text-slate-400">Үй тапсырмасы жоқ</p>'}
+                    </div>
+                `;
             }
         }
 
         function renderNewsFeed(panel) {
             panel.innerHTML = `
-                <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📰 Мектеп жаңалықтары мен лентасы</h3>
+                <h3 class="text-sm font-extrabold text-slate-900 border-b pb-3 mb-4">📰 Мектеп жаңалықтары</h3>
                 ${currentUser.role === 'admin' || currentUser.role === 'teacher' ? `
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 max-w-xl space-y-3 mb-6">
                         <input type="text" id="news-title" placeholder="Жаңалық тақырыбы" class="w-full border border-slate-200 bg-white rounded-xl p-2.5 text-xs">
                         <textarea id="news-content" rows="3" class="w-full border border-slate-200 bg-white rounded-xl p-3 text-xs" placeholder="Жаңалық мәтіні..."></textarea>
-                        <button onclick="postNews()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Жаңалықты жариялау</button>
+                        <button onclick="postNews()" class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-sm">Жариялау</button>
                     </div>
                 ` : ''}
-                <div class="space-y-3">${newsFeed.map(n => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs space-y-1.5"><h4 class="font-extrabold text-slate-900 text-sm">${n.title}</h4><p class="text-slate-600">${n.content}</p><div class="text-[10px] text-slate-400">Авторы: ${n.author} (${n.date})</div></div>`).join('') || '<p class="text-xs text-slate-400">Жаңалықтар әлі жоқ</p>'}</div>
+                <div class="space-y-3">${newsFeed.map(n => `<div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm text-xs space-y-1.5"><h4 class="font-extrabold text-slate-900 text-sm">${n.title}</h4><p class="text-slate-600">${n.content}</p><div class="text-[10px] text-slate-400">Авторы: ${n.author} (${n.date})</div></div>`).join('') || '<p class="text-xs text-slate-400">Жаңалықтар жоқ</p>'}</div>
             `;
         }
 
@@ -586,8 +657,8 @@
             if(!name || !username || !password) return alert('Барлық өрістерді толтырыңыз!');
             if(users.some(u => u.username === username)) return alert('Бұл логин бос емес!');
 
-            showSpinner("Аккаунт тіркелуде...");
-            users.push({ name, username, password, role, biometricRegistered: true });
+            showSpinner("Тіркелуде...");
+            users.push({ name, username, password, role });
             await saveDataToCloud();
             hideSpinner();
             alert('Сәтті тіркелді!');
@@ -604,14 +675,34 @@
             }
         }
 
+        async function addSanction() {
+            const studentName = document.getElementById('sanc-student').value.trim();
+            const reason = document.getElementById('sanc-reason').value.trim();
+            if(!studentName || !reason) return alert('Өрістерді толтырыңыз!');
+            showSpinner("Санкция қосылуда...");
+            sanctions.push({ studentName, reason, date: new Date().toLocaleDateString() });
+            await saveDataToCloud();
+            hideSpinner();
+            alert('Санкция сәтті қолданылды!');
+            renderTabContent();
+        }
+
+        async function removeSanction(idx) {
+            showSpinner("Өшірілуде...");
+            sanctions.splice(idx, 1);
+            await saveDataToCloud();
+            hideSpinner();
+            renderTabContent();
+        }
+
         async function saveAnnouncement() {
             const text = document.getElementById('announcement-input').value.trim();
-            showSpinner("Хабарландыру жариялануда...");
+            showSpinner("Жариялануда...");
             currentAnnouncement = text;
             await saveDataToCloud();
             hideSpinner();
             checkBanners();
-            alert('Хабарландыру сәтті жарияланды!');
+            alert('Жарияланды!');
         }
 
         async function clearAnnouncement() {
@@ -621,29 +712,29 @@
             hideSpinner();
             checkBanners();
             document.getElementById('announcement-input').value = '';
-            alert('Хабарландыру өшірілді!');
+            alert('Өшірілді!');
         }
 
         async function postHomework() {
             const subject = document.getElementById('hw-subject').value.trim();
             const desc = document.getElementById('hw-desc').value.trim();
-            if(!subject || !desc) return alert('Барлық өрістерді толтырыңыз!');
-            showSpinner("Үй тапсырмасы жүктелуде...");
+            if(!subject || !desc) return alert('Өрістерді толтырыңыз!');
+            showSpinner("Жүктелуде...");
             homeworks.push({ subject, desc, teacher: currentUser.name });
             await saveDataToCloud();
             hideSpinner();
-            alert('Үй тапсырмасы сәтті жүктелді!');
+            alert('Жүктелді!');
             renderTabContent();
         }
 
         async function createMeetingSlot() {
             const time = document.getElementById('meet-time').value.trim();
-            if(!time) return alert('Уақытты енгізіңіз!');
-            showSpinner("Кездесу уақыты қосылуда...");
+            if(!time) return alert('Уақытты жазыңыз!');
+            showSpinner("Қосылуда...");
             meetings.push({ time, teacher: currentUser.name, booked: false, parentName: '' });
             await saveDataToCloud();
             hideSpinner();
-            alert('Кездесу уақыты сәтті қосылды!');
+            alert('Слот қосылды!');
             renderTabContent();
         }
 
@@ -653,19 +744,19 @@
             meetings[idx].parentName = currentUser.name;
             await saveDataToCloud();
             hideSpinner();
-            alert('Кездесу сәтті броньдалды!');
+            alert('Броньдалды!');
             renderTabContent();
         }
 
         async function postNews() {
             const title = document.getElementById('news-title').value.trim();
             const content = document.getElementById('news-content').value.trim();
-            if(!title || !content) return alert('Барлық өрістерді толтырыңыз!');
-            showSpinner("Жаңалық жариялануда...");
+            if(!title || !content) return alert('Өрістерді толтырыңыз!');
+            showSpinner("Жариялануда...");
             newsFeed.push({ title, content, author: currentUser.name, date: new Date().toLocaleDateString() });
             await saveDataToCloud();
             hideSpinner();
-            alert('Жаңалық сәтті жарияланды!');
+            alert('Жарияланды!');
             renderTabContent();
         }
     </script>
