@@ -47,6 +47,7 @@
         <div id="spinner-text" class="text-xs font-bold tracking-wider text-slate-200">Деректер өңделуде...</div>
     </div>
 
+    <!-- Initial Boot Animation -->
     <div id="gov-boot">
         <div class="text-center space-y-3 animate-fade">
             <div class="w-14 h-14 mx-auto bg-blue-900 rounded-xl flex items-center justify-center shadow-md text-xl font-black text-white">BL</div>
@@ -70,6 +71,11 @@
             </div>
         </div>
         <div class="flex items-center space-x-4">
+            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-blue-900/80 text-white border border-blue-700 rounded px-2 py-1 text-[11px] font-bold focus:outline-none">
+                <option value="kk">Қаз</option>
+                <option value="ru">Рус</option>
+                <option value="en">Eng</option>
+            </select>
             <div id="user-info" class="hidden flex items-center space-x-4">
                 <div class="text-right">
                     <span id="welcome-text" class="text-xs font-bold block text-white"></span>
@@ -98,15 +104,15 @@
             <!-- Password Login Form -->
             <form id="form-password-login" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
+                    <label id="lbl-user" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
                     <input type="text" id="login-username" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="Логиніңіз">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
+                    <label id="lbl-pass" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
                     <input type="password" id="login-password" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded border border-red-200"></div>
-                <button type="submit" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
+                <button type="submit" id="btn-login" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
             </form>
 
             <!-- Phone SMS Login Form -->
@@ -129,10 +135,18 @@
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="hidden grid grid-cols-1 md:grid-cols-5 gap-4 w-full items-start animate-fade">
             <aside class="bg-white rounded-xl p-3 md:col-span-1 shadow-sm border border-slate-200 sticky top-16">
-                <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
+                <div id="menu-title" class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 px-2">Басқару панелі</div>
                 <nav id="sidebar-menu" class="space-y-1 text-xs font-semibold text-slate-600"></nav>
             </aside>
             <main class="md:col-span-4 space-y-3">
+                <div id="warning-banner" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs shadow-xs flex items-center space-x-3 animate-fade">
+                    <span class="text-base">⚠️</span>
+                    <div>
+                        <b class="font-bold">Әкімшілік тарапынан ескерту берілді:</b>
+                        <span id="warning-reason-text"></span>
+                    </div>
+                </div>
+
                 <div id="announcement-banner" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs shadow-xs flex items-center space-x-3 animate-fade">
                     <span class="text-base">📢</span>
                     <div>
@@ -147,7 +161,7 @@
     </div>
 
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
-        <span class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
+        <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
         <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған (Gov Standard Active)</span>
     </footer>
 
@@ -172,21 +186,61 @@
             "Математика", "Қазақ тілі", "Қазақ әдебиеті", "Ағылшын тілі", 
             "Орыс тілі", "Физика", "Химия", "Биология", "География", 
             "Қазақстан тарихы", "Дүние жүзі тарихы", "Информатика", 
-            "Дене шынықтыру", "Алгебра", "Геометрия"
+            "Дене шынықтыру", "Алгебра", "Геометрия", "Адам және қоғам", 
+            "Музыка", "Көркем еңбек"
         ];
 
         let currentUser = null;
         let activeTab = '';
+        let currentLang = 'kk';
         let users = [];
         let classesList = [];
         let schedules = [];
         let grades = {}; 
         let attendance = {}; 
+        let ktpList = [];
+        let supportTickets = [];
         let homeworks = [];
         let messages = [];
         let currentAnnouncement = '';
         let selectedTeacherSubject = subjectsList[0];
         let generatedSMSCode = '';
+
+        const translations = {
+            kk: {
+                subtitle: "Мемлекеттік бірыңғай мектеп журналы",
+                loginTitle: "Жүйеге кіру",
+                loginSub: "BilimClass ресми электронды журналы",
+                userLbl: "Логин",
+                passLbl: "Пароль",
+                loginBtn: "Кіру",
+                logoutBtn: "Шығу",
+                menuTitle: "Басқару панелі",
+                footer: "BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған."
+            },
+            ru: {
+                subtitle: "Государственная единая школьная система",
+                loginTitle: "Вход в систему",
+                loginSub: "Электронный журнал BilimClass",
+                userLbl: "Логин",
+                passLbl: "Пароль",
+                loginBtn: "Войти",
+                logoutBtn: "Выйти",
+                menuTitle: "Панель управления",
+                footer: "BilimClass Enterprise Cloud © 2026. Все права защищены."
+            },
+            en: {
+                subtitle: "State Unified School System",
+                loginTitle: "Sign In",
+                loginSub: "BilimClass Electronic Journal",
+                userLbl: "Username",
+                passLbl: "Password",
+                loginBtn: "Login",
+                logoutBtn: "Logout",
+                menuTitle: "Control Panel",
+                footer: "BilimClass Enterprise Cloud © 2026. All rights reserved."
+            }
+        };
 
         window.onload = async function() {
             setTimeout(() => {
@@ -197,7 +251,7 @@
 
             await loadDataFromCloud();
             if(!users.some(u => u.username === 'admin')) {
-                users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші', phone: '+77011111111' });
+                users.push({ username: 'admin', password: 'admin2026', role: 'admin', name: 'Бас әкімші', phone: '+77011111111', warningReason: '', status: 'active' });
                 await saveDataToCloud();
             }
         };
@@ -214,7 +268,7 @@
         async function loadDataFromCloud() {
             if(useFirebase) {
                 try {
-                    const snap = await db.collection("bilimland").doc("clean_v20_final").get();
+                    const snap = await db.collection("bilimland").doc("clean_v21_full_restored").get();
                     if(snap.exists) {
                         let data = snap.data();
                         users = data.users || [];
@@ -222,6 +276,8 @@
                         schedules = data.schedules || [];
                         grades = data.grades || {};
                         attendance = data.attendance || {};
+                        ktpList = data.ktpList || [];
+                        supportTickets = data.supportTickets || [];
                         homeworks = data.homeworks || [];
                         messages = data.messages || [];
                         currentAnnouncement = data.announcement || '';
@@ -233,11 +289,26 @@
         async function saveDataToCloud() {
             if(useFirebase) {
                 try {
-                    await db.collection("bilimland").doc("clean_v20_final").set({
-                        users, classesList, schedules, grades, attendance, homeworks, messages, announcement: currentAnnouncement
+                    await db.collection("bilimland").doc("clean_v21_full_restored").set({
+                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, homeworks, messages, announcement: currentAnnouncement
                     });
                 } catch(e) { console.error(e); }
             }
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            document.getElementById('header-subtitle').innerText = t.subtitle;
+            document.getElementById('login-title').innerText = t.loginTitle;
+            document.getElementById('login-subtitle').innerText = t.loginSub;
+            document.getElementById('lbl-user').innerText = t.userLbl;
+            document.getElementById('lbl-pass').innerText = t.passLbl;
+            document.getElementById('btn-login').innerText = t.loginBtn;
+            document.getElementById('btn-logout').innerText = t.logoutBtn;
+            document.getElementById('menu-title').innerText = t.menuTitle;
+            document.getElementById('footer-text').innerText = t.footer;
+            if(currentUser) renderSidebar();
         }
 
         function switchLoginTab(type) {
@@ -301,6 +372,11 @@
 
             const foundUser = users.find(u => u.username === usernameInput && u.password === passwordInput);
             if (foundUser) {
+                if(foundUser.status === 'blocked') {
+                    errorDiv.innerText = 'Аккаунт бұғатталған!';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
                 errorDiv.classList.add('hidden');
                 loginSuccess(foundUser);
             } else {
@@ -323,7 +399,7 @@
 
             document.getElementById('welcome-role').innerText = roleTitle;
 
-            if(currentUser.role === 'admin') activeTab = 'admin_users';
+            if(currentUser.role === 'admin') activeTab = 'admin_monitoring';
             else if(currentUser.role === 'teacher') activeTab = 'teacher_journal';
             else if(currentUser.role === 'parent') activeTab = 'parent_grades';
             else activeTab = 'student_grades';
@@ -342,6 +418,15 @@
             } else {
                 annBanner.classList.add('hidden');
             }
+
+            const warnBanner = document.getElementById('warning-banner');
+            const warnText = document.getElementById('warning-reason-text');
+            if(currentUser.warningReason) {
+                warnText.innerText = currentUser.warningReason;
+                warnBanner.classList.remove('hidden');
+            } else {
+                warnBanner.classList.add('hidden');
+            }
         }
 
         function logout() {
@@ -350,6 +435,7 @@
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
             document.getElementById('announcement-banner').classList.add('hidden');
+            document.getElementById('warning-banner').classList.add('hidden');
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('phone-step-1').classList.remove('hidden');
@@ -361,22 +447,29 @@
             let links = [];
             if (currentUser.role === 'admin') {
                 links = [
-                    { id: 'admin_users', label: '👥 Аккаунттарды басқару' },
+                    { id: 'admin_monitoring', label: '📊 Мониторинг' },
+                    { id: 'admin_sanctions', label: '🛡️ Санкциялар' },
+                    { id: 'admin_schedule', label: '📅 Кесте' },
+                    { id: 'admin_users', label: '👥 Пайдаланушылар' },
                     { id: 'admin_announcement', label: '📢 Хабарландыру' }
                 ];
             } else if (currentUser.role === 'teacher') {
                 links = [
                     { id: 'teacher_journal', label: '📖 Бағалар журналы' },
+                    { id: 'teacher_attendance', label: '📋 Қатысу' },
                     { id: 'teacher_homework', label: '📚 Үй тапсырмасын беру' },
-                    { id: 'teacher_messages', label: '💬 Оқушылардан хаттар' }
+                    { id: 'teacher_messages', label: '💬 Оқушы хаттары' },
+                    { id: 'teacher_schedule', label: '📅 Кесте' }
                 ];
             } else if (currentUser.role === 'parent') {
                 links = [
-                    { id: 'parent_grades', label: '👨‍👩‍👧 Баланың бағалары' }
+                    { id: 'parent_grades', label: '👨‍👩‍👧 Баланың бағалары' },
+                    { id: 'parent_schedule', label: '📅 Бала кестесі' }
                 ];
             } else {
                 links = [
                     { id: 'student_grades', label: '📊 Менің бағаларым' },
+                    { id: 'student_schedule', label: '📅 Менің кестем' },
                     { id: 'student_homework', label: '📚 Үй тапсырмалары' },
                     { id: 'student_contact', label: '💬 Мұғаліммен байланыс' },
                     { id: 'student_join', label: '🔑 Сыныпқа қосылу (DCA)' }
@@ -400,7 +493,35 @@
             const panel = document.getElementById('active-content-panel');
 
             if (currentUser.role === 'admin') {
-                if (activeTab === 'admin_users') {
+                if (activeTab === 'admin_monitoring') {
+                    let classRows = classesList.length > 0 ? classesList.map(c => `<tr><td><b>${c.name}</b></td><td>${c.teacher}</td><td><code class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">${c.dcaCode}</code></td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Сыныптар жоқ</td></tr>';
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📊 Мектеп сыныптары мен DCA кодтары</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Жетекші мұғалім</th><th>DCA Коды</th></tr></thead><tbody>${classRows}</tbody></table></div>`;
+                } else if (activeTab === 'admin_sanctions') {
+                    let staffList = users.filter(u => u.role !== 'admin').map(u => `
+                        <tr class="text-xs">
+                            <td class="font-bold">${u.name} (@${u.username})</td>
+                            <td><span class="px-2 py-0.5 rounded font-bold ${u.status === 'blocked' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${u.status === 'blocked' ? 'Бұғатталған' : 'Белсенді'}</span></td>
+                            <td><span class="text-red-600">${u.warningReason || 'Жоқ'}</span></td>
+                            <td>
+                                <button onclick="issueWarningPrompt('${u.username}')" class="px-2 py-1 bg-amber-500 text-white rounded font-bold hover:bg-amber-600 mr-1">Ескерту</button>
+                                <button onclick="toggleBlockUser('${u.username}')" class="px-2 py-1 ${u.status === 'blocked' ? 'bg-emerald-600' : 'bg-red-600'} text-white rounded font-bold">${u.status === 'blocked' ? 'Ашу' : 'Бұғаттау'}</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🛡️ Модерация және Санкциялар</h3><div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Пайдаланушы</th><th>Мәртебесі</th><th>Ескерту себебі</th><th>Әрекеттер</th></tr></thead><tbody>${staffList || '<tr><td colspan="4" class="text-center text-slate-400">Қолданушылар жоқ</td></tr>'}</tbody></table></div>`;
+                } else if (activeTab === 'admin_schedule') {
+                    let schedRows = schedules.length > 0 ? schedules.map(s => `<tr><td><b>${s.className}</b></td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') : '<tr><td colspan="3" class="text-center text-slate-400">Кестелер жоқ</td></tr>';
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесін бекіту</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border max-w-lg space-y-3 mb-4">
+                            <input type="text" id="sched-class" placeholder="Сынып (Мысалы: 10 «А»)" class="w-full border rounded p-2 text-xs bg-white">
+                            <select id="sched-subject" class="w-full border rounded p-2 text-xs bg-white font-bold">${subjectsList.map(sub => `<option value="${sub}">${sub}</option>`).join('')}</select>
+                            <input type="text" id="sched-time" placeholder="Уақыты (Мысалы: Дүйсенбі 08:30)" class="w-full border rounded p-2 text-xs bg-white">
+                            <button onclick="saveSchedule()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Кестені бекіту</button>
+                        </div>
+                        <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedRows}</tbody></table></div>
+                    `;
+                } else if (activeTab === 'admin_users') {
                     let allUsersList = users.map(u => `
                         <tr class="text-xs">
                             <td class="font-bold">${u.name}</td>
@@ -500,6 +621,30 @@
                             </table>
                         </div>
                     `;
+                } else if (activeTab === 'teacher_attendance') {
+                    let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
+                    let students = myClass ? users.filter(u => u.role === 'student' && (myClass.students || []).includes(u.username)) : [];
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📋 Қатысу журналы</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full gov-table">
+                                <thead><tr><th>Оқушы</th><th>Мәртебесі</th><th>Қатысуды таңдау</th><th>Әрекет</th></tr></thead>
+                                <tbody>
+                                    ${students.map(s => {
+                                        let attRecord = (attendance[s.username] || {})['today'] || '-';
+                                        return `
+                                            <tr>
+                                                <td class="font-bold text-left">${s.name}</td>
+                                                <td><span class="font-bold">${attRecord}</span></td>
+                                                <td><select id="att_status_${s.username}" class="border rounded p-1 text-xs bg-white"><option value="-">-</option><option value="+">Қатысты (+)</option><option value="С">Себепті (С)</option><option value="А">Ауырып жатыр (А)</option></select></td>
+                                                <td><button onclick="saveAttendance('${s.username}')" class="px-3 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сақтау</button></td>
+                                            </tr>
+                                        `;
+                                    }).join('') || '<tr><td colspan="4" class="text-center text-slate-400">Оқушылар жоқ</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
                 } else if (activeTab === 'teacher_homework') {
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмасын беру</h3>
@@ -536,6 +681,8 @@
                             `).join('') : '<p class="text-xs text-slate-400">Хабарламалар жоқ</p>'}
                         </div>
                     `;
+                } else if (activeTab === 'teacher_schedule') {
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесі</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
                 }
             }
             else if (currentUser.role === 'parent') {
@@ -564,8 +711,6 @@
                 `;
             }
             else {
-                let studentClass = classesList.find(c => (c.students || []).includes(currentUser.username));
-
                 if (activeTab === 'student_grades') {
                     let myGrades = grades[currentUser.username] || {};
                     panel.innerHTML = `
@@ -591,6 +736,8 @@
                             </table>
                         </div>
                     `;
+                } else if (activeTab === 'student_schedule') {
+                    panel.innerHTML = `<h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📅 Сабақ кестесі</h3><table class="w-full gov-table"><thead><tr><th>Сынып</th><th>Пән</th><th>Уақыты</th></tr></thead><tbody>${schedules.map(s => `<tr><td>${s.className}</td><td>${s.subject}</td><td>${s.time}</td></tr>`).join('') || '<tr><td colspan="3" class="text-center text-slate-400">Кесте жоқ</td></tr>'}</tbody></table>`;
                 } else if (activeTab === 'student_homework') {
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📚 Үй тапсырмалары</h3>
@@ -683,6 +830,25 @@
             renderTabContent();
         }
 
+        async function saveAttendance(username) {
+            let status = document.getElementById(`att_status_${username}`).value;
+            if(!attendance[username]) attendance[username] = {};
+            attendance[username]['today'] = status;
+            await saveDataToCloud();
+            alert('Қатысу сақталды!');
+        }
+
+        async function saveSchedule() {
+            let className = document.getElementById('sched-class').value.trim();
+            let subject = document.getElementById('sched-subject').value;
+            let time = document.getElementById('sched-time').value.trim();
+            if(!className || !time) return alert('Барлық өрістерді толтырыңыз!');
+            schedules.push({ className, subject, time });
+            await saveDataToCloud();
+            alert('Кесте бекітілді!');
+            renderTabContent();
+        }
+
         async function postHomework() {
             let subject = document.getElementById('hw-subject').value;
             let desc = document.getElementById('hw-desc').value.trim();
@@ -729,7 +895,7 @@
             const phone = document.getElementById('reg-phone').value.trim();
             const role = document.getElementById('reg-role').value;
             if(!name || !username || !password) return alert('Өрістерді толтырыңыз!');
-            users.push({ name, username, password, phone, role, parentOf: role==='parent'?users.find(u=>u.role==='student')?.username:'' });
+            users.push({ name, username, password, phone, role, parentOf: role==='parent'?users.find(u=>u.role==='student')?.username:'', warningReason: '', status: 'active' });
             await saveDataToCloud();
             alert('Тіркелді!');
             renderTabContent();
@@ -741,6 +907,18 @@
                 await saveDataToCloud();
                 renderTabContent();
             }
+        }
+
+        async function issueWarningPrompt(username) {
+            let reason = prompt('Ескерту себебін енгізіңіз:');
+            if(reason === null) return;
+            let u = users.find(x => x.username === username);
+            if(u) { u.warningReason = reason; await saveDataToCloud(); alert('Ескерту берілді!'); renderTabContent(); }
+        }
+
+        async function toggleBlockUser(username) {
+            let u = users.find(x => x.username === username);
+            if(u) { u.status = u.status === 'blocked' ? 'active' : 'blocked'; await saveDataToCloud(); renderTabContent(); }
         }
 
         async function saveAnnouncement() {
@@ -757,7 +935,6 @@
             alert('Өшірілді!');
         }
 
-        // ӘДЕКІ, КӨРКЕМ МЕМЛЕКЕТТІК БЛАНКІ ФОРМАТЫНДА PDF ЖҮКТЕУ
         function downloadPDFReport() {
             let myGrades = grades[currentUser.username] || {};
             let sClass = classesList.find(c => (c.students || []).includes(currentUser.username));
@@ -830,7 +1007,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = `BilimClass_Tabel_${currentUser.username}.html`;
             link.click();
-            alert('Әдемі дизайнмен рәсімделген ресми табель файлы сәтті жүктелді! Файлды ашып, браузер арқылы PDF түрінде сақтап немесе басып шығара аласыз.');
+            alert('Ресми табель файлы сәтті жүктелді!');
         }
     </script>
 </body>
