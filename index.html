@@ -192,6 +192,17 @@
         </div>
     </div>
 
+    <!-- Passkey / Biometric Registration Modal / Prompt -->
+    <div id="passkey-prompt-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50 animate-fade">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center relative border border-slate-200 space-y-4">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl mx-auto flex items-center justify-center text-xl font-black">🔒</div>
+            <h3 class="text-base font-extrabold text-slate-900">Touch ID / Face ID тіркеу</h3>
+            <p class="text-xs text-slate-500">Бұл аккаунт үшін келесі жолы парольсіз бірден кіру үшін құрылғыңыздың биометриясын байланыстырыңыз.</p>
+            <button type="button" onclick="registerPasskeyForCurrentAccount()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs shadow transition-all">Биометрияны қосу</button>
+            <button type="button" onclick="closePasskeyPrompt()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-bold text-xs transition-all">Кейін</button>
+        </div>
+    </div>
+
     <footer class="bg-white py-3 px-6 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center">
         <span id="footer-text" class="font-bold text-slate-700">BilimClass Enterprise Cloud © 2026. Барлық құқықтар қорғалған.</span>
         <span class="text-emerald-600 font-bold flex items-center gap-1">● Бұлттық база қосылған</span>
@@ -582,6 +593,41 @@
 
             localStorage.setItem('bilim_current_session_id', sessionId);
             authenticateUserSession(userObj);
+            
+            // Жаңа аккаунт немесе кірген кезде Passkey тіркеу терезесін шығару
+            checkAndPromptPasskeyRegistration(userObj.username);
+        }
+
+        function checkAndPromptPasskeyRegistration(username) {
+            let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+            if (!credMap[username]) {
+                // Егер бұл қолданушының Passkey-і тіркелмеген болса, ұсыныс модалын шығарамыз
+                document.getElementById('passkey-prompt-modal').classList.remove('hidden');
+            }
+        }
+
+        async function registerPasskeyForCurrentAccount() {
+            document.getElementById('passkey-prompt-modal').classList.add('hidden');
+            showSpinner("Biometric Passkey тіркелуде...");
+            try {
+                if (window.hanko && window.hanko.webauthn) {
+                    await window.hanko.webauthn.register();
+                    let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+                    credMap[currentUser.username] = currentUser.username;
+                    localStorage.setItem('bilim_passkeys_map', JSON.stringify(credMap));
+                    hideSpinner();
+                    alert("✨ Face ID / Touch ID сәтті тіркелді! Келесі жолы бір түйме арқылы кіре аласыз.");
+                    return;
+                }
+            } catch(e) {
+                console.log(e);
+            }
+            hideSpinner();
+            alert("Биометрияны тіркеу кезінде қате орын алды немесе браузер қолдамайды.");
+        }
+
+        function closePasskeyPrompt() {
+            document.getElementById('passkey-prompt-modal').classList.add('hidden');
         }
 
         function authenticateUserSession(foundUser) {
@@ -1111,7 +1157,7 @@
                                                 </td>
                                                 <td>
                                                     <button onclick="calculateAndSaveGrade('${s.username}')" class="px-2.5 py-1 bg-blue-600 text-white rounded font-bold text-[10px] mr-1">Сақтау</button>
-                                                    <button onclick="deleteGradeRecord('${s.username}')" class="px-2 py-1 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button>
+                                                    <button onclick="deleteGradeRecord('${s.username}')" class="px-2.5 py-1 bg-red-100 text-red-600 rounded font-bold text-[10px]">Жою</button>
                                                 </td>
                                             </tr>
                                         `;
