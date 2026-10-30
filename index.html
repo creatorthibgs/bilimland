@@ -1214,7 +1214,7 @@
         }
 
         async function terminateSession(sessionId) {
-            if (confirm("Бұл сеансты жойғыңыз келе ме? Сол құрылғы жүйеден шығарылады.")) {
+            if (confirm("Бұл сеансты жойғыңыз келе ме?")) {
                 showSpinner("Сеанс жойылуда...");
                 await loadDataFromCloud();
                 if (activeSessionsStore[currentUser.username]) {
