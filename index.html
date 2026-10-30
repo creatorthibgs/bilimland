@@ -103,6 +103,13 @@
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded border border-red-200"></div>
                 <button type="submit" id="btn-login" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
+                
+                <!-- Биометриялық кіру батырмасы (Passkeys) -->
+                <div class="pt-1">
+                    <button type="button" onclick="handleBiometricLoginClick()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-bold text-xs flex items-center justify-center gap-2 border border-slate-300 transition-all">
+                        <span>🔒</span> Face ID / Touch ID арқылы кіру
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -358,6 +365,124 @@
             if(currentUser) renderSidebar();
         }
 
+        // --- WEBAUTHN / BIOMETRIC LOGIN (PASSKEYS) ---
+        function isWebAuthnSupported() {
+            return window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function';
+        }
+
+        async function registerPasskey(username) {
+            if (!isWebAuthnSupported()) return;
+            try {
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                
+                const publicKeyCredentialCreationOptions = {
+                    challenge: challenge,
+                    rp: { name: "BilimClass Enterprise", id: window.location.hostname },
+                    user: {
+                        id: Uint8Array.from(username, c => c.charCodeAt(0)),
+                        name: username,
+                        displayName: username,
+                    },
+                    pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+                    authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                    timeout: 60000,
+                    attestation: "none"
+                };
+
+                const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
+                localStorage.setItem(`bilim_passkey_${username}`, JSON.stringify({
+                    id: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
+                    type: credential.type
+                }));
+                alert('✨ Биометрия (Passkey) сәтті тіркелді!');
+            } catch (err) {
+                console.error('Passkey тіркеу қатесі:', err);
+            }
+        }
+
+        async function loginWithPasskey(username) {
+            if (!isWebAuthnSupported()) return false;
+            const savedCred = localStorage.getItem(`bilim_passkey_${username}`);
+            if (!savedCred) {
+                alert('Бұл қолданушы үшін сақталған Passkey жоқ. Алдымен парольмен кіріңіз.');
+                return false;
+            }
+            try {
+                const credData = JSON.parse(savedCred);
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+
+                const publicKeyCredentialRequestOptions = {
+                    challenge: challenge,
+                    allowCredentials: [{
+                        id: Uint8Array.from(atob(credData.id), c => c.charCodeAt(0)),
+                        type: 'public-key',
+                        transports: ['internal']
+                    }],
+                    userVerification: 'required',
+                    timeout: 60000
+                };
+
+                const assertion = await navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions });
+                return !!assertion;
+            } catch (err) {
+                console.error('Passkey арқылы кіру қатесі:', err);
+                return false;
+            }
+        }
+
+        async function handleBiometricLoginClick() {
+            let usernameInput = document.getElementById('login-username').value.trim();
+            if (!usernameInput) {
+                alert('Алдымен жоғарыдағы өріске логиніңізді жазыңыз!');
+                return;
+            }
+            let success = await loginWithPasskey(usernameInput);
+            if (success) {
+                await loadDataFromCloud();
+                let foundUser = users.find(u => u.username === usernameInput);
+                if (foundUser) {
+                    if(foundUser.status === 'blocked') {
+                        alert('Аккаунт бұғатталған!');
+                        return;
+                    }
+                    authenticateUserSession(foundUser);
+                } else {
+                    alert('Қолданушы базадан табылмады.');
+                }
+            }
+        }
+
+        function authenticateUserSession(foundUser) {
+            currentUser = foundUser;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('welcome-text').innerText = currentUser.name;
+            
+            let roleTitle = 'Оқушы';
+            if(currentUser.role === 'admin') roleTitle = 'Бас әкімші';
+            else if(currentUser.role === 'teacher') roleTitle = 'Мұғалім';
+            else if(currentUser.role === 'parent') roleTitle = 'Ата-ана';
+            document.getElementById('welcome-role').innerText = roleTitle;
+
+            if(currentUser.role === 'admin') activeTab = 'admin_monitoring';
+            else if(currentUser.role === 'teacher') activeTab = 'teacher_journal';
+            else if(currentUser.role === 'parent') activeTab = 'parent_grades';
+            else activeTab = 'student_grades';
+
+            checkBanners();
+            renderSidebar();
+            renderTabContent();
+
+            if (isWebAuthnSupported() && !localStorage.getItem(`bilim_passkey_${currentUser.username}`)) {
+                if (confirm('🔒 Осы құрылғыда Face ID / Touch ID арқылы келесіде жылдам кіруді қосуды қалайсыз ба?')) {
+                    registerPasskey(currentUser.username);
+                }
+            }
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
             showSpinner("Жүйеге кіру тексерілуде...");
@@ -375,31 +500,11 @@
                     errorDiv.classList.remove('hidden');
                     return;
                 }
-                currentUser = foundUser;
                 errorDiv.classList.add('hidden');
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                document.getElementById('user-info').classList.remove('hidden');
-                document.getElementById('welcome-text').innerText = currentUser.name;
-                
-                let roleTitle = 'Оқушы';
-                if(currentUser.role === 'admin') roleTitle = 'Бас әкімші';
-                else if(currentUser.role === 'teacher') roleTitle = 'Мұғалім';
-                else if(currentUser.role === 'parent') roleTitle = 'Ата-ана';
-
-                document.getElementById('welcome-role').innerText = roleTitle;
-
-                if(currentUser.role === 'admin') activeTab = 'admin_monitoring';
-                else if(currentUser.role === 'teacher') activeTab = 'teacher_journal';
-                else if(currentUser.role === 'parent') activeTab = 'parent_grades';
-                else activeTab = 'student_grades';
-
-                checkBanners();
-                renderSidebar();
-                renderTabContent();
+                authenticateUserSession(foundUser);
             } else {
                 errorDiv.innerText = 'Қате логин немесе пароль!';
-                errorDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
             }
         }
 
@@ -1114,7 +1219,6 @@
                 return alert('Қате DCA коды! Мұғалімнен дұрыс кодты сұраңыз.');
             }
 
-            // Remove student from any previous classes
             classesList.forEach(c => {
                 if(c.students) {
                     c.students = c.students.filter(s => s !== currentUser.username);
@@ -1302,28 +1406,23 @@
                 
                 let studentUsernames = targetClass.students || [];
                 
-                // 1. Remove grades & attendance for all students in this class
                 studentUsernames.forEach(sUser => {
                     delete grades[sUser];
                     delete attendance[sUser];
                 });
 
-                // 2. Remove students and their corresponding parents from users list
                 users = users.filter(u => {
                     if (studentUsernames.includes(u.username)) return false;
                     if (u.role === 'parent' && studentUsernames.includes(u.parentOf)) return false;
                     return true;
                 });
 
-                // 3. Remove schedules associated with this class
                 schedules = schedules.filter(s => s.className !== targetClass.name);
-
-                // 4. Finally delete class itself
                 classesList.splice(classIdx, 1);
 
                 await saveDataToCloud();
                 hideSpinner();
-                alert('Сынып және оған қатысты барлық оқушы, ата-ана мен баға деректері сәтті жойылды!');
+                alert('Сынып пен оған қатысты барлық оқушы, ата-ана мен баға деректері сәтті жойылды!');
                 renderTabContent();
             }
         }
@@ -1332,7 +1431,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrgrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
