@@ -95,19 +95,19 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label id="lbl-user" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Логин</label>
-                    <input type="text" id="login-username" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="Логиніңіз">
+                    <input type="text" id="login-username" class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="Логиніңіз">
                 </div>
                 <div>
                     <label id="lbl-pass" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Пароль</label>
-                    <input type="password" id="login-password" required class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="••••••••">
+                    <input type="password" id="login-password" class="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-blue-600" placeholder="••••••••">
                 </div>
                 <div id="login-error" class="hidden text-red-600 text-xs text-center font-bold bg-red-50 p-2 rounded border border-red-200"></div>
                 <button type="submit" id="btn-login" class="w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded font-bold text-xs shadow transition-all">Кіру</button>
                 
-                <!-- Биометриялық кіру батырмасы (Passkeys) -->
+                <!-- Автоматты биометриялық кіру батырмасы (Passkeys / Touch ID) -->
                 <div class="pt-1">
-                    <button type="button" onclick="handleBiometricLoginClick()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-bold text-xs flex items-center justify-center gap-2 border border-slate-300 transition-all">
-                        <span>🔒</span> Face ID / Touch ID арқылы кіру
+                    <button type="button" onclick="handleBiometricLoginClick()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-bold text-xs flex items-center justify-center gap-2 border border-slate-300 transition-all shadow-xs">
+                        <span>🔒</span> Touch ID / Face ID арқылы кіру
                     </button>
                 </div>
             </form>
@@ -365,7 +365,7 @@
             if(currentUser) renderSidebar();
         }
 
-        // --- WEBAUTHN / BIOMETRIC LOGIN (PASSKEYS) ---
+        // --- PASSWORDLESS WEBAUTHN / BIOMETRIC LOGIN ---
         function isWebAuthnSupported() {
             return window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function';
         }
@@ -391,65 +391,72 @@
                 };
 
                 const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
-                localStorage.setItem(`bilim_passkey_${username}`, JSON.stringify({
-                    id: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
-                    type: credential.type
-                }));
-                alert('✨ Биометрия (Passkey) сәтті тіркелді!');
+                let credIdB64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+                
+                // Сақтау
+                localStorage.setItem(`bilim_passkey_${username}`, JSON.stringify({ id: credIdB64, type: credential.type }));
+                
+                let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+                credMap[credIdB64] = username;
+                localStorage.setItem('bilim_passkeys_map', JSON.stringify(credMap));
+
+                alert('✨ Touch ID / Биометрия сәтті тіркелді!');
             } catch (err) {
                 console.error('Passkey тіркеу қатесі:', err);
             }
         }
 
-        async function loginWithPasskey(username) {
-            if (!isWebAuthnSupported()) return false;
-            const savedCred = localStorage.getItem(`bilim_passkey_${username}`);
-            if (!savedCred) {
-                alert('Бұл қолданушы үшін сақталған Passkey жоқ. Алдымен парольмен кіріңіз.');
-                return false;
+        async function handleBiometricLoginClick() {
+            if (!isWebAuthnSupported()) {
+                alert('Бұл құрылғыда биометриялық кіру қолдау таппайды.');
+                return;
             }
+
+            let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+            if (Object.keys(credMap).length === 0) {
+                alert('Бұл құрылғыда әлі ешқандай биометриялық аккаунт тіркелмеген. Алдымен логин мен пароль арқылы кіріп, биометрияны қосыңыз.');
+                return;
+            }
+
+            showSpinner("Touch ID / Биометрия тексерілуде...");
             try {
-                const credData = JSON.parse(savedCred);
                 const challenge = new Uint8Array(32);
                 window.crypto.getRandomValues(challenge);
 
                 const publicKeyCredentialRequestOptions = {
                     challenge: challenge,
-                    allowCredentials: [{
-                        id: Uint8Array.from(atob(credData.id), c => c.charCodeAt(0)),
-                        type: 'public-key',
-                        transports: ['internal']
-                    }],
                     userVerification: 'required',
                     timeout: 60000
                 };
 
                 const assertion = await navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions });
-                return !!assertion;
-            } catch (err) {
-                console.error('Passkey арқылы кіру қатесі:', err);
-                return false;
-            }
-        }
+                hideSpinner();
 
-        async function handleBiometricLoginClick() {
-            let usernameInput = document.getElementById('login-username').value.trim();
-            if (!usernameInput) {
-                alert('Алдымен жоғарыдағы өріске логиніңізді жазыңыз!');
-                return;
-            }
-            let success = await loginWithPasskey(usernameInput);
-            if (success) {
-                await loadDataFromCloud();
-                let foundUser = users.find(u => u.username === usernameInput);
-                if (foundUser) {
-                    if(foundUser.status === 'blocked') {
-                        alert('Аккаунт бұғатталған!');
-                        return;
+                if (assertion) {
+                    let credIdB64 = btoa(String.fromCharCode(...new Uint8Array(assertion.rawId)));
+                    let matchedUsername = credMap[credIdB64];
+
+                    if (matchedUsername) {
+                        await loadDataFromCloud();
+                        let foundUser = users.find(u => u.username === matchedUsername);
+                        if (foundUser) {
+                            if (foundUser.status === 'blocked') {
+                                alert('Аккаунт бұғатталған!');
+                                return;
+                            }
+                            authenticateUserSession(foundUser);
+                        } else {
+                            alert('Қолданушы деректер базасынан табылмады.');
+                        }
+                    } else {
+                        alert('Бұл биометриялық кілт жүйеден табылмады.');
                     }
-                    authenticateUserSession(foundUser);
-                } else {
-                    alert('Қолданушы базадан табылмады.');
+                }
+            } catch (err) {
+                hideSpinner();
+                console.error('Биометриялық кіру қатесі:', err);
+                if (err.name !== 'NotAllowedError') {
+                    alert('Биометрия арқылы кіру сәтсіз аяқталды.');
                 }
             }
         }
@@ -477,7 +484,7 @@
             renderTabContent();
 
             if (isWebAuthnSupported() && !localStorage.getItem(`bilim_passkey_${currentUser.username}`)) {
-                if (confirm('🔒 Осы құрылғыда Face ID / Touch ID арқылы келесіде жылдам кіруді қосуды қалайсыз ба?')) {
+                if (confirm('🔒 Осы құрылғыда Touch ID арқылы келесіде логин жазбай бірден кіруді қосуды қалайсыз ба?')) {
                     registerPasskey(currentUser.username);
                 }
             }
@@ -1431,7 +1438,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrgrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
