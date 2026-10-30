@@ -604,33 +604,91 @@
             }
         }
 
+        // ШЫНАЙЫ NATIVE WEBAUTHN ТІРКЕУ (FACE ID / TOUCH ID)
         async function registerPasskeyForCurrentAccount() {
             document.getElementById('passkey-prompt-modal').classList.add('hidden');
-            showSpinner("Биометрия дайындалуда...");
+            showSpinner("Touch ID / Face ID сұралуда...");
             try {
-                if (window.hanko && window.hanko.user) {
-                    // Hanko стандартты тіркеу механизмі
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                const userId = new TextEncoder().encode(currentUser.username);
+                
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "BilimClass Enterprise", id: window.location.hostname },
+                        user: {
+                            id: userId,
+                            name: currentUser.username,
+                            displayName: currentUser.name
+                        },
+                        pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                        timeout: 60000,
+                        attestation: "none"
+                    }
+                });
+
+                if (credential) {
+                    let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+                    credMap[currentUser.username] = { registered: true };
+                    localStorage.setItem('bilim_passkeys_map', JSON.stringify(credMap));
                     hideSpinner();
-                    alert("✨ Биометрия сәтті қосылды!");
-                    return;
+                    alert("✨ Face ID / Touch ID сәтті тіркелді!");
                 }
             } catch(e) {
-                console.log(e);
+                hideSpinner();
+                console.error(e);
+                alert("⚠️ Биометрияны тіркеуден бас тартылды немесе қолдау жоқ: " + e.message);
             }
-            hideSpinner();
-            alert("Биометрия бұл браузерде немесе құрылғыда қолжетімді.");
         }
 
         function closePasskeyPrompt() {
             document.getElementById('passkey-prompt-modal').classList.add('hidden');
         }
 
+        // ШЫНАЙЫ NATIVE WEBAUTHN КІРУ (FACE ID / TOUCH ID)
         async function handleBiometricLoginClick() {
             showSpinner("Touch ID / Face ID тексерілуде...");
-            setTimeout(() => {
+            try {
+                let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+                let usernames = Object.keys(credMap);
+                
+                if (usernames.length === 0) {
+                    hideSpinner();
+                    alert("Бұл құрылғыда тіркелген биометриялық кілт табылмады. Алдымен логин мен пароль арқылы кіріп, биометрияны қосыңыз.");
+                    return;
+                }
+
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+
+                const assertion = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: challenge,
+                        rpId: window.location.hostname,
+                        userVerification: "required"
+                    }
+                });
+
+                if (assertion) {
+                    let targetUsername = usernames[0];
+                    await loadDataFromCloud();
+                    let foundUser = users.find(u => u.username === targetUsername);
+                    
+                    if (foundUser) {
+                        hideSpinner();
+                        alert("✨ Биометрия арқылы кіру сәтті өтті!");
+                        registerAndCheckSession(foundUser);
+                        return;
+                    }
+                }
+            } catch(e) {
                 hideSpinner();
-                alert("Биометрия арқылы кіру сәтті өтті!");
-            }, 800);
+                console.error(e);
+                alert("⚠️ Биометриямен кіру сәтсіз аяқталды немесе бас тартылды.");
+            }
+            hideSpinner();
         }
 
         function authenticateUserSession(foundUser) {
