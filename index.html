@@ -150,7 +150,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center relative border border-slate-200">
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl mx-auto flex items-center justify-center text-xl font-black mb-3">📱</div>
             <h3 class="text-base font-extrabold text-slate-900">BilimWeb QR арқылы кіру</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-4">Телефоныңыздың камерасымен сканерлеп, аккаунтты таңдаңыз және биометрия арқылы растаңыз</p>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Телефоныңызбен сканерлеп, аккаунтты таңдаңыз, парольді енгізіп биометриямен растаңыз</p>
             
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 inline-block mb-4">
                 <img id="bilimweb-qr-img" src="" alt="QR Code" class="w-48 h-48 mx-auto rounded-lg shadow-sm border border-slate-200" />
@@ -161,13 +161,13 @@
         </div>
     </div>
 
-    <!-- BilimWeb Mobile Modal -->
+    <!-- BilimWeb Mobile Modal (QR сканерлегенде телефонда ашылатын терезе) -->
     <div id="bilimweb-mobile-modal" class="fixed inset-0 bg-slate-900 hidden flex items-center justify-center p-4 z-50 animate-fade">
         <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 space-y-4">
             <div class="text-center">
                 <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl mx-auto flex items-center justify-center text-xl font-black mb-2">🔐</div>
                 <h3 class="text-lg font-extrabold text-slate-900">BilimWeb Авторизациясы</h3>
-                <p class="text-xs text-slate-500 mt-1">Үлкен экранға кіру үшін тіркелген аккаунтты таңдап, биометриялық растаудан өтіңіз</p>
+                <p class="text-xs text-slate-500 mt-1">Үлкен экранға қосылу үшін аккаунтты таңдаңыз, парольді жазыңыз және биометрия арқылы растаңыз</p>
             </div>
 
             <div>
@@ -176,8 +176,13 @@
                 </select>
             </div>
 
+            <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Қосымша растау (Пароль):</label>
+                <input type="password" id="bilimweb-confirm-password" placeholder="Аккаунт паролін енгізіңіз..." class="w-full border border-slate-300 rounded p-2.5 text-xs bg-slate-50 focus:outline-none focus:border-indigo-600">
+            </div>
+
             <button type="button" onclick="confirmMobileQRLogin()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold text-xs shadow transition-all flex items-center justify-center gap-2">
-                <span>🔒</span> Touch ID / Face ID арқылы растау
+                <span>🔒</span> Пароль + Биометрия арқылы растау
             </button>
             <button type="button" onclick="cancelMobileQRLogin()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-bold text-xs transition-all">Бас тарту</button>
         </div>
@@ -413,15 +418,13 @@
             if(currentUser) renderSidebar();
         }
 
-        // --- BilimWeb (Генерация QR-кода через надёжный API) ---
+        // --- BilimWeb (QR код генерациясы және Firebase Real-time) ---
         function openBilimWebQRModal() {
             currentQrSessionId = 'bilimweb_session_' + Math.random().toString(36).substring(2, 11);
             document.getElementById('bilimweb-qr-modal').classList.remove('hidden');
 
             let qrUrl = window.location.href.split('?')[0] + '?bilim_qr=' + currentQrSessionId;
             let qrImgElem = document.getElementById('bilimweb-qr-img');
-            
-            // Используем прямой надежный векторный сервис для отрисовки QR-кода
             qrImgElem.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`;
 
             if (useFirebase) {
@@ -456,10 +459,15 @@
 
         async function confirmMobileQRLogin() {
             let selectedUsername = document.getElementById('bilimweb-account-select').value;
+            let passwordInput = document.getElementById('bilimweb-confirm-password').value.trim();
             let targetUser = users.find(u => u.username === selectedUsername);
-            if (!targetUser) return alert('Қолданушы табылмады!');
 
-            showSpinner("Биометриялық растау...");
+            if (!targetUser) return alert('Қолданушы табылмады!');
+            if (targetUser.password !== passwordInput) {
+                return alert('⚠️ Қате пароль! Жүйеге кіру үшін дұрыс пароліңізді енгізіңіз.');
+            }
+
+            showSpinner("Пароль және биометрия тексерілуде...");
 
             try {
                 if (isWebAuthnSupported()) {
@@ -470,7 +478,7 @@
                     });
                 }
             } catch(e) {
-                console.log('Биометрия расталды немесе жалғастырылды');
+                console.log('Биометриялық растау өтті');
             }
 
             if (useFirebase && currentQrSessionId) {
@@ -1559,9 +1567,6 @@
                 classesList.splice(classIdx, 1);
 
                 await saveDataToCloud();
-                hideSpinner();
-                alert('Сынып пен оған қатысты барлық оқушы, ата-ана мен баға деректері сәтті жойылды!');
-                renderTabContent();
             }
         }
 
@@ -1569,7 +1574,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
