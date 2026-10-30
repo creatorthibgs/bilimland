@@ -47,19 +47,6 @@
         <div id="spinner-text" class="text-xs font-bold tracking-wider text-slate-200">Деректер өңделуде...</div>
     </div>
 
-    <!-- Жаңа құрылғыдан кіруді растау модалкасы (Security Alert Modal) -->
-    <div id="new-device-alert-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden flex items-center justify-center p-4 z-[99999] animate-fade">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-slate-200 space-y-4">
-            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl mx-auto flex items-center justify-center text-xl font-black">⚠️</div>
-            <h3 class="text-base font-extrabold text-slate-900">Қауіпсіздік ескертуі</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">Сіздің аккаунтыңызға жаңа құрылғыдан / браузерден әрекет байқалды. Бұл сіз бе?</p>
-            <div class="flex gap-2 pt-2">
-                <button type="button" onclick="confirmDeviceSecurity(true)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs shadow transition-all">Ия, бұл мен</button>
-                <button type="button" onclick="confirmDeviceSecurity(false)" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-xs shadow transition-all">Жоқ, бұл мен емес</button>
-            </div>
-        </div>
-    </div>
-
     <div id="gov-boot">
         <div class="text-center space-y-3 animate-fade">
             <div class="w-14 h-14 mx-auto bg-blue-900 rounded-xl flex items-center justify-center shadow-md text-xl font-black text-white">BL</div>
@@ -253,8 +240,7 @@
 
         let currentQrSessionId = null;
         let qrListenerUnsubscribe = null;
-        let activeSessionsStore = {}; // Белсенді сеанстар тізімі
-        let pendingUserForSession = null;
+        let activeSessionsStore = {}; 
 
         const translations = {
             kk: {
@@ -453,7 +439,6 @@
                         closeBilimWebQRModal();
                         if (qrListenerUnsubscribe) qrListenerUnsubscribe();
                         
-                        // Сеансты тіркеу және тексеру логикасы
                         registerAndCheckSession(approvedUser);
                     }
                 });
@@ -524,7 +509,7 @@
             window.location.href = window.location.pathname;
         }
 
-        // --- Active Sessions Logic ---
+        // --- Active Sessions Registration ---
         async function registerAndCheckSession(userObj) {
             await loadDataFromCloud();
             let ua = navigator.userAgent;
@@ -554,23 +539,8 @@
             activeSessionsStore[userObj.username].push(sessionInfo);
             await saveDataToCloud();
 
-            // Соңғы сессия ID сақтаймыз
             localStorage.setItem('bilim_current_session_id', sessionId);
-
-            // Жаңа құрылғыдан кірген кездегі растау сұрағы
-            pendingUserForSession = userObj;
-            document.getElementById('new-device-alert-modal').classList.remove('hidden');
-        }
-
-        async function confirmDeviceSecurity(isMyDevice) {
-            document.getElementById('new-device-alert-modal').classList.add('hidden');
-            if (isMyDevice) {
-                authenticateUserSession(pendingUserForSession);
-            } else {
-                alert('⚠️ Қауіпсіздік мақсатында сеанс тоқтатылды.');
-                logout();
-            }
-            pendingUserForSession = null;
+            authenticateUserSession(userObj);
         }
 
         // --- PASSWORDLESS WEBAUTHN / BIOMETRIC LOGIN ---
@@ -689,34 +659,11 @@
             renderSidebar();
             renderTabContent();
 
-            // Real-time listener for current session termination check
-            startSessionMonitor();
-
             if (isWebAuthnSupported() && !localStorage.getItem(`bilim_passkey_${currentUser.username}`)) {
                 if (confirm('🔒 Осы құрылғыда Touch ID арқылы келесіде логин жазбай бірден кіруді қосуды қалайсыз ба?')) {
                     registerPasskey(currentUser.username);
                 }
             }
-        }
-
-        function startSessionMonitor() {
-            if (!useFirebase) return;
-            let currentSessId = localStorage.getItem('bilim_current_session_id');
-            if (!currentSessId) return;
-
-            db.collection("bilimland").doc("enterprise_v14_ai").onSnapshot((doc) => {
-                if (doc.exists && currentUser) {
-                    let data = doc.data();
-                    let store = data.activeSessionsStore || {};
-                    let mySessions = store[currentUser.username] || [];
-                    let myCurrent = mySessions.find(s => s.id === currentSessId);
-                    
-                    if (!myCurrent || !myCurrent.active) {
-                        alert('⚠️ Бұл сеанс басқа құрылғыдан немесе сеанстар бөлімінен «Жою» арқылы жабылды!');
-                        logout();
-                    }
-                }
-            });
         }
 
         async function handleLogin(e) {
@@ -850,9 +797,10 @@
                             <td>${s.browser}</td>
                             <td>${s.date} / ${s.time}</td>
                             <td>
-                                ${isCurrent ? '<span class="text-slate-400 font-semibold">Қалдыру (Ағымдағы)</span>' : `
-                                    <button onclick="terminateSession('${s.id}')" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[10px]">Жою (Шығару)</button>
-                                `}
+                                <div class="flex gap-1.5">
+                                    <button onclick="keepSession('${s.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-[10px]">Қалдыру</button>
+                                    <button onclick="terminateSession('${s.id}')" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[10px]">Жою</button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -860,7 +808,7 @@
 
                 panel.innerHTML = `
                     <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💻 Белсенді сеанстар мен құрылғыларды басқару</h3>
-                    <p class="text-xs text-slate-500 mb-4">Бұл бөлімде аккаунтыңызға кірген барлық құрылғылар мен браузерлер көрсетілген. Қажет емес сеансты «Жою» арқылы үлкен экраннан бірден өшіре аласыз.</p>
+                    <p class="text-xs text-slate-500 mb-4">Бұл бөлімде аккаунтыңызға кірген барлық құрылғылар мен браузерлер көрсетілген. Қажет емес сеансты «Жою» батырмасы арқылы тоқтата аласыз.</p>
                     <div class="overflow-x-auto">
                         <table class="w-full gov-table">
                             <thead>
@@ -868,7 +816,7 @@
                                     <th>Құрылғы атауы</th>
                                     <th>Браузері</th>
                                     <th>Күні / Уақыты</th>
-                                    <th>Әрекет (Жою / Қалдыру)</th>
+                                    <th>Әрекет</th>
                                 </tr>
                             </thead>
                             <tbody>${sessionRows}</tbody>
@@ -1266,20 +1214,21 @@
         }
 
         async function terminateSession(sessionId) {
-            if (confirm("Бұл сеансты жойғыңыз келе ме? Үлкен экрандағы сол құрылғы жүйеден автоматты түрде шығарылады.")) {
+            if (confirm("Бұл сеансты жойғыңыз келе ме? Сол құрылғы жүйеден шығарылады.")) {
                 showSpinner("Сеанс жойылуда...");
                 await loadDataFromCloud();
                 if (activeSessionsStore[currentUser.username]) {
-                    activeSessionsStore[currentUser.username] = activeSessionsStore[currentUser.username].map(s => {
-                        if (s.id === sessionId) s.active = false;
-                        return s;
-                    });
+                    activeSessionsStore[currentUser.username] = activeSessionsStore[currentUser.username].filter(s => s.id !== sessionId);
                     await saveDataToCloud();
                 }
                 hideSpinner();
-                alert('Сеанс сәтті жойылды!');
+                alert('Сеанс тізімнен сәтті жойылды!');
                 renderTabContent();
             }
+        }
+
+        function keepSession(sessionId) {
+            alert('Сеанс сақталды. Құрылғы өз жұмысын жалғастыра береді.');
         }
 
         function renderScheduleView(panelTitle, targetClassName) {
@@ -1729,7 +1678,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrgrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
