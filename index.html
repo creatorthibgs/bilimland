@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
@@ -29,15 +30,14 @@
         .gov-loader-progress {
             position: absolute; left: 0; top: 0; bottom: 0; width: 40%; background: #1e3a8a; border-radius: 2px; animation: govMove 1.2s infinite ease-in-out;
         }
-        @keyframes govMove {
-            0% { left: -40%; }
-            100% { left: 100%; }
-        }
+        @keyframes govMove { 0% { left: -40%; } 100% { left: 100%; } }
 
         .win10-spinner-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(3px);
             z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;
         }
+
+        .id-card-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
@@ -86,7 +86,6 @@
     </header>
 
     <div class="flex-1 max-w-[1400px] w-full mx-auto p-3 md:p-4 flex flex-col">
-        
         <div id="login-section" class="w-full max-w-md mx-auto my-auto bg-white p-8 rounded-xl shadow-xl border border-slate-200 animate-fade">
             <div class="text-center mb-6">
                 <h2 id="login-title" class="text-lg font-extrabold text-slate-900">Жүйеге кіру</h2>
@@ -242,6 +241,15 @@
         let qrListenerUnsubscribe = null;
         let activeSessionsStore = {}; 
 
+        let bilimTests = [];
+        let testResults = {}; 
+        let bilimCards = {}; 
+        let bilimSubscriptions = {}; 
+        let subscriptionSettings = { startDate: '', endDate: '' };
+
+        let tempQuestions = [];
+        let html5QrScanner = null;
+
         const translations = {
             kk: {
                 subtitle: "Мемлекеттік бірыңғай мектеп журналы",
@@ -260,6 +268,8 @@
                 adminAnn: "📢 Хабарландыру",
                 adminSupport: "🛟 Қолдау кірістері",
                 adminAI: "🤖 Admin-GPT",
+                adminBilimID: "🪪 BilimID Басқару",
+                adminSub: "📜 BilimSubscription (Табельдер)",
                 teachJorn: "📖 Бағалар журналы",
                 teachAtt: "📋 Қатысу журналы",
                 teachClass: "➕ Сынып ашу (DCA)",
@@ -267,6 +277,9 @@
                 teachKtp: "📑 КТЖ (Күнтізбелік жоспар)",
                 teachSup: "🛟 Қолдау қызметі",
                 teachAI: "🤖 TeachGPT",
+                teachTest: "📝 BilimTest (Тест)",
+                teachCheckID: "🔍 CheckID (Камера)",
+                teachID: "🪪 Менің BilimID-ім",
                 studGrades: "📊 Менің бағаларым",
                 studSched: "📅 Менің кестем",
                 studHw: "📚 Үй тапсырмасы",
@@ -274,9 +287,13 @@
                 studJoin: "🔑 DCA кодпен қосылу",
                 studSup: "🛟 Қолдау",
                 studAI: "🤖 Study-GPT",
+                studTest: "📝 BilimTest Тапсыру",
+                studID: "🪪 Менің BilimID-ім",
                 parentGrades: "👨‍👩‍👧 Баланың бағалары",
                 parentSched: "📅 Баланың кестесі",
                 parentSupport: "🛟 Қолдау қызметі",
+                parentID: "🪪 Баланың BilimID-і",
+                parentSub: "📜 BilimSubscription (Табель қол қою)",
                 sessionsTab: "💻 Белсенді сеанстар"
             },
             ru: {
@@ -296,6 +313,8 @@
                 adminAnn: "📢 Объявления",
                 adminSupport: "🛟 Входящие тикеты",
                 adminAI: "🤖 Admin-GPT",
+                adminBilimID: "🪪 Управление BilimID",
+                adminSub: "📜 BilimSubscription (Табели)",
                 teachJorn: "📖 Журнал оценок",
                 teachAtt: "📋 Посещаемость",
                 teachClass: "➕ Создать класс (DCA)",
@@ -303,6 +322,9 @@
                 teachKtp: "📑 КТП",
                 teachSup: "🛟 Поддержка",
                 teachAI: "🤖 TeachGPT",
+                teachTest: "📝 BilimTest (Тесты)",
+                teachCheckID: "🔍 CheckID (Камера)",
+                teachID: "🪪 Мой BilimID",
                 studGrades: "📊 Мои оценки",
                 studSched: "📅 Мое расписание",
                 studHw: "📚 Домашка",
@@ -310,9 +332,13 @@
                 studJoin: "🔑 Вступить по DCA коду",
                 studSup: "🛟 Поддержка",
                 studAI: "🤖 Study-GPT",
+                studTest: "📝 Пройти BilimTest",
+                studID: "🪪 Мой BilimID",
                 parentGrades: "👨‍👩‍👧 Оценки ребенка",
                 parentSched: "📅 Расписание ребенка",
                 parentSupport: "🛟 Поддержка",
+                parentID: "🪪 BilimID ребенка",
+                parentSub: "📜 BilimSubscription (Подпись)",
                 sessionsTab: "💻 Активные сеансы"
             },
             en: {
@@ -332,6 +358,8 @@
                 adminAnn: "📢 Announcements",
                 adminSupport: "🛟 Support Tickets",
                 adminAI: "🤖 Admin-GPT",
+                adminBilimID: "🪪 BilimID Manage",
+                adminSub: "📜 BilimSubscription",
                 teachJorn: "📖 Gradebook",
                 teachAtt: "📋 Attendance",
                 teachClass: "➕ Create Class (DCA)",
@@ -339,6 +367,9 @@
                 teachKtp: "📑 KTP",
                 teachSup: "🛟 Support",
                 teachAI: "🤖 TeachGPT",
+                teachTest: "📝 BilimTest",
+                teachCheckID: "🔍 CheckID (Camera)",
+                teachID: "🪪 My BilimID",
                 studGrades: "📊 My Grades",
                 studSched: "📅 My Schedule",
                 studHw: "📚 Homework",
@@ -346,9 +377,13 @@
                 studJoin: "🔑 Join via DCA Code",
                 studSup: "🛟 Support",
                 studAI: "🤖 Study-GPT",
+                studTest: "📝 Pass BilimTest",
+                studID: "🪪 My BilimID",
                 parentGrades: "👨‍👩‍👧 Child Grades",
                 parentSched: "📅 Child Schedule",
                 parentSupport: "🛟 Support",
+                parentID: "🪪 Child BilimID",
+                parentSub: "📜 BilimSubscription",
                 sessionsTab: "💻 Active Sessions"
             }
         };
@@ -393,6 +428,12 @@
                         supportTickets = data.supportTickets || [];
                         currentAnnouncement = data.announcement || '';
                         activeSessionsStore = data.activeSessionsStore || {};
+                        
+                        bilimTests = data.bilimTests || [];
+                        testResults = data.testResults || {};
+                        bilimCards = data.bilimCards || {};
+                        bilimSubscriptions = data.bilimSubscriptions || {};
+                        subscriptionSettings = data.subscriptionSettings || { startDate: '', endDate: '' };
                     }
                 } catch(e) { console.error(e); }
             }
@@ -402,7 +443,8 @@
             if(useFirebase) {
                 try {
                     await db.collection("bilimland").doc("enterprise_v14_ai").set({
-                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement, activeSessionsStore
+                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement, activeSessionsStore,
+                        bilimTests, testResults, bilimCards, bilimSubscriptions, subscriptionSettings
                     });
                 } catch(e) { console.error(e); }
             }
@@ -423,7 +465,6 @@
             if(currentUser) renderSidebar();
         }
 
-        // --- BilimWeb (QR код) ---
         function openBilimWebQRModal() {
             currentQrSessionId = 'bilimweb_session_' + Math.random().toString(36).substring(2, 11);
             document.getElementById('bilimweb-qr-modal').classList.remove('hidden');
@@ -509,7 +550,6 @@
             window.location.href = window.location.pathname;
         }
 
-        // --- Active Sessions Registration ---
         async function registerAndCheckSession(userObj) {
             await loadDataFromCloud();
             let ua = navigator.userAgent;
@@ -543,7 +583,6 @@
             authenticateUserSession(userObj);
         }
 
-        // --- PASSWORDLESS WEBAUTHN / BIOMETRIC LOGIN ---
         function isWebAuthnSupported() {
             return window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function';
         }
@@ -712,6 +751,9 @@
         }
 
         function logout() {
+            if(html5QrScanner) {
+                try { html5QrScanner.clear(); } catch(e){}
+            }
             currentUser = null;
             localStorage.removeItem('bilim_current_session_id');
             document.getElementById('login-section').classList.remove('hidden');
@@ -733,6 +775,8 @@
                     { id: 'admin_sanctions', label: t.adminSanc },
                     { id: 'admin_schedule', label: t.adminSched },
                     { id: 'admin_users', label: t.adminUsers },
+                    { id: 'admin_bilimid', label: t.adminBilimID },
+                    { id: 'admin_sub', label: t.adminSub },
                     { id: 'admin_announcement', label: t.adminAnn },
                     { id: 'admin_support', label: t.adminSupport },
                     { id: 'sessions_management', label: t.sessionsTab },
@@ -743,6 +787,9 @@
                     { id: 'teacher_journal', label: t.teachJorn },
                     { id: 'teacher_attendance', label: t.teachAtt },
                     { id: 'teacher_classes', label: t.teachClass },
+                    { id: 'teacher_test', label: t.teachTest },
+                    { id: 'teacher_checkid', label: t.teachCheckID },
+                    { id: 'teacher_id', label: t.teachID },
                     { id: 'teacher_schedule', label: t.teachSched },
                     { id: 'teacher_ktp', label: t.teachKtp },
                     { id: 'teacher_support', label: t.teachSup },
@@ -753,12 +800,16 @@
                 links = [
                     { id: 'parent_grades', label: t.parentGrades },
                     { id: 'parent_schedule', label: t.parentSched },
+                    { id: 'parent_id', label: t.parentID },
+                    { id: 'parent_sub', label: t.parentSub },
                     { id: 'sessions_management', label: t.sessionsTab },
                     { id: 'parent_support', label: t.parentSupport }
                 ];
             } else {
                 links = [
                     { id: 'student_grades', label: t.studGrades },
+                    { id: 'student_test', label: t.studTest },
+                    { id: 'student_id', label: t.studID },
                     { id: 'student_schedule', label: t.studSched },
                     { id: 'student_homework', label: t.studHw },
                     { id: 'student_contact', label: t.studContact },
@@ -776,6 +827,9 @@
         }
 
         function switchTab(tabId) {
+            if(html5QrScanner) {
+                try { html5QrScanner.clear(); } catch(e){}
+            }
             activeTab = tabId;
             renderSidebar();
             renderTabContent();
@@ -934,6 +988,119 @@
                         </div>
                         <div class="overflow-x-auto"><table class="w-full gov-table"><thead><tr><th>Аты-жөні</th><th>Логин</th><th>Пароль</th><th>Рөлі</th><th>Бекітілген баласы</th><th>Әрекет</th></tr></thead><tbody>${allUsersList}</tbody></table></div>
                     `;
+                } else if (activeTab === 'admin_bilimid') {
+                    let userSelectOptions = users.filter(u => u.role === 'student' || u.role === 'teacher').map(u => `<option value="${u.username}">${u.name} (@${u.username}) - [${u.role === 'teacher' ? 'Мұғалім' : 'Оқушы'}]</option>`).join('');
+                    let classOptions = classesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('') + '<option value="—">Мұғалім / Сыныпсыз</option>';
+
+                    let idCardRows = Object.keys(bilimCards).length > 0 ? Object.keys(bilimCards).map(un => {
+                        let c = bilimCards[un];
+                        let stColor = c.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : (c.status === 'INACTIVE' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700 font-bold');
+                        return `
+                            <tr class="text-xs">
+                                <td><b>${c.name}</b> (@${un})</td>
+                                <td><span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] ${c.role === 'teacher' ? 'bg-blue-100 text-blue-700' : 'bg-indigo-100 text-indigo-700'}">${c.role === 'teacher' ? 'Мұғалім' : 'Оқушы'}</span></td>
+                                <td>${c.school} (${c.className})</td>
+                                <td><code class="bg-slate-100 px-2 py-0.5 rounded font-mono font-bold">${c.idNumber}</code></td>
+                                <td>${c.issueDate} / ${c.approveDate}</td>
+                                <td><b>${c.validUntil}</b></td>
+                                <td><span class="px-2 py-0.5 rounded text-[10px] font-bold ${stColor}">${c.status === 'ACTIVE' ? '● ACTIVE' : (c.status === 'INACTIVE' ? '⚠️ INACTIVE' : '🚨 INVALID')}</span></td>
+                                <td>
+                                    <button onclick="extendBilimID('${un}')" class="px-2 py-1 bg-indigo-600 text-white rounded font-bold text-[10px] hover:bg-indigo-700">Ұзарту</button>
+                                    <button onclick="deleteBilimID('${un}')" class="px-2 py-1 bg-red-600 text-white rounded font-bold text-[10px] hover:bg-red-700">Жою</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('') : '<tr><td colspan="8" class="text-center text-slate-400 py-4">Рәсімделген BilimID карталары жоқ</td></tr>';
+
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🪪 BilimID — Цифрлық идентификациялық карталарды басқару</h3>
+                        <div class="p-4 bg-slate-50 rounded-lg border mb-4 space-y-3 max-w-2xl">
+                            <h4 class="text-xs font-bold text-slate-700">Жаңа BilimID жасау немесе жаңарту</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Қолданушыны таңдаңыз:</label>
+                                    <select id="id-username" class="w-full border rounded p-2 text-xs bg-white font-bold text-blue-700">
+                                        ${userSelectOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Мектеп атауы:</label>
+                                    <input type="text" id="id-school" value="№12 Мектеп-Гимназиясы" class="w-full border rounded p-2 text-xs bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Сыныбы:</label>
+                                    <select id="id-class" class="w-full border rounded p-2 text-xs bg-white font-bold">
+                                        ${classOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Туған күні (кк.аа.жжжж):</label>
+                                    <input type="text" id="id-dob" placeholder="12.05.2012" class="w-full border rounded p-2 text-xs bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Мәртебесі (Status):</label>
+                                    <select id="id-status" class="w-full border rounded p-2 text-xs font-bold bg-white">
+                                        <option value="ACTIVE" class="text-emerald-600 font-bold">ACTIVE (Жарамды - Жасыл)</option>
+                                        <option value="INACTIVE" class="text-amber-600 font-bold">INACTIVE (Белсенді емес - Сарғыш)</option>
+                                        <option value="INVALID" class="text-red-600 font-bold">INVALID (Жарамсыз - Қызыл)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Жарамдылық мерзімі:</label>
+                                    <input type="text" id="id-valid" value="31.05.2027" class="w-full border rounded p-2 text-xs bg-white font-bold">
+                                </div>
+                            </div>
+                            <button onclick="createOrUpdateBilimID()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold">🪪 BilimID сақтау және ID генерациялау</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full gov-table min-w-[800px]">
+                                <thead>
+                                    <tr>
+                                        <th>Аты-жөні</th>
+                                        <th>Қызметі</th>
+                                        <th>Мектеп / Сынып</th>
+                                        <th>Bilim ID</th>
+                                        <th>Берілген / Мақұлданған</th>
+                                        <th>Жарамдылығы</th>
+                                        <th>Мәртебесі</th>
+                                        <th>Әрекет</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${idCardRows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                } else if (activeTab === 'admin_sub') {
+                    let classOptions = classesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📜 BilimSubscription — Ата-аналардың қатысу табельдерін бақылау</h3>
+                        
+                        <div class="p-4 bg-slate-50 rounded-lg border mb-4 space-y-3 max-w-xl">
+                            <h4 class="text-xs font-bold text-slate-700">Табельге қол қою мерзімін бекіту</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Басталу күні:</label>
+                                    <input type="date" id="sub-start-date" value="${subscriptionSettings.startDate || ''}" class="w-full border rounded p-2 text-xs bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Аяқталу (Соңғы) күні:</label>
+                                    <input type="date" id="sub-end-date" value="${subscriptionSettings.endDate || ''}" class="w-full border rounded p-2 text-xs bg-white">
+                                </div>
+                            </div>
+                            <button onclick="saveSubscriptionSettings()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Мерзімді сақтау</button>
+                        </div>
+
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3 flex items-center gap-3">
+                            <label class="text-xs font-bold text-slate-700">Сыныпты таңдаңыз:</label>
+                            <select id="admin-sub-class-select" onchange="renderAdminSubTable()" class="border rounded p-1.5 text-xs bg-white font-bold text-blue-700">
+                                ${classOptions || '<option value="">Сыныптар жоқ</option>'}
+                            </select>
+                        </div>
+
+                        <div id="admin-sub-table-container" class="overflow-x-auto"></div>
+                    `;
+                    renderAdminSubTable();
                 } else if (activeTab === 'admin_announcement') {
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📢 Хабарландыру тарату</h3>
@@ -1016,6 +1183,96 @@
                                 </tbody>
                             </table>
                         </div>
+                    `;
+                } else if (activeTab === 'teacher_test') {
+                    let myClassOptions = classesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                    let myTests = bilimTests.filter(t => t.author === currentUser.username);
+
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📝 BilimTest — Интерактивті тест құрастыру және нәтижелер</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="p-4 bg-slate-50 border rounded-xl space-y-3">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase">1. Жаңа тест баптауы</h4>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Сыныпты таңдаңыз:</label>
+                                    <select id="test-class-select" class="w-full border rounded p-2 text-xs bg-white font-bold text-blue-700">
+                                        ${myClassOptions || '<option value="">Сыныптар тіркелмеген</option>'}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Тест тақырыбы:</label>
+                                    <input type="text" id="test-title-input" placeholder="Мысалы: Квадрат теңдеулер тоқсандық тесті" class="w-full border rounded p-2 text-xs bg-white">
+                                </div>
+                                <button onclick="startAddingQuestions()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold w-full">Сұрақтар қосуға өту ➔</button>
+                            </div>
+
+                            <div id="test-questions-builder" class="p-4 bg-slate-50 border rounded-xl space-y-3 hidden">
+                                <h4 class="text-xs font-bold text-indigo-900 uppercase">2. Сұрақ №<span id="current-q-num">1</span> (Карточка)</h4>
+                                <textarea id="q-text" rows="2" placeholder="Сұрақ мәтінін жазыңыз..." class="w-full border rounded p-2 text-xs bg-white"></textarea>
+                                
+                                <div class="space-y-1">
+                                    <label class="block text-[10px] font-bold text-slate-500">Нұсқалар (дұрысын таңдаңыз):</label>
+                                    <div class="flex items-center gap-2"><input type="radio" name="correct_opt" value="0" checked><input type="text" id="opt_0" placeholder="А нұсқасы" class="border rounded p-1 text-xs w-full bg-white"></div>
+                                    <div class="flex items-center gap-2"><input type="radio" name="correct_opt" value="1"><input type="text" id="opt_1" placeholder="Б нұсқасы" class="border rounded p-1 text-xs w-full bg-white"></div>
+                                    <div class="flex items-center gap-2"><input type="radio" name="correct_opt" value="2"><input type="text" id="opt_2" placeholder="В нұсқасы" class="border rounded p-1 text-xs w-full bg-white"></div>
+                                    <div class="flex items-center gap-2"><input type="radio" name="correct_opt" value="3"><input type="text" id="opt_3" placeholder="Г нұсқасы" class="border rounded p-1 text-xs w-full bg-white"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center pt-2">
+                                    <button onclick="addQuestionCard()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded text-xs font-bold">+ Келесі сұрақ</button>
+                                    <button onclick="publishBilimTest()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow">🚀 Жариялау</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">Жарияланған тесттер және оқушылар нәтижесі</h4>
+                        <div class="space-y-3">
+                            ${myTests.length > 0 ? myTests.map(t => {
+                                let resForTest = testResults[t.id] || {};
+                                let studentResultsRows = Object.keys(resForTest).map(st => `
+                                    <tr class="text-[11px]">
+                                        <td class="font-bold">${users.find(u => u.username === st)?.name || st}</td>
+                                        <td class="font-bold text-indigo-700">${resForTest[st].correctCount} / ${t.questions.length}</td>
+                                        <td class="font-extrabold text-amber-600">${resForTest[st].percent}%</td>
+                                        <td><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">${resForTest[st].suggestedGrade} (Формативті)</span></td>
+                                    </tr>
+                                `).join('');
+
+                                return `
+                                    <div class="p-3 bg-white border rounded-lg shadow-xs space-y-2">
+                                        <div class="flex justify-between items-center border-b pb-1">
+                                            <span class="font-extrabold text-xs text-blue-900">${t.title} <span class="text-slate-500 font-normal">(${t.className} сыныбы, ${t.questions.length} сұрақ)</span></span>
+                                            <button onclick="deleteBilimTest('${t.id}')" class="text-red-600 text-[10px] font-bold underline">Тестті жою</button>
+                                        </div>
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full gov-table">
+                                                <thead><tr><th>Оқушы</th><th>Дұрыс сұрақ</th><th>Жалпы (%)</th><th>Ұсынылған баға</th></tr></thead>
+                                                <tbody>${studentResultsRows || '<tr><td colspan="4" class="text-center text-slate-400 py-2">Әлі ешкім тапсырмады</td></tr>'}</tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') : '<p class="text-xs text-slate-400">Сіз әлі тест жарияламадыңыз.</p>'}
+                        </div>
+                    `;
+                } else if (activeTab === 'teacher_checkid') {
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🔍 CheckID — Камера арқылы BilimID сканерлеу</h3>
+                        <p class="text-xs text-slate-500 mb-3">Оқушының BilimID QR-кодын камераға жақындатып, қауіпсіздік статусын тексеріңіз.</p>
+                        
+                        <div class="max-w-md mx-auto space-y-3">
+                            <div id="qr-reader" class="w-full rounded-xl overflow-hidden border border-slate-300 shadow-inner bg-slate-100 min-h-[250px]"></div>
+                            <button onclick="startQRScanner()" class="w-full py-2 bg-indigo-600 text-white rounded font-bold text-xs shadow">📷 Камераны іске қосу</button>
+                            
+                            <div id="scan-result-card" class="hidden p-4 rounded-xl border text-xs space-y-2 animate-fade"></div>
+                        </div>
+                    `;
+                } else if (activeTab === 'teacher_id') {
+                    let myCard = bilimCards[currentUser.username];
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🪪 Жеке BilimID Картасы</h3>
+                        ${renderSingleIDCardHTML(myCard, currentUser)}
                     `;
                 } else if (activeTab === 'teacher_attendance') {
                     let myClass = classesList.find(c => c.teacherUsername === currentUser.username);
@@ -1123,6 +1380,36 @@
                             </table>
                         </div>
                     `;
+                } else if (activeTab === 'parent_id') {
+                    let childCard = bilimCards[childUsername];
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🪪 Балаңыздың BilimID Идентификациялық Картасы</h3>
+                        ${renderSingleIDCardHTML(childCard, childObj)}
+                    `;
+                } else if (activeTab === 'parent_sub') {
+                    let isSigned = (bilimSubscriptions[childUsername] || {}).signed;
+                    let signDate = (bilimSubscriptions[childUsername] || {}).signedAt || '';
+
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📜 BilimSubscription — Айлық сабаққа қатысу табельін растау</h3>
+                        
+                        <div class="p-4 bg-slate-50 border rounded-xl max-w-lg space-y-3">
+                            <div class="text-xs font-bold text-slate-800">Бала: <span class="text-blue-700">${childName}</span> (${classNameStr})</div>
+                            <div class="text-xs text-slate-600">Қол қою мерзімі: <b>${subscriptionSettings.startDate || '—'}</b> күннен <b>${subscriptionSettings.endDate || '—'}</b> күнге дейін.</div>
+                            
+                            ${isSigned ? `
+                                <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold rounded-lg flex items-center justify-between">
+                                    <span>✅ Табельге қол қойылды және расталды!</span>
+                                    <span class="text-[10px] text-emerald-700">${signDate}</span>
+                                </div>
+                            ` : `
+                                <div class="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-lg">
+                                    ⚠️ Ай соңында балаңыздың сабаққа толық қатысқанын растау үшін төмендегі батырманы басып, қол қойыңыз.
+                                </div>
+                                <button onclick="signParentSubscription()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow transition-all">✍️ Қол қою және растау</button>
+                            `}
+                        </div>
+                    `;
                 } else if (activeTab === 'parent_schedule') {
                     panel.innerHTML = renderScheduleView("📅 Баланың сабақ кестесі", classNameStr);
                 } else if (activeTab === 'parent_support') {
@@ -1181,6 +1468,41 @@
                             </table>
                         </div>
                     `;
+                } else if (activeTab === 'student_test') {
+                    let availableTests = bilimTests.filter(t => t.className === (studentClass?.name || ''));
+
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📝 BilimTest — Тапсыру бөлімі</h3>
+                        
+                        <div id="student-test-view">
+                            <div class="space-y-3">
+                                ${availableTests.length > 0 ? availableTests.map(t => {
+                                    let myRes = (testResults[t.id] || {})[currentUser.username];
+                                    return `
+                                        <div class="p-4 bg-slate-50 border rounded-xl flex justify-between items-center">
+                                            <div>
+                                                <h4 class="text-xs font-extrabold text-blue-900">${t.title}</h4>
+                                                <p class="text-[10px] text-slate-500">Сұрақ саны: ${t.questions.length} | Мұғалім: @${t.author}</p>
+                                            </div>
+                                            <div>
+                                                ${myRes ? `
+                                                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded border border-emerald-200">Нәтиже: ${myRes.percent}% (${myRes.suggestedGrade} балл)</span>
+                                                ` : `
+                                                    <button onclick="startStudentTest('${t.id}')" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded shadow">▶ Start Тест</button>
+                                                `}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('') : '<p class="text-xs text-slate-400">Сіздің сыныпқа арналған белсенді тесттер жоқ.</p>'}
+                            </div>
+                        </div>
+                    `;
+                } else if (activeTab === 'student_id') {
+                    let myCard = bilimCards[currentUser.username];
+                    panel.innerHTML = `
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">🪪 Менің BilimID Картам</h3>
+                        ${renderSingleIDCardHTML(myCard, currentUser)}
+                    `;
                 } else if (activeTab === 'student_schedule') {
                     let targetClassName = studentClass ? studentClass.name : '';
                     panel.innerHTML = renderScheduleView("📅 Менің сабақ кестем", targetClassName);
@@ -1211,6 +1533,367 @@
                     renderAIChatPanel(panel, 'Study-GPT', 'Бүгінгі сабақ кестесі, үй тапсырмасының бар-жоғы, пәндер бойынша көрсеткіштерің, қай пәннен алғыр екенің және күрделі тақырыптарды түсіндіру.');
                 }
             }
+        }
+
+        function renderSingleIDCardHTML(cardData, targetUserObj) {
+            if (!cardData) {
+                return `
+                    <div class="p-6 text-center text-slate-500 bg-slate-50 border rounded-xl space-y-2">
+                        <div class="text-2xl">⚠️</div>
+                        <div class="text-xs font-bold">Бұл қолданушыға әлі BilimID картасы рәсімделмеген!</div>
+                        <p class="text-[10px]">Мектеп әкімшілігіне хабарласып, ID картаңызды белсендіріңіз.</p>
+                    </div>
+                `;
+            }
+
+            let statusBg = cardData.status === 'ACTIVE' ? 'bg-emerald-600 text-white' : (cardData.status === 'INACTIVE' ? 'bg-amber-500 text-white' : 'bg-red-600 text-white');
+            let statusText = cardData.status === 'ACTIVE' ? '● ACTIVE' : (cardData.status === 'INACTIVE' ? '⚠️ INACTIVE' : '🚨 INVALID');
+
+            let qrContent = JSON.stringify({ un: cardData.username, id: cardData.idNumber, st: cardData.status });
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrContent)}`;
+
+            return `
+                <div class="max-w-sm mx-auto id-card-gradient text-white p-5 rounded-2xl shadow-2xl relative border border-blue-400/30 space-y-4">
+                    <div class="flex justify-between items-center border-b border-blue-400/30 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-7 h-7 rounded bg-white text-blue-900 font-black flex items-center justify-center text-xs">BL</div>
+                            <div>
+                                <div class="text-[10px] font-extrabold uppercase tracking-wider text-blue-200">${cardData.school}</div>
+                                <div class="text-[8px] text-slate-300">БІРЫҢҒАЙ ЦИФРЛЫҚ ИДЕНТИФИКАТОР</div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-extrabold ${statusBg}">${statusText}</span>
+                    </div>
+
+                    <div class="flex gap-4 items-center">
+                        <div class="bg-white p-1 rounded-lg border shadow-inner">
+                            <img src="${qrUrl}" alt="QR" class="w-24 h-24 rounded" />
+                        </div>
+                        <div class="space-y-1 text-xs">
+                            <div class="text-[10px] text-blue-300 font-bold uppercase">${cardData.role === 'teacher' ? 'МҰҒАЛІМ' : 'ОҚУШЫ'}</div>
+                            <div class="text-sm font-black text-white leading-tight">${cardData.name}</div>
+                            <div class="text-[10px] text-slate-300">Сыныбы: <b class="text-white">${cardData.className}</b></div>
+                            <div class="text-[10px] text-slate-300">Туған күні: <b class="text-white">${cardData.dob}</b></div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-blue-400/30 pt-3 flex justify-between items-end text-[9px] text-slate-300">
+                        <div>
+                            <div>Bilim ID: <code class="text-white font-bold font-mono text-[11px]">${cardData.idNumber}</code></div>
+                            <div>Берілді / Мақұлданды: ${cardData.issueDate} / ${cardData.approveDate}</div>
+                        </div>
+                        <div class="text-right">
+                            <div>Мерзімі: <b class="text-white">${cardData.validUntil}</b></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function createOrUpdateBilimID() {
+            let username = document.getElementById('id-username').value;
+            let school = document.getElementById('id-school').value.trim();
+            let className = document.getElementById('id-class').value;
+            let dob = document.getElementById('id-dob').value.trim();
+            let status = document.getElementById('id-status').value;
+            let validUntil = document.getElementById('id-valid').value.trim();
+
+            let targetUser = users.find(u => u.username === username);
+            if (!targetUser) return alert('Қолданушы табылмады!');
+
+            showSpinner("BilimID жасалуда...");
+
+            let now = new Date();
+            let dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
+            
+            let randomId = Math.floor(10000 + Math.random() * 90000) + '-' + Math.floor(10000 + Math.random() * 90000);
+
+            bilimCards[username] = {
+                username: username,
+                name: targetUser.name,
+                role: targetUser.role,
+                school: school || "№12 Мектеп-Гимназиясы",
+                className: className,
+                dob: dob || "12.05.2012",
+                idNumber: (bilimCards[username]?.idNumber || randomId),
+                issueDate: (bilimCards[username]?.issueDate || dateStr),
+                approveDate: dateStr,
+                validUntil: validUntil || "31.05.2027",
+                status: status
+            };
+
+            await saveDataToCloud();
+            hideSpinner();
+            alert(`✨ ${targetUser.name} үшін BilimID сәтті сақталды! ID: ${bilimCards[username].idNumber}`);
+            renderTabContent();
+        }
+
+        async function extendBilimID(username) {
+            if (bilimCards[username]) {
+                showSpinner("Мерзімі ұзартылуда...");
+                bilimCards[username].validUntil = "31.05.2028";
+                bilimCards[username].status = "ACTIVE";
+                await saveDataToCloud();
+                hideSpinner();
+                alert('BilimID мерзімі 2028 жылға дейін ұзартылды және ACTIVE мәртебесі берілді!');
+                renderTabContent();
+            }
+        }
+
+        async function deleteBilimID(username) {
+            if (confirm("Бұл BilimID картасын жойғыңыз келе ме?")) {
+                showSpinner("Жойылуда...");
+                delete bilimCards[username];
+                await saveDataToCloud();
+                hideSpinner();
+                renderTabContent();
+            }
+        }
+
+        function startAddingQuestions() {
+            let title = document.getElementById('test-title-input').value.trim();
+            if(!title) return alert('Тест тақырыбын енгізіңіз!');
+            
+            tempQuestions = [];
+            document.getElementById('test-questions-builder').classList.remove('hidden');
+            document.getElementById('current-q-num').innerText = '1';
+        }
+
+        function addQuestionCard() {
+            let qText = document.getElementById('q-text').value.trim();
+            let opt0 = document.getElementById('opt_0').value.trim();
+            let opt1 = document.getElementById('opt_1').value.trim();
+            let opt2 = document.getElementById('opt_2').value.trim();
+            let opt3 = document.getElementById('opt_3').value.trim();
+            let correctIdx = parseInt(document.querySelector('input[name="correct_opt"]:checked').value);
+
+            if(!qText || !opt0 || !opt1) return alert('Сұрақ пен кемінде 2 нұсқаны толтырыңыз!');
+
+            tempQuestions.push({
+                q: qText,
+                options: [opt0, opt1, opt2, opt3],
+                correct: correctIdx
+            });
+
+            document.getElementById('q-text').value = '';
+            document.getElementById('opt_0').value = '';
+            document.getElementById('opt_1').value = '';
+            document.getElementById('opt_2').value = '';
+            document.getElementById('opt_3').value = '';
+            document.getElementById('current-q-num').innerText = tempQuestions.length + 1;
+            alert(`Сұрақ №${tempQuestions.length} сақталды! Әрі қарай қосыңыз немесе «Жариялау» батырмасын басыңыз.`);
+        }
+
+        async function publishBilimTest() {
+            let qText = document.getElementById('q-text').value.trim();
+            if(qText) {
+                addQuestionCard();
+            }
+
+            if(tempQuestions.length === 0) return alert('Кемінде 1 сұрақ қосылуы тиіс!');
+
+            showSpinner("Тест жариялануда...");
+            let testId = 'test_' + Math.random().toString(36).substring(2, 9);
+            let className = document.getElementById('test-class-select').value;
+            let title = document.getElementById('test-title-input').value.trim();
+
+            bilimTests.push({
+                id: testId,
+                className: className,
+                title: title,
+                author: currentUser.username,
+                questions: tempQuestions
+            });
+
+            await saveDataToCloud();
+            hideSpinner();
+            alert('🚀 BilimTest сәтті жарияланды!');
+            renderTabContent();
+        }
+
+        async function deleteBilimTest(testId) {
+            if(confirm('Тестті өшіргіңіз келе ме?')) {
+                showSpinner("Өшірілуде...");
+                bilimTests = bilimTests.filter(t => t.id !== testId);
+                delete testResults[testId];
+                await saveDataToCloud();
+                hideSpinner();
+                renderTabContent();
+            }
+        }
+
+        function startStudentTest(testId) {
+            let test = bilimTests.find(t => t.id === testId);
+            if(!test) return;
+
+            let questionsHTML = test.questions.map((q, idx) => `
+                <div class="p-4 bg-white border rounded-xl space-y-2">
+                    <div class="font-bold text-xs text-blue-900">Сұрақ ${idx + 1}: ${q.q}</div>
+                    <div class="space-y-1 text-xs">
+                        ${q.options.map((opt, oIdx) => opt ? `
+                            <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-50 border cursor-pointer">
+                                <input type="radio" name="ans_${idx}" value="${oIdx}">
+                                <span>${opt}</span>
+                            </label>
+                        ` : '').join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('student-test-view').innerHTML = `
+                <div class="space-y-4 max-w-2xl mx-auto">
+                    <div class="p-3 bg-blue-50 border rounded-lg flex justify-between items-center">
+                        <span class="font-extrabold text-xs text-blue-900">${test.title}</span>
+                        <span class="text-xs font-bold text-slate-500">Барлық сұрақ: ${test.questions.length}</span>
+                    </div>
+                    ${questionsHTML}
+                    <button onclick="submitStudentTest('${test.id}')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow transition-all">✅ Тестті аяқтау және жіберу</button>
+                </div>
+            `;
+        }
+
+        async function submitStudentTest(testId) {
+            let test = bilimTests.find(t => t.id === testId);
+            if(!test) return;
+
+            let correctCount = 0;
+            test.questions.forEach((q, idx) => {
+                let selected = document.querySelector(`input[name="ans_${idx}"]:checked`);
+                if(selected && parseInt(selected.value) === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            let percent = Math.round(correctCount * 2); 
+            if(percent > 100) percent = 100;
+
+            let suggestedGrade = getStandardGrade(percent);
+
+            showSpinner("Тест нәтижесі есептелуде...");
+
+            if(!testResults[testId]) testResults[testId] = {};
+            testResults[testId][currentUser.username] = {
+                correctCount: correctCount,
+                percent: percent,
+                suggestedGrade: suggestedGrade
+            };
+
+            await saveDataToCloud();
+            hideSpinner();
+            alert(`✨ Тест аяқталды!\nСіздің көрсеткішіңіз: ${percent}%\nДұрыс сұрақтар: ${correctCount}/${test.questions.length}\nҰсынылған формативті баға: ${suggestedGrade}`);
+            renderTabContent();
+        }
+
+        function startQRScanner() {
+            if (html5QrScanner) {
+                try { html5QrScanner.clear(); } catch(e){}
+            }
+
+            html5QrScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 200 });
+            html5QrScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        function onScanSuccess(decodedText) {
+            try {
+                let data = JSON.parse(decodedText);
+                let card = bilimCards[data.un] || { name: 'Белгісіз', className: '—', school: '—', idNumber: data.id || '—', status: data.st || 'INVALID' };
+
+                let resultDiv = document.getElementById('scan-result-card');
+                resultDiv.classList.remove('hidden');
+
+                let statusBg = card.status === 'ACTIVE' ? 'bg-emerald-100 border-emerald-300 text-emerald-900' : (card.status === 'INACTIVE' ? 'bg-amber-100 border-amber-300 text-amber-900' : 'bg-red-100 border-red-300 text-red-900');
+                let statusBadge = card.status === 'ACTIVE' ? '🟢 ACTIVE (Жарамды)' : (card.status === 'INACTIVE' ? '⚠️ INACTIVE (Белсенді емес)' : '🚨 INVALID (Жарамсыз)');
+
+                resultDiv.className = `p-4 rounded-xl border text-xs space-y-2 animate-fade ${statusBg}`;
+                resultDiv.innerHTML = `
+                    <div class="font-extrabold text-sm flex justify-between">
+                        <span>${card.name}</span>
+                        <span>${statusBadge}</span>
+                    </div>
+                    <div>Мектеп: <b>${card.school}</b> | Сынып: <b>${card.className}</b></div>
+                    <div>Bilim ID: <code class="font-mono font-bold">${card.idNumber}</code></div>
+                `;
+
+                if(html5QrScanner) {
+                    html5QrScanner.clear();
+                }
+            } catch(e) {
+                alert('Сканерленген QR код BilimID форматына сәйкес келмейді!');
+            }
+        }
+
+        function onScanFailure(error) {}
+
+        function renderAdminSubTable() {
+            let className = document.getElementById('admin-sub-class-select')?.value;
+            let targetClass = classesList.find(c => c.name === className);
+            let students = targetClass ? users.filter(u => u.role === 'student' && (targetClass.students || []).includes(u.username)) : [];
+
+            let rows = students.length > 0 ? students.map(s => {
+                let parentObj = users.find(u => u.role === 'parent' && u.parentOf === s.username);
+                let subInfo = bilimSubscriptions[s.username] || { signed: false, status: 'normal' };
+
+                let statusStr = subInfo.signed ? '<span class="text-emerald-600 font-bold">✅ Қол қойылған</span>' : '<span class="text-amber-600 font-bold">⏳ Күтуде</span>';
+                if(subInfo.status === 'expelled') statusStr = '<span class="text-red-600 font-bold">🚨 Босатылған</span>';
+
+                return `
+                    <tr class="text-xs">
+                        <td class="font-bold">${s.name} (@${s.username})</td>
+                        <td>${parentObj ? `${parentObj.name} (@${parentObj.username})` : '<span class="text-slate-400">Тіркелмеген</span>'}</td>
+                        <td>${statusStr}</td>
+                        <td>
+                            <button onclick="setStudentSubStatus('${s.username}', 'expelled')" class="px-2 py-1 bg-red-600 text-white rounded font-bold text-[10px] mr-1">Сыныптан босату</button>
+                            <button onclick="setStudentSubStatus('${s.username}', 'normal')" class="px-2 py-1 bg-blue-600 text-white rounded font-bold text-[10px]">Сыныпта қалдыру</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('') : '<tr><td colspan="4" class="text-center text-slate-400 py-4">Бұл сыныпта оқушылар жоқ</td></tr>';
+
+            document.getElementById('admin-sub-table-container').innerHTML = `
+                <table class="w-full gov-table min-w-[650px]">
+                    <thead><tr><th>Оқушы аты-жөні</th><th>Ата-анасы</th><th>Табель мәртебесі</th><th>Әкімшілік шешім</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        async function saveSubscriptionSettings() {
+            showSpinner("Мерзім сақталуда...");
+            subscriptionSettings.startDate = document.getElementById('sub-start-date').value;
+            subscriptionSettings.endDate = document.getElementById('sub-end-date').value;
+            await saveDataToCloud();
+            hideSpinner();
+            alert('Табельге қол қою мерзімі сәтті сақталды!');
+        }
+
+        async function signParentSubscription() {
+            let childUsername = currentUser.parentOf;
+            if(!childUsername) return;
+
+            showSpinner("Табельге қол қойылуда...");
+            let now = new Date();
+            let dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`;
+
+            bilimSubscriptions[childUsername] = {
+                signed: true,
+                signedBy: currentUser.username,
+                signedAt: dateStr,
+                status: 'normal'
+            };
+
+            await saveDataToCloud();
+            hideSpinner();
+            alert('✍️ Табельге сәтті қол қойылды және мектеп әкімшілігіне жіберілді!');
+            renderTabContent();
+        }
+
+        async function setStudentSubStatus(username, status) {
+            showSpinner("Мәртебе өзгертілуде...");
+            if(!bilimSubscriptions[username]) bilimSubscriptions[username] = {};
+            bilimSubscriptions[username].status = status;
+            await saveDataToCloud();
+            hideSpinner();
+            renderAdminSubTable();
         }
 
         async function terminateSession(sessionId) {
@@ -1582,6 +2265,8 @@
             if(confirm('Өшіргіңіз келе ме?')) {
                 showSpinner("Өшірілуде...");
                 users = users.filter(u => u.username !== username);
+                delete bilimCards[username];
+                delete bilimSubscriptions[username];
                 await saveDataToCloud();
                 hideSpinner();
                 renderTabContent();
@@ -1656,6 +2341,8 @@
                 studentUsernames.forEach(sUser => {
                     delete grades[sUser];
                     delete attendance[sUser];
+                    delete bilimCards[sUser];
+                    delete bilimSubscriptions[sUser];
                 });
 
                 users = users.filter(u => {
@@ -1678,7 +2365,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
