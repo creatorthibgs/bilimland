@@ -47,6 +47,19 @@
         <div id="spinner-text" class="text-xs font-bold tracking-wider text-slate-200">Деректер өңделуде...</div>
     </div>
 
+    <!-- Жаңа құрылғыдан кіруді растау модалкасы (Security Alert Modal) -->
+    <div id="new-device-alert-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden flex items-center justify-center p-4 z-[99999] animate-fade">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center border border-slate-200 space-y-4">
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl mx-auto flex items-center justify-center text-xl font-black">⚠️</div>
+            <h3 class="text-base font-extrabold text-slate-900">Қауіпсіздік ескертуі</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">Сіздің аккаунтыңызға жаңа құрылғыдан / браузерден әрекет байқалды. Бұл сіз бе?</p>
+            <div class="flex gap-2 pt-2">
+                <button type="button" onclick="confirmDeviceSecurity(true)" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs shadow transition-all">Ия, бұл мен</button>
+                <button type="button" onclick="confirmDeviceSecurity(false)" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-xs shadow transition-all">Жоқ, бұл мен емес</button>
+            </div>
+        </div>
+    </div>
+
     <div id="gov-boot">
         <div class="text-center space-y-3 animate-fade">
             <div class="w-14 h-14 mx-auto bg-blue-900 rounded-xl flex items-center justify-center shadow-md text-xl font-black text-white">BL</div>
@@ -161,7 +174,7 @@
         </div>
     </div>
 
-    <!-- BilimWeb Mobile Modal (QR сканерлегенде телефонда ашылатын терезе) -->
+    <!-- BilimWeb Mobile Modal -->
     <div id="bilimweb-mobile-modal" class="fixed inset-0 bg-slate-900 hidden flex items-center justify-center p-4 z-50 animate-fade">
         <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 space-y-4">
             <div class="text-center">
@@ -240,6 +253,8 @@
 
         let currentQrSessionId = null;
         let qrListenerUnsubscribe = null;
+        let activeSessionsStore = {}; // Белсенді сеанстар тізімі
+        let pendingUserForSession = null;
 
         const translations = {
             kk: {
@@ -275,7 +290,8 @@
                 studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Баланың бағалары",
                 parentSched: "📅 Баланың кестесі",
-                parentSupport: "🛟 Қолдау қызметі"
+                parentSupport: "🛟 Қолдау қызметі",
+                sessionsTab: "💻 Белсенді сеанстар"
             },
             ru: {
                 subtitle: "Государственная единая школьная система",
@@ -310,7 +326,8 @@
                 studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Оценки ребенка",
                 parentSched: "📅 Расписание ребенка",
-                parentSupport: "🛟 Поддержка"
+                parentSupport: "🛟 Поддержка",
+                sessionsTab: "💻 Активные сеансы"
             },
             en: {
                 subtitle: "State Unified School System",
@@ -345,7 +362,8 @@
                 studAI: "🤖 Study-GPT",
                 parentGrades: "👨‍👩‍👧 Child Grades",
                 parentSched: "📅 Child Schedule",
-                parentSupport: "🛟 Support"
+                parentSupport: "🛟 Support",
+                sessionsTab: "💻 Active Sessions"
             }
         };
 
@@ -388,6 +406,7 @@
                         ktpList = data.ktpList || [];
                         supportTickets = data.supportTickets || [];
                         currentAnnouncement = data.announcement || '';
+                        activeSessionsStore = data.activeSessionsStore || {};
                     }
                 } catch(e) { console.error(e); }
             }
@@ -397,7 +416,7 @@
             if(useFirebase) {
                 try {
                     await db.collection("bilimland").doc("enterprise_v14_ai").set({
-                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement
+                        users, classesList, schedules, grades, attendance, ktpList, supportTickets, announcement: currentAnnouncement, activeSessionsStore
                     });
                 } catch(e) { console.error(e); }
             }
@@ -418,7 +437,7 @@
             if(currentUser) renderSidebar();
         }
 
-        // --- BilimWeb (QR код генерациясы және Firebase Real-time) ---
+        // --- BilimWeb (QR код) ---
         function openBilimWebQRModal() {
             currentQrSessionId = 'bilimweb_session_' + Math.random().toString(36).substring(2, 11);
             document.getElementById('bilimweb-qr-modal').classList.remove('hidden');
@@ -433,7 +452,9 @@
                         let approvedUser = doc.data().user;
                         closeBilimWebQRModal();
                         if (qrListenerUnsubscribe) qrListenerUnsubscribe();
-                        authenticateUserSession(approvedUser);
+                        
+                        // Сеансты тіркеу және тексеру логикасы
+                        registerAndCheckSession(approvedUser);
                     }
                 });
             }
@@ -477,9 +498,7 @@
                         publicKey: { challenge: challenge, userVerification: 'required', timeout: 60000 }
                     });
                 }
-            } catch(e) {
-                console.log('Биометриялық растау өтті');
-            }
+            } catch(e) {}
 
             if (useFirebase && currentQrSessionId) {
                 try {
@@ -503,6 +522,55 @@
 
         function cancelMobileQRLogin() {
             window.location.href = window.location.pathname;
+        }
+
+        // --- Active Sessions Logic ---
+        async function registerAndCheckSession(userObj) {
+            await loadDataFromCloud();
+            let ua = navigator.userAgent;
+            let browser = "Chrome / Safari";
+            if (ua.includes("Firefox")) browser = "Mozilla Firefox";
+            else if (ua.includes("Edg")) browser = "Microsoft Edge";
+            else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Apple Safari";
+
+            let deviceName = /Mobile|Android|iPhone/i.exec(ua) ? "Мобильді құрылғы / Smart TV" : "Desktop Ноутбук / PC";
+            let now = new Date();
+            let dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            let sessionId = 'sess_' + Math.random().toString(36).substring(2, 9);
+            let sessionInfo = {
+                id: sessionId,
+                device: deviceName,
+                date: dateStr,
+                time: timeStr,
+                browser: browser,
+                active: true
+            };
+
+            if (!activeSessionsStore[userObj.username]) {
+                activeSessionsStore[userObj.username] = [];
+            }
+            activeSessionsStore[userObj.username].push(sessionInfo);
+            await saveDataToCloud();
+
+            // Соңғы сессия ID сақтаймыз
+            localStorage.setItem('bilim_current_session_id', sessionId);
+
+            // Жаңа құрылғыдан кірген кездегі растау сұрағы
+            pendingUserForSession = userObj;
+            document.getElementById('new-device-alert-modal').classList.remove('hidden');
+        }
+
+        async function confirmDeviceSecurity(isMyDevice) {
+            document.getElementById('new-device-alert-modal').classList.add('hidden');
+            if (isMyDevice) {
+                authenticateUserSession(pendingUserForSession);
+            } else {
+                alert('⚠️ Қауіпсіздік мақсатында сеанс тоқтатылды.');
+                logout();
+            }
+            pendingUserForSession = null;
         }
 
         // --- PASSWORDLESS WEBAUTHN / BIOMETRIC LOGIN ---
@@ -583,7 +651,7 @@
                                 alert('Аккаунт бұғатталған!');
                                 return;
                             }
-                            authenticateUserSession(foundUser);
+                            registerAndCheckSession(foundUser);
                         } else {
                             alert('Қолданушы деректер базасынан табылмады.');
                         }
@@ -593,7 +661,6 @@
                 }
             } catch (err) {
                 hideSpinner();
-                console.error('Биометриялық кіру қатесі:', err);
                 if (err.name !== 'NotAllowedError') {
                     alert('Биометрия арқылы кіру сәтсіз аяқталды.');
                 }
@@ -622,11 +689,34 @@
             renderSidebar();
             renderTabContent();
 
+            // Real-time listener for current session termination check
+            startSessionMonitor();
+
             if (isWebAuthnSupported() && !localStorage.getItem(`bilim_passkey_${currentUser.username}`)) {
                 if (confirm('🔒 Осы құрылғыда Touch ID арқылы келесіде логин жазбай бірден кіруді қосуды қалайсыз ба?')) {
                     registerPasskey(currentUser.username);
                 }
             }
+        }
+
+        function startSessionMonitor() {
+            if (!useFirebase) return;
+            let currentSessId = localStorage.getItem('bilim_current_session_id');
+            if (!currentSessId) return;
+
+            db.collection("bilimland").doc("enterprise_v14_ai").onSnapshot((doc) => {
+                if (doc.exists && currentUser) {
+                    let data = doc.data();
+                    let store = data.activeSessionsStore || {};
+                    let mySessions = store[currentUser.username] || [];
+                    let myCurrent = mySessions.find(s => s.id === currentSessId);
+                    
+                    if (!myCurrent || !myCurrent.active) {
+                        alert('⚠️ Бұл сеанс басқа құрылғыдан немесе сеанстар бөлімінен «Жою» арқылы жабылды!');
+                        logout();
+                    }
+                }
+            });
         }
 
         async function handleLogin(e) {
@@ -647,7 +737,7 @@
                     return;
                 }
                 errorDiv.classList.add('hidden');
-                authenticateUserSession(foundUser);
+                registerAndCheckSession(foundUser);
             } else {
                 errorDiv.innerText = 'Қате логин немесе пароль!';
                 errorDiv.classList.remove('hidden');
@@ -676,6 +766,7 @@
 
         function logout() {
             currentUser = null;
+            localStorage.removeItem('bilim_current_session_id');
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('user-info').classList.add('hidden');
@@ -697,6 +788,7 @@
                     { id: 'admin_users', label: t.adminUsers },
                     { id: 'admin_announcement', label: t.adminAnn },
                     { id: 'admin_support', label: t.adminSupport },
+                    { id: 'sessions_management', label: t.sessionsTab },
                     { id: 'admin_ai', label: t.adminAI }
                 ];
             } else if (currentUser.role === 'teacher') {
@@ -707,12 +799,14 @@
                     { id: 'teacher_schedule', label: t.teachSched },
                     { id: 'teacher_ktp', label: t.teachKtp },
                     { id: 'teacher_support', label: t.teachSup },
+                    { id: 'sessions_management', label: t.sessionsTab },
                     { id: 'teacher_ai', label: t.teachAI }
                 ];
             } else if (currentUser.role === 'parent') {
                 links = [
                     { id: 'parent_grades', label: t.parentGrades },
                     { id: 'parent_schedule', label: t.parentSched },
+                    { id: 'sessions_management', label: t.sessionsTab },
                     { id: 'parent_support', label: t.parentSupport }
                 ];
             } else {
@@ -722,6 +816,7 @@
                     { id: 'student_homework', label: t.studHw },
                     { id: 'student_contact', label: t.studContact },
                     { id: 'student_join', label: t.studJoin },
+                    { id: 'sessions_management', label: t.sessionsTab },
                     { id: 'student_support', label: t.studSup },
                     { id: 'student_ai', label: t.studAI }
                 ];
@@ -742,6 +837,46 @@
         async function renderTabContent() {
             await loadDataFromCloud();
             const panel = document.getElementById('active-content-panel');
+
+            if (activeTab === 'sessions_management') {
+                let mySessions = (activeSessionsStore[currentUser.username] || []);
+                let currentSessId = localStorage.getItem('bilim_current_session_id');
+
+                let sessionRows = mySessions.length > 0 ? mySessions.map((s) => {
+                    let isCurrent = s.id === currentSessId;
+                    return `
+                        <tr class="text-xs">
+                            <td class="font-bold">${s.device} ${isCurrent ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-bold ml-1">(Ағымдағы құрылғы)</span>' : ''}</td>
+                            <td>${s.browser}</td>
+                            <td>${s.date} / ${s.time}</td>
+                            <td>
+                                ${isCurrent ? '<span class="text-slate-400 font-semibold">Қалдыру (Ағымдағы)</span>' : `
+                                    <button onclick="terminateSession('${s.id}')" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-[10px]">Жою (Шығару)</button>
+                                `}
+                            </td>
+                        </tr>
+                    `;
+                }).join('') : '<tr><td colspan="4" class="text-center text-slate-400 py-4">Белсенді сеанстар тізімі бос</td></tr>';
+
+                panel.innerHTML = `
+                    <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">💻 Белсенді сеанстар мен құрылғыларды басқару</h3>
+                    <p class="text-xs text-slate-500 mb-4">Бұл бөлімде аккаунтыңызға кірген барлық құрылғылар мен браузерлер көрсетілген. Қажет емес сеансты «Жою» арқылы үлкен экраннан бірден өшіре аласыз.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full gov-table">
+                            <thead>
+                                <tr>
+                                    <th>Құрылғы атауы</th>
+                                    <th>Браузері</th>
+                                    <th>Күні / Уақыты</th>
+                                    <th>Әрекет (Жою / Қалдыру)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${sessionRows}</tbody>
+                        </table>
+                    </div>
+                `;
+                return;
+            }
 
             if (currentUser.role === 'admin') {
                 if (activeTab === 'admin_monitoring') {
@@ -1127,6 +1262,23 @@
                 } else if (activeTab === 'student_ai') {
                     renderAIChatPanel(panel, 'Study-GPT', 'Бүгінгі сабақ кестесі, үй тапсырмасының бар-жоғы, пәндер бойынша көрсеткіштерің, қай пәннен алғыр екенің және күрделі тақырыптарды түсіндіру.');
                 }
+            }
+        }
+
+        async function terminateSession(sessionId) {
+            if (confirm("Бұл сеансты жойғыңыз келе ме? Үлкен экрандағы сол құрылғы жүйеден автоматты түрде шығарылады.")) {
+                showSpinner("Сеанс жойылуда...");
+                await loadDataFromCloud();
+                if (activeSessionsStore[currentUser.username]) {
+                    activeSessionsStore[currentUser.username] = activeSessionsStore[currentUser.username].map(s => {
+                        if (s.id === sessionId) s.active = false;
+                        return s;
+                    });
+                    await saveDataToCloud();
+                }
+                hideSpinner();
+                alert('Сеанс сәтті жойылды!');
+                renderTabContent();
             }
         }
 
@@ -1567,6 +1719,9 @@
                 classesList.splice(classIdx, 1);
 
                 await saveDataToCloud();
+                hideSpinner();
+                alert('Сынып пен оған қатысты барлық оқушы, ата-ана мен баға деректері сәтті жойылды!');
+                renderTabContent();
             }
         }
 
@@ -1574,7 +1729,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrgrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrgrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
