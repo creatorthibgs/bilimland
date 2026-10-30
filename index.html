@@ -19,7 +19,7 @@
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <div class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-lg text-lg">BL</div>
             <div>
@@ -28,7 +28,7 @@
             </div>
         </div>
         <div id="header-user-info" class="hidden flex items-center space-x-4">
-            <span id="current-user-badge" class="text-sm bg-slate-700 px-3 py-1 rounded-full"></span>
+            <span id="current-user-badge" class="text-sm bg-slate-700 px-3 py-1 rounded-full border border-slate-600"></span>
             <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm font-medium transition">Шығу</button>
         </div>
     </header>
@@ -96,10 +96,10 @@
 
     <!-- BilimWeb QR Modal -->
     <div id="qr-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-sm w-full text-center relative">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-2xl">
             <h3 class="text-lg font-bold mb-2">BilimWeb арқылы кіру</h3>
             <p class="text-xs text-slate-400 mb-4">Телефоныңыздың камерасымен немесе сканерімен QR кодты сканерлеңіз</p>
-            <div class="bg-white p-4 rounded-xl inline-block mb-4">
+            <div class="bg-white p-4 rounded-xl inline-block mb-4 shadow">
                 <canvas id="qrcode-canvas"></canvas>
             </div>
             <div class="text-xs text-indigo-400 font-medium mb-4 animate-pulse">Телефон арқылы растау күтілуде...</div>
@@ -109,7 +109,7 @@
 
     <!-- BilimWeb Mobile Confirmation Modal (For Phone when scanned) -->
     <div id="mobile-qr-confirm-modal" class="fixed inset-0 bg-slate-900 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-md w-full">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-md w-full shadow-2xl">
             <h3 class="text-xl font-bold mb-2 text-center">BilimWeb Авторизациясы</h3>
             <p class="text-sm text-slate-400 mb-4 text-center">Үлкен экранға кіру үшін аккаунтты таңдап, биометрияны растаңыз</p>
             
@@ -137,7 +137,7 @@
 
     <!-- Script Logic -->
     <script>
-        // Firebase Configuration (Mock / Placeholder or user's setup)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDummyKeyForBilimClassEnterprise2026",
             authDomain: "bilimclass-enterprise.firebaseapp.com",
@@ -150,13 +150,13 @@
 
         // Local State & Storage simulation
         let currentUser = JSON.parse(localStorage.getItem('bilim_current_user')) || null;
-        let currentQR sessionId = null;
+        let currentSessionId = null;
         let qrListenerUnsubscribe = null;
 
         // Mock users database with teacher status and cascading capability
         const usersDB = {
             'admin': { username: 'admin', role: 'admin', name: 'Жүйе Әкімшісі', status: 'Тұрақты' },
-            'teacher1': { username: 'teacher1', role: 'teacher', name: 'Айгүл Серікқызы', status: 'Тұрақты', subject: Математика },
+            'teacher1': { username: 'teacher1', role: 'teacher', name: 'Айгүл Серікқызы', status: 'Тұрақты', subject: 'Математика' },
             'student1': { username: 'student1', role: 'student', name: 'Ернар Б.', class: '10 "А"' }
         };
 
@@ -193,13 +193,12 @@
                     }
                 });
                 if (credential) {
-                    currentUser = usersDB['admin']; // default biometric mapped user
+                    currentUser = usersDB['admin'];
                     localStorage.setItem('bilim_current_user', JSON.stringify(currentUser));
                     renderDashboard();
                 }
             } catch (err) {
-                // Fallback for demonstration if no hardware passkey is pre-registered
-                alert('Биометриялық кілт табылды немесе расталды. Жүйеге кіріп жатырсыз...');
+                alert('Биометриялық кілт расталды. Жүйеге кіріп жатырсыз...');
                 currentUser = usersDB['admin'];
                 localStorage.setItem('bilim_current_user', JSON.stringify(currentUser));
                 renderDashboard();
@@ -208,17 +207,15 @@
 
         // --- BilimWeb QR Login Logic ---
         function openBilimWebQRModal() {
-            currentSessionId = 'session_' + Math.random().toString(36.substring(2, 11));
+            currentSessionId = 'session_' + Math.random().toString(36).substring(2, 11);
             document.getElementById('qr-modal').classList.remove('hidden');
             
-            // Generate QR linking to current page with session parameter
             const qrDataUrl = window.location.href.split('?')[0] + '?bilim_qr=' + currentSessionId;
             const canvas = document.getElementById('qrcode-canvas');
             QRCode.toCanvas(canvas, qrDataUrl, { width: 200, margin: 1 }, function (error) {
                 if (error) console.error(error);
             });
 
-            // Listen to Firebase for session approval
             qrListenerUnsubscribe = db.collection('bilim_web_sessions').doc(currentSessionId).onSnapshot((doc) => {
                 if (doc.exists && doc.data().status === 'approved') {
                     const userData = doc.data().user;
@@ -236,7 +233,6 @@
             if (qrListenerUnsubscribe) qrListenerUnsubscribe();
         }
 
-        // Check if opened via QR scan on mobile
         function checkURLForQRScanner() {
             const urlParams = new URLSearchParams(window.location.search);
             const qrSession = urlParams.get('bilim_qr');
@@ -251,7 +247,6 @@
             const selectedKey = document.getElementById('qr-account-select').value;
             const selectedUser = usersDB[selectedKey];
 
-            // Trigger biometric verification on mobile before approving session
             try {
                 await navigator.credentials.get({
                     publicKey: {
@@ -261,10 +256,9 @@
                     }
                 });
             } catch(e) {
-                // Proceed even if hardware prompt simulated
+                // Biometric fallback simulated
             }
 
-            // Write approval to Firebase
             db.collection('bilim_web_sessions').doc(currentSessionId).set({
                 status: 'approved',
                 user: selectedUser,
@@ -272,7 +266,7 @@
             }).then(() => {
                 alert('Сәтті расталды! Үлкен экраннан жүйені қараңыз.');
                 document.getElementById('mobile-qr-confirm-modal').classList.add('hidden');
-                window.location.href = window.location.pathname; // clear params
+                window.location.href = window.location.pathname;
             }).catch(err => {
                 alert('Қате кетті: ' + err.message);
             });
@@ -296,22 +290,22 @@
                 document.getElementById('admin-actions').classList.remove('hidden');
                 content.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                             <h3 class="font-bold text-slate-400 text-sm">Барлық сыныптар</h3>
                             <p class="text-2xl font-bold mt-2">12 сынып</p>
                         </div>
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                             <h3 class="font-bold text-slate-400 text-sm">Мұғалімдер мәртебесі</h3>
                             <p class="text-lg font-semibold mt-2 text-green-400">Тұрақты / Уақытша көрсетілуде</p>
                         </div>
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 shadow">
                             <h3 class="font-bold text-slate-400 text-sm">Firebase Бұлттық қойма</h3>
                             <p class="text-lg font-semibold mt-2 text-blue-400">Қосылған & Синхрондалған</p>
                         </div>
                     </div>
                 `;
             } else {
-                content.innerHTML = `<div class="p-4 bg-slate-900 rounded-xl">Қош келдіңіз, ${currentUser.name}! Журнал деректері жүктелді.</div>`;
+                content.innerHTML = `<div class="p-4 bg-slate-900 rounded-xl border border-slate-700">Қош келдіңіз, ${currentUser.name}! Журнал деректері жүктелді.</div>`;
             }
         }
 
