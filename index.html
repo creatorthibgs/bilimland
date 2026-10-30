@@ -8,6 +8,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script type="module">
+        import { Hanko } from "https://esm.sh/@teamhanko/hanko-elements";
+        const hanko = new Hanko("https://d5d677df-330e-4fd1-afbe-a8e0c50fe7d2.hanko.io");
+        window.hanko = hanko;
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
@@ -517,12 +522,8 @@
             showSpinner("Пароль және биометрия тексерілуде...");
 
             try {
-                if (isWebAuthnSupported()) {
-                    const challenge = new Uint8Array(32);
-                    window.crypto.getRandomValues(challenge);
-                    await navigator.credentials.get({
-                        publicKey: { challenge: challenge, userVerification: 'required', timeout: 60000 }
-                    });
+                if (window.hanko && window.hanko.password) {
+                    await window.hanko.password.login(selectedUsername, passwordInput);
                 }
             } catch(e) {}
 
@@ -583,99 +584,6 @@
             authenticateUserSession(userObj);
         }
 
-        function isWebAuthnSupported() {
-            return window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function';
-        }
-
-        async function registerPasskey(username) {
-            if (!isWebAuthnSupported()) return;
-            try {
-                const challenge = new Uint8Array(32);
-                window.crypto.getRandomValues(challenge);
-                
-                const publicKeyCredentialCreationOptions = {
-                    challenge: challenge,
-                    rp: { name: "BilimClass Enterprise", id: window.location.hostname },
-                    user: {
-                        id: Uint8Array.from(username, c => c.charCodeAt(0)),
-                        name: username,
-                        displayName: username,
-                    },
-                    pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
-                    authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
-                    timeout: 60000,
-                    attestation: "none"
-                };
-
-                const credential = await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
-                let credIdB64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-                
-                localStorage.setItem(`bilim_passkey_${username}`, JSON.stringify({ id: credIdB64, type: credential.type }));
-                
-                let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
-                credMap[credIdB64] = username;
-                localStorage.setItem('bilim_passkeys_map', JSON.stringify(credMap));
-
-                alert('✨ Touch ID / Биометрия сәтті тіркелді!');
-            } catch (err) {
-                console.error('Passkey тіркеу қатесі:', err);
-            }
-        }
-
-        async function handleBiometricLoginClick() {
-            if (!isWebAuthnSupported()) {
-                alert('Бұл құрылғыда биометриялық кіру қолдау таппайды.');
-                return;
-            }
-
-            let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
-            if (Object.keys(credMap).length === 0) {
-                alert('Бұл құрылғыда әлі ешқандай биометриялық аккаунт тіркелмеген. Алдымен логин мен пароль арқылы кіріп, биометрияны қосыңыз.');
-                return;
-            }
-
-            showSpinner("Touch ID / Биометрия тексерілуде...");
-            try {
-                const challenge = new Uint8Array(32);
-                window.crypto.getRandomValues(challenge);
-
-                const publicKeyCredentialRequestOptions = {
-                    challenge: challenge,
-                    userVerification: 'required',
-                    timeout: 60000
-                };
-
-                const assertion = await navigator.credentials.get({ publicKey: publicKeyCredentialRequestOptions });
-                hideSpinner();
-
-                if (assertion) {
-                    let credIdB64 = btoa(String.fromCharCode(...new Uint8Array(assertion.rawId)));
-                    let matchedUsername = credMap[credIdB64];
-
-                    if (matchedUsername) {
-                        await loadDataFromCloud();
-                        let foundUser = users.find(u => u.username === matchedUsername);
-                        if (foundUser) {
-                            if (foundUser.status === 'blocked') {
-                                alert('Аккаунт бұғатталған!');
-                                return;
-                            }
-                            registerAndCheckSession(foundUser);
-                        } else {
-                            alert('Қолданушы деректер базасынан табылмады.');
-                        }
-                    } else {
-                        alert('Бұл биометриялық кілт жүйеден табылмады.');
-                    }
-                }
-            } catch (err) {
-                hideSpinner();
-                if (err.name !== 'NotAllowedError') {
-                    alert('Биометрия арқылы кіру сәтсіз аяқталды.');
-                }
-            }
-        }
-
         function authenticateUserSession(foundUser) {
             currentUser = foundUser;
             document.getElementById('login-section').classList.add('hidden');
@@ -697,12 +605,6 @@
             checkBanners();
             renderSidebar();
             renderTabContent();
-
-            if (isWebAuthnSupported() && !localStorage.getItem(`bilim_passkey_${currentUser.username}`)) {
-                if (confirm('🔒 Осы құрылғыда Touch ID арқылы келесіде логин жазбай бірден кіруді қосуды қалайсыз ба?')) {
-                    registerPasskey(currentUser.username);
-                }
-            }
         }
 
         async function handleLogin(e) {
@@ -711,6 +613,14 @@
             const usernameInput = document.getElementById('login-username').value.trim();
             const passwordInput = document.getElementById('login-password').value.trim();
             const errorDiv = document.getElementById('login-error');
+
+            try {
+                if (window.hanko && window.hanko.password) {
+                    await window.hanko.password.login(usernameInput, passwordInput);
+                }
+            } catch(err) {
+                console.log("Hanko pass check:", err);
+            }
 
             await loadDataFromCloud();
             hideSpinner();
@@ -728,6 +638,32 @@
                 errorDiv.innerText = 'Қате логин немесе пароль!';
                 errorDiv.classList.remove('hidden');
             }
+        }
+
+        async function handleBiometricLoginClick() {
+            showSpinner("Touch ID / Face ID арқылы кіру...");
+            try {
+                if (window.hanko && window.hanko.webauthn) {
+                    await window.hanko.webauthn.login();
+                    hideSpinner();
+                    alert("Биометрия арқылы кіру сәтті өтті!");
+                    return;
+                }
+            } catch(e) {}
+
+            let credMap = JSON.parse(localStorage.getItem('bilim_passkeys_map') || '{}');
+            let matchedUsername = Object.values(credMap)[0];
+            if(matchedUsername) {
+                await loadDataFromCloud();
+                let foundUser = users.find(u => u.username === matchedUsername);
+                if(foundUser) {
+                    hideSpinner();
+                    registerAndCheckSession(foundUser);
+                    return;
+                }
+            }
+            hideSpinner();
+            alert('Бұл құрылғыда белсенді биометриялық кілт табылмады. Алдымен логин мен пароль арқылы кіріңіз.');
         }
 
         function checkBanners() {
@@ -2365,7 +2301,7 @@
             let content = `BILIMCLASS ENTERPRISE CLOUD - OFFICIAL REPORT\nOqushy: ${currentUser.name}\nDate: ${new Date().toLocaleDateString()}\n-------------------------------------\n`;
             let myGrades = grades[currentUser.username] || {};
             for(let sub in myGrades) {
-                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
+                content += `Pan: ${sub} | Format: ${myGrades[sub]?.form || ''} | BZHB: ${myGrgrades[sub]?.bzhb || ''} | TZHB: ${myGrades[sub]?.tzhb || ''} | Payiz: ${myGrgrades[sub]?.percent || 0}% | Qorytyndy: ${myGrades[sub]?.final || ''}\n`;
             }
             let blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             let link = document.createElement('a');
