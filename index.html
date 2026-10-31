@@ -266,6 +266,16 @@
         let tempQuestions = [];
         let html5QrScanner = null;
 
+        function getCurrentFormattedDateTime() {
+            let now = new Date();
+            let y = now.getFullYear();
+            let m = String(now.getMonth() + 1).padStart(2, '0');
+            let d = String(now.getDate()).padStart(2, '0');
+            let h = String(now.getHours()).padStart(2, '0');
+            let min = String(now.getMinutes()).padStart(2, '0');
+            return `${y}/${m}/${d}-${h}:${min}`;
+        }
+
         const translations = {
             kk: {
                 subtitle: "Мемлекеттік бірыңғай мектеп журналы",
@@ -571,9 +581,8 @@
             else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Apple Safari";
 
             let deviceName = /Mobile|Android|iPhone/i.exec(ua) ? "Мобильді құрылғы / Smart TV" : "Desktop Ноутбук / PC";
-            let now = new Date();
-            let dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()}`;
-            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            let dateStr = getCurrentFormattedDateTime().split('-')[0].replace(/\//g, '.');
+            let timeStr = getCurrentFormattedDateTime().split('-')[1];
 
             let sessionId = 'sess_' + Math.random().toString(36).substring(2, 9);
             let sessionInfo = {
@@ -604,7 +613,6 @@
             }
         }
 
-        // ШЫНАЙЫ NATIVE WEBAUTHN ТІРКЕУ (FACE ID / TOUCH ID)
         async function registerPasskeyForCurrentAccount() {
             document.getElementById('passkey-prompt-modal').classList.add('hidden');
             showSpinner("Touch ID / Face ID сұралуда...");
@@ -647,7 +655,6 @@
             document.getElementById('passkey-prompt-modal').classList.add('hidden');
         }
 
-        // ШЫНАЙЫ NATIVE WEBAUTHN КІРУ (FACE ID / TOUCH ID)
         async function handleBiometricLoginClick() {
             showSpinner("Touch ID / Face ID тексерілуде...");
             try {
@@ -1090,21 +1097,26 @@
                 } else if (activeTab === 'admin_sub') {
                     let classOptions = classesList.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
 
+                    // Convert YYYY/MM/DD-HH:mm to YYYY-MM-DDTHH:mm for datetime-local input
+                    let startValUI = subscriptionSettings.startDate ? subscriptionSettings.startDate.replace(/\//g, '-').replace('-', 'T') : '';
+                    let endValUI = subscriptionSettings.endDate ? subscriptionSettings.endDate.replace(/\//g, '-').replace('-', 'T') : '';
+
                     panel.innerHTML = `
                         <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📜 BilimSubscription — Ата-аналардың қатысу табельдерін бақылау</h3>
                         
                         <div class="p-4 bg-slate-50 rounded-lg border mb-4 space-y-3 max-w-xl">
-                            <h4 class="text-xs font-bold text-slate-700">Табельге қол қою мерзімін бекіту</h4>
+                            <h4 class="text-xs font-bold text-slate-700">Табельге қол қою уақыт терезесін бекіту (YYYY/MM/DD-HH:mm)</h4>
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Басталу күні:</label>
-                                    <input type="date" id="sub-start-date" value="${subscriptionSettings.startDate || ''}" class="w-full border rounded p-2 text-xs bg-white">
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Басталу уақыты:</label>
+                                    <input type="datetime-local" id="sub-start-datetime" value="${startValUI}" class="w-full border rounded p-2 text-xs bg-white font-bold">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Аяқталу (Соңғы) күні:</label>
-                                    <input type="date" id="sub-end-date" value="${subscriptionSettings.endDate || ''}" class="w-full border rounded p-2 text-xs bg-white">
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Аяқталу уақыты:</label>
+                                    <input type="datetime-local" id="sub-end-datetime" value="${endValUI}" class="w-full border rounded p-2 text-xs bg-white font-bold">
                                 </div>
                             </div>
+                            <div class="text-[11px] text-slate-500">Ағымдағы белсенді терезе: <b>${subscriptionSettings.startDate || '—'}</b> мен <b>${subscriptionSettings.endDate || '—'}</b> арасы</div>
                             <button onclick="saveSubscriptionSettings()" class="px-4 py-2 bg-blue-600 text-white rounded text-xs font-bold">Мерзімді сақтау</button>
                         </div>
 
@@ -1404,27 +1416,53 @@
                         ${renderSingleIDCardHTML(childCard, childObj)}
                     `;
                 } else if (activeTab === 'parent_sub') {
-                    let isSigned = (bilimSubscriptions[childUsername] || {}).signed;
-                    let signDate = (bilimSubscriptions[childUsername] || {}).signedAt || '';
+                    let subInfo = bilimSubscriptions[childUsername] || { signed: false, history: [] };
+                    let currentStr = getCurrentFormattedDateTime();
+                    let startWin = subscriptionSettings.startDate;
+                    let endWin = subscriptionSettings.endDate;
+
+                    // Active window check
+                    let isActiveWindow = startWin && endWin && currentStr >= startWin && currentStr <= endWin;
+                    
+                    // Check if already signed for THIS current active window
+                    let isSignedCurrentWindow = subInfo.signed && startWin && subInfo.signedAt >= startWin && subInfo.signedAt <= endWin;
+
+                    let historyListHTML = (subInfo.history || []).length > 0 ? subInfo.history.map(h => `
+                        <li class="text-xs text-slate-700 py-1 border-b flex justify-between">
+                            <span>🗓️ Мерзім: <b>${h.periodStart} — ${h.periodEnd}</b></span>
+                            <span class="text-emerald-600 font-bold">✅ Расталды: ${h.signedAt}</span>
+                        </li>
+                    `).join('') : '<p class="text-xs text-slate-400">Әлі расталған табель тарихы жоқ</p>';
 
                     panel.innerHTML = `
-                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📜 BilimSubscription — Айлық сабаққа қатысу табельін растау</h3>
+                        <h3 class="text-sm font-extrabold text-slate-900 border-b pb-2 mb-3">📜 BilimSubscription — Сабаққа қатысу табельін растау</h3>
                         
                         <div class="p-4 bg-slate-50 border rounded-xl max-w-lg space-y-3">
                             <div class="text-xs font-bold text-slate-800">Бала: <span class="text-blue-700">${childName}</span> (${classNameStr})</div>
-                            <div class="text-xs text-slate-600">Қол қою мерзімі: <b>${subscriptionSettings.startDate || '—'}</b> күннен <b>${subscriptionSettings.endDate || '—'}</b> күнге дейін.</div>
+                            <div class="text-xs text-slate-600 p-2 bg-blue-50 border border-blue-200 rounded">
+                                Әкімші бекіткен қол қою мерзімі: <br><b>${startWin || 'Бекітілмеген'}</b> мен <b>${endWin || 'Бекітілмеген'}</b> арасы.
+                            </div>
                             
-                            ${isSigned ? `
+                            ${isSignedCurrentWindow ? `
                                 <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold rounded-lg flex items-center justify-between">
-                                    <span>✅ Табельге қол қойылды және расталды!</span>
-                                    <span class="text-[10px] text-emerald-700">${signDate}</span>
+                                    <span>✅ Бұл мерзім үшін табельге қол қойылды!</span>
+                                    <span class="text-[10px] text-emerald-700">${subInfo.signedAt}</span>
                                 </div>
-                            ` : `
+                            ` : (isActiveWindow ? `
                                 <div class="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-lg">
-                                    ⚠️ Ай соңында балаңыздың сабаққа толық қатысқанын растау үшін төмендегі батырманы басып, қол қойыңыз.
+                                    ⚠️ Қазір қол қою мерзімі ашық! Төмендегі батырманы басып растаңыз.
                                 </div>
-                                <button onclick="signParentSubscription()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow transition-all">✍️ Қол қою және растау</button>
-                            `}
+                                <button onclick="signParentSubscription()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow transition-all">✍️ Қол қою және растау (${currentStr})</button>
+                            ` : `
+                                <div class="p-3 bg-slate-100 border text-slate-500 text-xs rounded-lg text-center font-medium">
+                                    🔒 Қазіргі уақытта қол қою мерзімі аяқталды немесе әкімші әлі жаңа мерзім бекітпеді.
+                                </div>
+                            `)}
+
+                            <div class="mt-4 pt-3 border-t">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">📜 Барлық қол қою тарихы (Архів):</h4>
+                                <ul class="space-y-1 bg-white p-2 border rounded-lg">${historyListHTML}</ul>
+                            </div>
                         </div>
                     `;
                 } else if (activeTab === 'parent_schedule') {
@@ -1850,7 +1888,7 @@
                 let parentObj = users.find(u => u.role === 'parent' && u.parentOf === s.username);
                 let subInfo = bilimSubscriptions[s.username] || { signed: false, status: 'normal' };
 
-                let statusStr = subInfo.signed ? '<span class="text-emerald-600 font-bold">✅ Қол қойылған</span>' : '<span class="text-amber-600 font-bold">⏳ Күтуде</span>';
+                let statusStr = subInfo.signed ? `<span class="text-emerald-600 font-bold">✅ Қол қойылған (${subInfo.signedAt})</span>` : '<span class="text-amber-600 font-bold">⏳ Күтуде</span>';
                 if(subInfo.status === 'expelled') statusStr = '<span class="text-red-600 font-bold">🚨 Босатылған</span>';
 
                 return `
@@ -1876,11 +1914,19 @@
 
         async function saveSubscriptionSettings() {
             showSpinner("Мерзім сақталуда...");
-            subscriptionSettings.startDate = document.getElementById('sub-start-date').value;
-            subscriptionSettings.endDate = document.getElementById('sub-end-date').value;
+            let startVal = document.getElementById('sub-start-datetime').value; // YYYY-MM-DDTHH:mm
+            let endVal = document.getElementById('sub-end-datetime').value;
+
+            if(!startVal || !endVal) return alert('Басталу және аяқталу уақытын толық енгізіңіз!');
+
+            // Convert to YYYY/MM/DD-HH:mm format
+            subscriptionSettings.startDate = startVal.replace(/-/g, '/').replace('T', '-');
+            subscriptionSettings.endDate = endVal.replace(/-/g, '/').replace('T', '-');
+
             await saveDataToCloud();
             hideSpinner();
-            alert('Табельге қол қою мерзімі сәтті сақталды!');
+            alert('✨ Табельге қол қою уақыт терезесі сәтті бекітілді!');
+            renderTabContent();
         }
 
         async function signParentSubscription() {
@@ -1888,19 +1934,30 @@
             if(!childUsername) return;
 
             showSpinner("Табельге қол қойылуда...");
-            let now = new Date();
-            let dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`;
+            let currentStr = getCurrentFormattedDateTime(); // YYYY/MM/DD-HH:mm
 
-            bilimSubscriptions[childUsername] = {
-                signed: true,
-                signedBy: currentUser.username,
-                signedAt: dateStr,
-                status: 'normal'
-            };
+            if(!bilimSubscriptions[childUsername]) {
+                bilimSubscriptions[childUsername] = { signed: false, history: [] };
+            }
+            if(!bilimSubscriptions[childUsername].history) {
+                bilimSubscriptions[childUsername].history = [];
+            }
+
+            bilimSubscriptions[childUsername].signed = true;
+            bilimSubscriptions[childUsername].signedAt = currentStr;
+            bilimSubscriptions[childUsername].signedBy = currentUser.username;
+            bilimSubscriptions[childUsername].status = 'normal';
+
+            bilimSubscriptions[childUsername].history.push({
+                signedAt: currentStr,
+                periodStart: subscriptionSettings.startDate,
+                periodEnd: subscriptionSettings.endDate,
+                signedBy: currentUser.username
+            });
 
             await saveDataToCloud();
             hideSpinner();
-            alert('✍️ Табельге сәтті қол қойылды және мектеп әкімшілігіне жіберілді!');
+            alert(`✍️ Табельге ${currentStr} уақытында сәтті қол қойылды!`);
             renderTabContent();
         }
 
